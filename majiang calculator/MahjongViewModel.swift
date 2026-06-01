@@ -19,6 +19,8 @@ final class MahjongViewModel: ObservableObject {
     @Published var hintMessage: String?
     /// 张数合法但标准形下无任何听牌
     @Published private(set) var showsNoWaiting: Bool = false
+    /// 正在调用 AI 识别照片
+    @Published private(set) var isRecognizing: Bool = false
 
     private let maxTiles = 14
 
@@ -94,6 +96,46 @@ final class MahjongViewModel: ObservableObject {
 
         waitingTiles = calculateWaiting(cards: cards)
         showsNoWaiting = waitingTiles.isEmpty
+    }
+
+    /// 直接用一组牌替换当前手牌（用于 AI 识别结果回填），超过 14 张时截断
+    func setHand(_ cards: [MahjongCard]) {
+        let ordered = cards.sorted { a, b in
+            if a.suit.displaySortIndex != b.suit.displaySortIndex {
+                return a.suit.displaySortIndex < b.suit.displaySortIndex
+            }
+            return a.rank < b.rank
+        }
+        selectedTiles = ordered.prefix(maxTiles).map { SelectedTile(card: $0) }
+        clearResult()
+    }
+
+    /// 调用 AI 识别照片中的麻将牌，回填手牌并（若张数合法）直接算听
+    func recognizeAndCalculate(imageData: Data, apiKey: String, model: String) async {
+        guard !isRecognizing else { return }
+        isRecognizing = true
+        hintMessage = nil
+        waitingTiles = []
+        showsNoWaiting = false
+        defer { isRecognizing = false }
+
+        do {
+            let service = TileRecognitionService(apiKey: apiKey, model: model)
+            let recognized = try await service.recognize(imageData: imageData)
+            let truncated = recognized.count > maxTiles
+            setHand(recognized)
+
+            if truncated {
+                hintMessage = "识别到超过 14 张牌，已保留前 14 张，请核对后再计算。"
+            } else if canCalculateWaiting {
+                completeCalculation()
+            } else {
+                hintMessage = "已识别 \(selectedTiles.count) 张，请核对；听牌计算需 1、4、7、10 或 13 张。"
+            }
+        } catch {
+            selectedTiles = []
+            hintMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+        }
     }
 
     private func clearResult() {

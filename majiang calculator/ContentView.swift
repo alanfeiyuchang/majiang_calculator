@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 // MARK: - Design
 
@@ -111,6 +112,15 @@ struct ContentView: View {
     @StateObject private var viewModel = MahjongViewModel()
     @State private var keyboardSuit: MahjongCard.Suit = .wan
 
+    // AI 识别相关
+    @AppStorage("anthropicAPIKey") private var apiKey = ""
+    @AppStorage("anthropicModel") private var model = "claude-sonnet-4-6"
+    @State private var photoItem: PhotosPickerItem?
+    @State private var showPhotoPicker = false
+    @State private var showCamera = false
+    @State private var showSettings = false
+    @State private var showSourceDialog = false
+
     private let handColumns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
 
     private var countHint: (String, Color) {
@@ -142,6 +152,15 @@ struct ContentView: View {
             .navigationTitle("听牌计算器")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .font(.body.weight(.medium))
+                    }
+                    .accessibilityLabel("设置")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         viewModel.reset()
@@ -152,6 +171,55 @@ struct ContentView: View {
                     .disabled(viewModel.selectedTiles.isEmpty && viewModel.waitingTiles.isEmpty)
                     .accessibilityLabel("清空全部")
                 }
+            }
+            .overlay { if viewModel.isRecognizing { recognizingOverlay } }
+        }
+        .confirmationDialog("选择图片来源", isPresented: $showSourceDialog, titleVisibility: .visible) {
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                Button("拍照") { showCamera = true }
+            }
+            Button("从相册选择") { showPhotoPicker = true }
+            Button("取消", role: .cancel) {}
+        }
+        .photosPicker(isPresented: $showPhotoPicker, selection: $photoItem, matching: .images)
+        .onChange(of: photoItem) { _, newItem in
+            guard let newItem else { return }
+            Task {
+                let data = try? await newItem.loadTransferable(type: Data.self)
+                photoItem = nil
+                if let data {
+                    await viewModel.recognizeAndCalculate(imageData: data, apiKey: apiKey, model: model)
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $showCamera) {
+            CameraPicker { image in
+                if let data = image.jpegData(compressionQuality: 0.9) {
+                    Task { await viewModel.recognizeAndCalculate(imageData: data, apiKey: apiKey, model: model) }
+                }
+            }
+            .ignoresSafeArea()
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView(apiKey: $apiKey, model: $model)
+        }
+    }
+
+    private var recognizingOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.35).ignoresSafeArea()
+            VStack(spacing: 14) {
+                ProgressView()
+                    .controlSize(.large)
+                    .tint(.white)
+                Text("AI 正在识别牌面…")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+            }
+            .padding(28)
+            .background {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.ultraThinMaterial)
             }
         }
     }
@@ -230,8 +298,23 @@ struct ContentView: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(Theme.accent)
-            .disabled(viewModel.selectedTiles.isEmpty)
+            .disabled(viewModel.selectedTiles.isEmpty || viewModel.isRecognizing)
             .padding(.top, 4)
+
+            Button {
+                showSourceDialog = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "camera.viewfinder")
+                    Text("拍照识别手牌")
+                }
+                .font(.subheadline.weight(.semibold))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+            }
+            .buttonStyle(.bordered)
+            .tint(Theme.accent)
+            .disabled(viewModel.isRecognizing)
         }
     }
 
@@ -409,6 +492,75 @@ private struct FlowWaitingLayout: Layout {
 
         let totalH = y + rowH
         return (CGSize(width: maxW, height: totalH), frames)
+    }
+}
+
+// MARK: - 相机
+
+private struct CameraPicker: UIViewControllerRepresentable {
+    var onCapture: (UIImage) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: CameraPicker
+        init(_ parent: CameraPicker) { self.parent = parent }
+
+        func imagePickerController(_ picker: UIImagePickerController,
+                                   didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+            if let image = info[.originalImage] as? UIImage {
+                parent.onCapture(image)
+            }
+            parent.dismiss()
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.dismiss()
+        }
+    }
+}
+
+// MARK: - 设置（AI 识别）
+
+private struct SettingsView: View {
+    @Binding var apiKey: String
+    @Binding var model: String
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    SecureField("sk-ant-…", text: $apiKey)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    TextField("模型", text: $model)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                } header: {
+                    Text("Anthropic API")
+                } footer: {
+                    Text("「拍照识别手牌」会把照片上传到 Anthropic Claude 进行识别，需填写你自己的 API Key。Key 仅保存在本机。默认模型 claude-sonnet-4-6。")
+                }
+            }
+            .navigationTitle("设置")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("完成") { dismiss() }
+                }
+            }
+        }
     }
 }
 
