@@ -112,13 +112,10 @@ struct ContentView: View {
     @StateObject private var viewModel = MahjongViewModel()
     @State private var keyboardSuit: MahjongCard.Suit = .wan
 
-    // AI 识别相关
-    @AppStorage("anthropicAPIKey") private var apiKey = ""
-    @AppStorage("anthropicModel") private var model = "claude-sonnet-4-6"
+    // AI 识别相关（本地 ONNX 模型）
     @State private var photoItem: PhotosPickerItem?
     @State private var showPhotoPicker = false
     @State private var showCamera = false
-    @State private var showSettings = false
     @State private var showSourceDialog = false
 
     private let handColumns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
@@ -152,15 +149,6 @@ struct ContentView: View {
             .navigationTitle("听牌计算器")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        showSettings = true
-                    } label: {
-                        Image(systemName: "gearshape")
-                            .font(.body.weight(.medium))
-                    }
-                    .accessibilityLabel("设置")
-                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         viewModel.reset()
@@ -188,20 +176,17 @@ struct ContentView: View {
                 let data = try? await newItem.loadTransferable(type: Data.self)
                 photoItem = nil
                 if let data {
-                    await viewModel.recognizeAndCalculate(imageData: data, apiKey: apiKey, model: model)
+                    await viewModel.recognizeAndCalculate(imageData: data)
                 }
             }
         }
         .fullScreenCover(isPresented: $showCamera) {
             CameraPicker { image in
                 if let data = image.jpegData(compressionQuality: 0.9) {
-                    Task { await viewModel.recognizeAndCalculate(imageData: data, apiKey: apiKey, model: model) }
+                    Task { await viewModel.recognizeAndCalculate(imageData: data) }
                 }
             }
             .ignoresSafeArea()
-        }
-        .sheet(isPresented: $showSettings) {
-            SettingsView(apiKey: $apiKey, model: $model)
         }
     }
 
@@ -526,40 +511,6 @@ private struct CameraPicker: UIViewControllerRepresentable {
 
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             parent.dismiss()
-        }
-    }
-}
-
-// MARK: - 设置（AI 识别）
-
-private struct SettingsView: View {
-    @Binding var apiKey: String
-    @Binding var model: String
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    SecureField("sk-ant-…", text: $apiKey)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    TextField("模型", text: $model)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                } header: {
-                    Text("Anthropic API")
-                } footer: {
-                    Text("「拍照识别手牌」会把照片上传到 Anthropic Claude 进行识别，需填写你自己的 API Key。Key 仅保存在本机。默认模型 claude-sonnet-4-6。")
-                }
-            }
-            .navigationTitle("设置")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("完成") { dismiss() }
-                }
-            }
         }
     }
 }

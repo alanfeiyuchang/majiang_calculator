@@ -110,8 +110,10 @@ final class MahjongViewModel: ObservableObject {
         clearResult()
     }
 
-    /// 调用 AI 识别照片中的麻将牌，回填手牌并（若张数合法）直接算听
-    func recognizeAndCalculate(imageData: Data, apiKey: String, model: String) async {
+    private let recognizer = LocalTileRecognizer()
+
+    /// 本地 AI 识别照片中的麻将牌，回填手牌并（若张数合法）直接算听
+    func recognizeAndCalculate(imageData: Data) async {
         guard !isRecognizing else { return }
         isRecognizing = true
         hintMessage = nil
@@ -120,8 +122,7 @@ final class MahjongViewModel: ObservableObject {
         defer { isRecognizing = false }
 
         do {
-            let service = TileRecognitionService(apiKey: apiKey, model: model)
-            let recognized = try await service.recognize(imageData: imageData)
+            let recognized = try await recognizer.recognize(imageData: imageData)
             let truncated = recognized.count > maxTiles
             setHand(recognized)
 
