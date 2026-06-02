@@ -609,7 +609,7 @@ private struct CropView: View {
         .background(.ultraThinMaterial)
     }
 
-    // 框外压暗
+    // 框外压暗（与裁剪框、手势同处 GeometryReader 坐标系，不能 ignoresSafeArea，否则会错位）
     private func dimming(_ rect: CGRect) -> some View {
         Rectangle()
             .fill(.black.opacity(0.55))
@@ -624,7 +624,6 @@ private struct CropView: View {
                     .compositingGroup()
             }
             .allowsHitTesting(false)
-            .ignoresSafeArea()
     }
 
     // 裁剪框 + 四角把手
