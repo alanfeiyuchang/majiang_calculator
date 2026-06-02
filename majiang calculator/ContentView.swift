@@ -749,6 +749,9 @@ private struct CropView: View {
     var onRetake: () -> Void
     var onCrop: (UIImage) -> Void
 
+    @State private var working: UIImage? = nil        // 当前（可旋转后）的图片
+    @State private var containerSize: CGSize = .zero
+    @State private var didSetup = false
     @State private var imageRect: CGRect = .zero    // 图片在视图中的实际显示区域
     @State private var cropRect: CGRect? = nil        // 裁剪框；nil = 未框选，识别整张
     @State private var dragBase: CGRect? = nil        // 移动/缩放手势开始时的快照
@@ -756,12 +759,14 @@ private struct CropView: View {
     private let handleSize: CGFloat = 28
     private let minCrop: CGFloat = 44
 
+    private var current: UIImage { working ?? image }
+
     var body: some View {
         NavigationStack {
             GeometryReader { geo in
                 ZStack {
                     Color.black.ignoresSafeArea()
-                    Image(uiImage: image)
+                    Image(uiImage: current)
                         .resizable()
                         .scaledToFit()
 
@@ -775,16 +780,27 @@ private struct CropView: View {
                         cropBox(rect)
                     }
                 }
-                .onAppear { layout(in: geo.size) }
-                .onChange(of: geo.size) { _, newSize in layout(in: newSize) }
+                .onAppear { setup(in: geo.size) }
+                .onChange(of: geo.size) { _, newSize in
+                    containerSize = newSize
+                    layout()
+                }
             }
             .ignoresSafeArea(edges: .bottom)
             .overlay(alignment: .bottom) { bottomBar }
-            .navigationTitle(cropRect == nil ? "在手牌上拖动框选（可选）" : "调整选区")
+            .navigationTitle(cropRect == nil ? "拖动框选 · 可旋转" : "调整选区")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") { onCancel() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        withAnimation { rotate() }
+                    } label: {
+                        Image(systemName: "rotate.right")
+                    }
+                    .accessibilityLabel("旋转")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(source == .camera ? "重拍" : "换一张") { onRetake() }
@@ -949,16 +965,35 @@ private struct CropView: View {
                 y: min(max(p.y, imageRect.minY), imageRect.maxY))
     }
 
-    private func layout(in container: CGSize) {
-        let iw = image.size.width, ih = image.size.height
+    /// 首次出现：相机拍的横图自动旋转为竖向，方便在竖屏裁剪页查看
+    private func setup(in container: CGSize) {
+        containerSize = container
+        if !didSetup {
+            didSetup = true
+            if source == .camera, image.size.width > image.size.height {
+                working = image.rotated90CW()
+            }
+        }
+        layout()
+    }
+
+    private func layout() {
+        let iw = current.size.width, ih = current.size.height
+        let container = containerSize
         guard iw > 0, ih > 0, container.width > 0, container.height > 0 else { return }
         let scale = min(container.width / iw, container.height / ih)
         let w = iw * scale, h = ih * scale
         imageRect = CGRect(x: (container.width - w) / 2, y: (container.height - h) / 2, width: w, height: h)
     }
 
+    private func rotate() {
+        working = current.rotated90CW()
+        cropRect = nil
+        layout()
+    }
+
     private func performCrop() {
-        let up = image.normalizedUp()
+        let up = current.normalizedUp()
         // 未框选：识别整张
         guard let rect = cropRect, let cg = up.cgImage,
               imageRect.width > 0, imageRect.height > 0 else {
