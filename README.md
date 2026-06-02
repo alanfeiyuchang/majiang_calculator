@@ -18,6 +18,12 @@ on-device AI model — no network, no API key.
   - Standard form (1 pair + 4 melds) of course.
 - **Partial hands.** Enter 1 / 4 / 7 / 10 / 13 tiles and it computes the waits,
   treating the not-yet-drawn tiles as completable melds — e.g. `1234万` → waits `1万 4万`.
+- **向听数 + 进张 + 打牌建议 (shanten / acceptance / discard advice).**
+  - 13-tile (or 3n+1) hands not yet ready show the **向听数** and every **进张**
+    (improving tile) with how many of each remain. Tenpai shows the waits; a 空听
+    (all winners already in hand) is flagged.
+  - 14-tile (or 3n+2) hands get **打牌建议**: each discard ranked by resulting
+    向听 then 进张 count, so you know what to throw. Respects 缺一门 and 龙七对.
 - **📷 Photo recognition (on-device).** Take or pick a photo, **drag the crop box
   over just your own hand** (so tiles laying around the table — discards, the wall,
   other players' melds — are excluded), and a bundled YOLOv8 model recognizes the

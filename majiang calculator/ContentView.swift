@@ -126,12 +126,13 @@ struct ContentView: View {
 
     private var countHint: (String, Color) {
         let n = viewModel.selectedTiles.count
+        let green = Color(red: 0.2, green: 0.72, blue: 0.45)
         if n == 0 { return ("选入手牌", .secondary) }
-        if n >= 14 { return ("已满 14 张", .orange) }
-        if n % 3 == 1 { return ("可算听牌", Color(red: 0.2, green: 0.72, blue: 0.45)) }
-        let need = (4 - (n % 3)) % 3
-        if need == 1 { return ("再选 1 张", .orange) }
-        return ("再选 2 张", .orange)
+        switch n % 3 {
+        case 1: return ("可算向听 / 听牌", green)
+        case 2: return ("可给打牌建议", green)
+        default: return ("再选 1 张", .orange)
+        }
     }
 
     var body: some View {
@@ -300,7 +301,7 @@ struct ContentView: View {
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "sparkles")
-                    Text("计算听牌")
+                    Text("分析手牌")
                 }
                 .font(.headline)
                 .frame(maxWidth: .infinity)
@@ -339,18 +340,47 @@ struct ContentView: View {
                     .foregroundStyle(.orange)
                     .fixedSize(horizontal: false, vertical: true)
             }
-        } else if viewModel.showsNoWaiting {
-            SectionCard(title: "听牌结果", systemImage: "xmark.circle.fill") {
-                Label {
-                    Text("无可胡听牌（标准形 / 七对，且缺一门）")
-                        .font(.subheadline)
-                } icon: {
-                    Image(systemName: "minus.circle")
-                        .foregroundStyle(.tertiary)
-                }
-                .foregroundStyle(.secondary)
+        } else if viewModel.hasAnalyzed {
+            analysisResult
+        } else {
+            SectionCard(title: "分析结果", systemImage: "questionmark.circle") {
+                Text("选牌后点「分析手牌」：13 张算听牌/向听，14 张给打牌建议。")
+                    .font(.footnote)
+                    .foregroundStyle(.tertiary)
             }
-        } else if !viewModel.waitingTiles.isEmpty {
+        }
+    }
+
+    @ViewBuilder
+    private var analysisResult: some View {
+        let sh = viewModel.shantenValue ?? 99
+        if sh == -1 {
+            // 已和（3n+2 且成牌）
+            SectionCard(title: "已和！", systemImage: "checkmark.seal.fill") {
+                Text("这副牌已经胡了（满足缺一门）。")
+                    .font(.subheadline)
+                    .foregroundStyle(Color(red: 0.16, green: 0.65, blue: 0.40))
+            }
+        } else if !viewModel.discards.isEmpty {
+            discardCard
+        } else if sh == 0 {
+            tenpaiCard
+        } else {
+            shantenCard
+        }
+    }
+
+    // 听牌（含空听）
+    @ViewBuilder
+    private var tenpaiCard: some View {
+        if viewModel.isDeadWait {
+            SectionCard(title: "听牌（空听）", systemImage: "exclamationmark.triangle.fill") {
+                Text("已听牌，但可胡的牌都已在手中（4 张用尽），无法再胡——空听。")
+                    .font(.subheadline)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        } else {
             SectionCard(
                 title: "听牌",
                 systemImage: "checkmark.seal.fill",
@@ -363,11 +393,66 @@ struct ContentView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-        } else {
-            SectionCard(title: "听牌结果", systemImage: "questionmark.circle") {
-                Text("选满 1、4、7、10 或 13 张后点「计算听牌」")
+        }
+    }
+
+    // 向听 + 进张（3n+1 未听牌）
+    private var shantenCard: some View {
+        SectionCard(
+            title: "向听 \(viewModel.shantenValue ?? 0)",
+            systemImage: "target",
+            accessory: Text("进张 \(acceptanceTotal) 张").monospacedDigit()
+        ) {
+            if viewModel.acceptance.isEmpty {
+                Text("无有效进张（受缺一门所限）。")
                     .font(.footnote)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
+            } else {
+                FlowWaitingLayout(spacing: 8) {
+                    ForEach(viewModel.acceptance) { item in
+                        VStack(spacing: 2) {
+                            MahjongTileChip(card: item.card, large: true)
+                            Text("剩\(item.remaining)")
+                                .font(.caption2.weight(.medium).monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    private var acceptanceTotal: Int {
+        viewModel.acceptance.reduce(0) { $0 + $1.remaining }
+    }
+
+    // 打牌建议（3n+2）
+    private var discardCard: some View {
+        SectionCard(
+            title: "打牌建议",
+            systemImage: "hand.point.up.left.fill",
+            accessory: Text("\(viewModel.discards.count) 种").monospacedDigit()
+        ) {
+            VStack(spacing: 10) {
+                ForEach(viewModel.discards.prefix(6)) { s in
+                    HStack(spacing: 10) {
+                        Text("打")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                        MahjongTileChip(card: s.discard)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(s.resultingShanten == 0 ? "听牌" : "向听 \(s.resultingShanten)")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(s.resultingShanten == 0
+                                                 ? Color(red: 0.16, green: 0.65, blue: 0.40) : .primary)
+                            Text("进张 \(s.acceptanceCount) 张 · \(s.acceptance.count) 门")
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                }
             }
         }
     }

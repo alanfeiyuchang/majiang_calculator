@@ -128,6 +128,144 @@ func isWinningHand14(_ freq: [Int]) -> Bool {
     freq.reduce(0, +) == 14 && isCompleteHand(freq)
 }
 
+// MARK: - 向听数 / 进张 / 打牌建议
+
+/// 标准型向听数：counts 拆成「n 面子 + 1 将」最少还差几张。
+/// -1 表示已和，0 表示听牌。neededMelds = 总张数 / 3。
+private func standardShantenN(_ counts: [Int], neededMelds n: Int) -> Int {
+    var best = 2 * n
+    var c = counts
+    func dfs(_ start: Int, _ m: Int, _ t: Int, _ p: Int) {
+        var i = start
+        while i < 27 && c[i] == 0 { i += 1 }
+        if i == 27 {
+            var sh = 2 * n - 2 * m - t
+            if m + t == n + 1 && p == 0 { sh += 1 }   // n+1 块但无将 → +1
+            if sh < best { best = sh }
+            return
+        }
+        let col = i % 9
+        // 刻子（最多 n 个面子）
+        if m < n, c[i] >= 3 {
+            c[i] -= 3; dfs(i, m + 1, t, p); c[i] += 3
+        }
+        // 顺子
+        if m < n, col <= 6, c[i] > 0, c[i + 1] > 0, c[i + 2] > 0 {
+            c[i] -= 1; c[i + 1] -= 1; c[i + 2] -= 1
+            dfs(i, m + 1, t, p)
+            c[i] += 1; c[i + 1] += 1; c[i + 2] += 1
+        }
+        // 搭子（面子+搭子最多 n+1 块）：对子（可作将）
+        if m + t < n + 1, c[i] >= 2 {
+            c[i] -= 2; dfs(i, m, t + 1, p + 1); c[i] += 2
+        }
+        // 搭子：两面 / 嵌张
+        if m + t < n + 1, col <= 7, c[i] > 0, c[i + 1] > 0 {
+            c[i] -= 1; c[i + 1] -= 1; dfs(i, m, t + 1, p); c[i] += 1; c[i + 1] += 1
+        }
+        if m + t < n + 1, col <= 6, c[i] > 0, c[i + 2] > 0 {
+            c[i] -= 1; c[i + 2] -= 1; dfs(i, m, t + 1, p); c[i] += 1; c[i + 2] += 1
+        }
+        // 孤张：弃掉一张
+        c[i] -= 1; dfs(i, m, t, p); c[i] += 1
+    }
+    dfs(0, 0, 0, 0)
+    return best
+}
+
+/// 七对向听数（仅整手 13/14 张有意义）。
+/// 四川麻将认龙七对：4 张同牌算两对，故按 Σ⌊张数/2⌋ 计对子数，无「七门」限制。
+private func chiitoiShanten(_ counts: [Int]) -> Int {
+    var pairs = 0
+    for x in counts { pairs += x / 2 }
+    return 6 - pairs
+}
+
+/// 频率数组的向听数（含缺一门：取「保留两门」的最优；整手时并入七对）
+func shantenOf(_ freq: [Int]) -> Int {
+    let size = freq.reduce(0, +)
+    guard size >= 1 else { return 8 }
+    let n = size / 3
+    let whole = (size == 13 || size == 14)
+    var best = Int.max
+    for drop in 0..<3 {
+        var c = freq
+        for r in 0..<9 { c[drop * 9 + r] = 0 }
+        best = min(best, standardShantenN(c, neededMelds: n))
+        if whole { best = min(best, chiitoiShanten(c)) }
+    }
+    return best
+}
+
+/// 手牌向听数
+func handShanten(_ cards: [MahjongCard]) -> Int {
+    shantenOf(handToFrequency27(cards))
+}
+
+/// 3n+1 手牌的进张：加入后能降低向听的牌，及各自剩余张数（4 − 手中张数）
+func acceptanceTiles(cards: [MahjongCard]) -> [(card: MahjongCard, remaining: Int)] {
+    let base = handToFrequency27(cards)
+    let size = base.reduce(0, +)
+    guard size % 3 == 1, size <= 13 else { return [] }
+    let s0 = shantenOf(base)
+    var result: [(MahjongCard, Int)] = []
+    for i in 0..<27 where base[i] < 4 {
+        var trial = base
+        trial[i] += 1
+        if shantenOf(trial) < s0 {
+            result.append((MahjongCard.fromTileIndex(i), 4 - base[i]))
+        }
+    }
+    return result.sorted { a, b in
+        if a.0.suit.displaySortIndex != b.0.suit.displaySortIndex {
+            return a.0.suit.displaySortIndex < b.0.suit.displaySortIndex
+        }
+        return a.0.rank < b.0.rank
+    }
+}
+
+/// 一个弃牌方案
+struct DiscardSuggestion: Identifiable {
+    let id = UUID()
+    let discard: MahjongCard
+    let resultingShanten: Int
+    let acceptance: [MahjongCard]
+    /// 进张总张数（各进张牌剩余张数之和）
+    let acceptanceCount: Int
+}
+
+/// 3n+2 手牌的打牌建议：每个可弃的牌 → 弃后向听 + 进张，按「向听升序、进张降序」排序
+func discardSuggestions(cards: [MahjongCard]) -> [DiscardSuggestion] {
+    var base = handToFrequency27(cards)
+    let size = base.reduce(0, +)
+    guard size % 3 == 2, size <= 14 else { return [] }
+
+    var out: [DiscardSuggestion] = []
+    for d in 0..<27 where base[d] > 0 {
+        base[d] -= 1
+        let remainingCards = (0..<27).flatMap { idx in
+            Array(repeating: MahjongCard.fromTileIndex(idx), count: base[idx])
+        }
+        let sh = shantenOf(base)
+        let acc = acceptanceTiles(cards: remainingCards)
+        base[d] += 1
+        out.append(DiscardSuggestion(
+            discard: MahjongCard.fromTileIndex(d),
+            resultingShanten: sh,
+            acceptance: acc.map(\.card),
+            acceptanceCount: acc.reduce(0) { $0 + $1.remaining }
+        ))
+    }
+    return out.sorted { a, b in
+        if a.resultingShanten != b.resultingShanten { return a.resultingShanten < b.resultingShanten }
+        if a.acceptanceCount != b.acceptanceCount { return a.acceptanceCount > b.acceptanceCount }
+        if a.discard.suit.displaySortIndex != b.discard.suit.displaySortIndex {
+            return a.discard.suit.displaySortIndex < b.discard.suit.displaySortIndex
+        }
+        return a.discard.rank < b.discard.rank
+    }
+}
+
 // MARK: - 听牌
 
 /// 当前 3n+1 张手牌（n = 0...4，即 1 / 4 / 7 / 10 / 13 张），
