@@ -52,8 +52,7 @@ the rules engine lives in [`MahjongCalculator.swift`](majiang%20calculator/Mahjo
 
 ## Build & run
 
-- **Xcode** with an **iOS 26.x** SDK (deployment target is 26.2). The app installs
-  only on iOS 26.x devices/simulators.
+- **Xcode** with a recent iOS SDK. Deployment target is **iOS 17.6+**.
 - Open `majiang calculator.xcodeproj` and build. On first open, Xcode resolves the
   **ONNX Runtime** Swift package (downloads the native binary once — needs network).
 - Photo from the library works in the simulator; the **camera** requires a real device.
@@ -63,7 +62,7 @@ If Xcode reports *"Missing package product 'onnxruntime'"*, quit Xcode, then
 
 ## Tech
 
-- SwiftUI, iOS 26.
+- SwiftUI, iOS 17.6+.
 - [ONNX Runtime — Swift Package](https://github.com/microsoft/onnxruntime-swift-package-manager) (`onnxruntime`, product module `OnnxRuntimeBindings`).
 - YOLOv8 object detection model in ONNX format.
 

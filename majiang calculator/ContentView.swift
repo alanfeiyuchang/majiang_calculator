@@ -5,6 +5,8 @@
 
 import SwiftUI
 import PhotosUI
+import AVFoundation
+import Combine
 
 // MARK: - Design
 
@@ -178,19 +180,32 @@ struct ContentView: View {
                 let data = try? await newItem.loadTransferable(type: Data.self)
                 photoItem = nil
                 if let data, let image = UIImage(data: data) {
-                    pendingCrop = PendingImage(image: image)
+                    pendingCrop = PendingImage(image: image, source: .library)
                 }
             }
         }
         .fullScreenCover(isPresented: $showCamera) {
-            CameraPicker { image in
-                pendingCrop = PendingImage(image: image)
+            CameraView { image in
+                showCamera = false
+                pendingCrop = PendingImage(image: image, source: .camera)
+            } onCancel: {
+                showCamera = false
             }
             .ignoresSafeArea()
         }
         .fullScreenCover(item: $pendingCrop) { item in
-            CropView(image: item.image) {
+            CropView(image: item.image, source: item.source) {
                 pendingCrop = nil
+            } onRetake: {
+                let source = item.source
+                pendingCrop = nil
+                // 等裁剪页关闭后再重新打开来源，避免「已在展示」冲突
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    switch source {
+                    case .camera: showCamera = true
+                    case .library: showPhotoPicker = true
+                    }
+                }
             } onCrop: { cropped in
                 pendingCrop = nil
                 if let data = cropped.jpegData(compressionQuality: 0.9) {
@@ -490,53 +505,163 @@ private struct FlowWaitingLayout: Layout {
     }
 }
 
-// MARK: - 相机
+// MARK: - 相机（AVFoundation 自定义拍摄，拍完直接进裁剪，无「重拍/使用照片」确认步骤）
 
-private struct CameraPicker: UIViewControllerRepresentable {
-    var onCapture: (UIImage) -> Void
-    @Environment(\.dismiss) private var dismiss
+private final class CameraModel: NSObject, ObservableObject, AVCapturePhotoCaptureDelegate {
+    let session = AVCaptureSession()
+    private let output = AVCapturePhotoOutput()
+    private let queue = DispatchQueue(label: "camera.session")
+    private var configured = false
 
-    func makeUIViewController(context: Context) -> UIImagePickerController {
-        let picker = UIImagePickerController()
-        picker.sourceType = .camera
-        picker.delegate = context.coordinator
-        return picker
+    var onCapture: ((UIImage) -> Void)?
+    /// 拍摄时根据界面方向设置的旋转角度
+    var captureAngle: CGFloat = 90
+
+    func start() {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            run()
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                if granted { self?.run() }
+            }
+        default:
+            break   // 被拒绝：预览为黑，用户需到系统设置开启
+        }
     }
 
-    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
-
-    func makeCoordinator() -> Coordinator { Coordinator(self) }
-
-    final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-        let parent: CameraPicker
-        init(_ parent: CameraPicker) { self.parent = parent }
-
-        func imagePickerController(_ picker: UIImagePickerController,
-                                   didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
-            if let image = info[.originalImage] as? UIImage {
-                parent.onCapture(image)
-            }
-            parent.dismiss()
+    private func run() {
+        queue.async {
+            if !self.configured { self.configure(); self.configured = true }
+            if !self.session.isRunning { self.session.startRunning() }
         }
+    }
 
-        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            parent.dismiss()
+    func stop() {
+        queue.async { if self.session.isRunning { self.session.stopRunning() } }
+    }
+
+    private func configure() {
+        session.beginConfiguration()
+        session.sessionPreset = .photo
+        if let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+           let input = try? AVCaptureDeviceInput(device: device), session.canAddInput(input) {
+            session.addInput(input)
+        }
+        if session.canAddOutput(output) { session.addOutput(output) }
+        session.commitConfiguration()
+    }
+
+    func capture() {
+        queue.async {
+            if let conn = self.output.connection(with: .video),
+               conn.isVideoRotationAngleSupported(self.captureAngle) {
+                conn.videoRotationAngle = self.captureAngle
+            }
+            self.output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+        }
+    }
+
+    func photoOutput(_ output: AVCapturePhotoOutput,
+                     didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        guard let data = photo.fileDataRepresentation(), let image = UIImage(data: data) else { return }
+        DispatchQueue.main.async { self.onCapture?(image) }
+    }
+}
+
+private struct CameraPreview: UIViewRepresentable {
+    let session: AVCaptureSession
+
+    func makeUIView(context: Context) -> PreviewView {
+        let v = PreviewView()
+        v.videoPreviewLayer.session = session
+        v.videoPreviewLayer.videoGravity = .resizeAspectFill
+        return v
+    }
+    func updateUIView(_ uiView: PreviewView, context: Context) {}
+
+    final class PreviewView: UIView {
+        override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
+        var videoPreviewLayer: AVCaptureVideoPreviewLayer { layer as! AVCaptureVideoPreviewLayer }
+    }
+}
+
+private struct CameraView: View {
+    var onCapture: (UIImage) -> Void
+    var onCancel: () -> Void
+    @StateObject private var model = CameraModel()
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            CameraPreview(session: model.session)
+                .ignoresSafeArea()
+
+            VStack {
+                HStack {
+                    Button { onCancel() } label: {
+                        Image(systemName: "xmark")
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .padding(12)
+                            .background(.black.opacity(0.4), in: Circle())
+                    }
+                    Spacer()
+                }
+                .padding()
+
+                Spacer()
+
+                Button {
+                    model.captureAngle = Self.currentCaptureAngle()
+                    model.capture()
+                } label: {
+                    ZStack {
+                        Circle().stroke(.white, lineWidth: 5).frame(width: 76, height: 76)
+                        Circle().fill(.white).frame(width: 62, height: 62)
+                    }
+                }
+                .padding(.bottom, 36)
+                .accessibilityLabel("拍照")
+            }
+        }
+        .onAppear {
+            model.onCapture = { onCapture($0) }
+            model.start()
+        }
+        .onDisappear { model.stop() }
+    }
+
+    /// 依据当前界面方向得到拍摄旋转角度（让照片方向正确）
+    private static func currentCaptureAngle() -> CGFloat {
+        let io = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.interfaceOrientation ?? .portrait
+        switch io {
+        case .portrait:            return 90
+        case .portraitUpsideDown:  return 270
+        case .landscapeLeft:       return 180
+        case .landscapeRight:      return 0
+        default:                   return 90
         }
     }
 }
 
 // MARK: - 裁剪到手牌
 
+enum ImageSource { case camera, library }
+
 struct PendingImage: Identifiable {
     let id = UUID()
     let image: UIImage
+    let source: ImageSource
 }
 
 /// 让用户把裁剪框拖到「只剩自己的手牌」，再交给模型识别，
 /// 避免把牌桌上其他人的牌、牌墙、弃牌也识别进来。
 private struct CropView: View {
     let image: UIImage
+    let source: ImageSource
     var onCancel: () -> Void
+    var onRetake: () -> Void
     var onCrop: (UIImage) -> Void
 
     @State private var imageRect: CGRect = .zero    // 图片在视图中的实际显示区域
@@ -576,19 +701,27 @@ private struct CropView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") { onCancel() }
                 }
-                if cropRect != nil {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("重选") { withAnimation { cropRect = nil } }
-                    }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(source == .camera ? "重拍" : "换一张") { onRetake() }
                 }
             }
             .toolbarBackground(.visible, for: .navigationBar)
         }
     }
 
-    // 底部大号识别按钮
+    // 底部：清除框选（有框时）+ 大号识别按钮
     private var bottomBar: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 8) {
+            if cropRect != nil {
+                Button {
+                    withAnimation { cropRect = nil }
+                } label: {
+                    Label("清除框选", systemImage: "xmark.circle")
+                        .font(.subheadline.weight(.medium))
+                }
+                .tint(.secondary)
+            }
+
             Button {
                 performCrop()
             } label: {
@@ -602,10 +735,10 @@ private struct CropView: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(Theme.accent)
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
-            .padding(.bottom, 8)
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
         .background(.ultraThinMaterial)
     }
 
