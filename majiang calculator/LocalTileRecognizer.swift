@@ -248,8 +248,8 @@ extension UIImage {
         return renderer.image { _ in draw(in: CGRect(origin: .zero, size: size)) }
     }
 
-    /// 顺时针旋转 90°（像素级烘焙，宽高互换）
-    func rotated90CW() -> UIImage {
+    /// 旋转 90°（像素级烘焙，宽高互换）。clockwise = true 顺时针，false 逆时针。
+    func rotated90(clockwise: Bool) -> UIImage {
         let newSize = CGSize(width: size.height, height: size.width)
         let format = UIGraphicsImageRendererFormat.default()
         format.scale = scale
@@ -257,7 +257,7 @@ extension UIImage {
         return renderer.image { ctx in
             let cg = ctx.cgContext
             cg.translateBy(x: newSize.width / 2, y: newSize.height / 2)
-            cg.rotate(by: .pi / 2)
+            cg.rotate(by: clockwise ? .pi / 2 : -.pi / 2)
             cg.translateBy(x: -size.width / 2, y: -size.height / 2)
             draw(in: CGRect(origin: .zero, size: size))
         }

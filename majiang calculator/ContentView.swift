@@ -798,7 +798,7 @@ private struct CropView: View {
                     Button {
                         withAnimation { rotate() }
                     } label: {
-                        Image(systemName: "rotate.right")
+                        Image(systemName: "rotate.left")
                     }
                     .accessibilityLabel("旋转")
                 }
@@ -965,13 +965,13 @@ private struct CropView: View {
                 y: min(max(p.y, imageRect.minY), imageRect.maxY))
     }
 
-    /// 首次出现：相机拍的横图自动旋转为竖向，方便在竖屏裁剪页查看
+    /// 首次出现：相机拍的横图（宽 > 高）自动逆时针旋转为竖向，方便竖屏裁剪
     private func setup(in container: CGSize) {
         containerSize = container
         if !didSetup {
             didSetup = true
             if source == .camera, image.size.width > image.size.height {
-                working = image.rotated90CW()
+                working = image.rotated90(clockwise: false)
             }
         }
         layout()
@@ -987,7 +987,7 @@ private struct CropView: View {
     }
 
     private func rotate() {
-        working = current.rotated90CW()
+        working = current.rotated90(clockwise: false)   // 逆时针
         cropRect = nil
         layout()
     }
