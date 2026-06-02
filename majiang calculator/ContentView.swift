@@ -540,8 +540,8 @@ private struct CropView: View {
     var onCrop: (UIImage) -> Void
 
     @State private var imageRect: CGRect = .zero    // 图片在视图中的实际显示区域
-    @State private var cropRect: CGRect = .zero      // 当前裁剪框（视图坐标）
-    @State private var dragBase: CGRect? = nil       // 手势开始时的裁剪框快照
+    @State private var cropRect: CGRect? = nil        // 裁剪框；nil = 未框选，识别整张
+    @State private var dragBase: CGRect? = nil        // 移动/缩放手势开始时的快照
 
     private let handleSize: CGFloat = 28
     private let minCrop: CGFloat = 44
@@ -555,41 +555,70 @@ private struct CropView: View {
                         .resizable()
                         .scaledToFit()
 
-                    if cropRect != .zero {
-                        dimming
-                        cropBox
+                    // 在图片上拖动以画出选区；未框选前整张可拖。
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .gesture(createGesture)
+
+                    if let rect = cropRect {
+                        dimming(rect)
+                        cropBox(rect)
                     }
                 }
-                .contentShape(Rectangle())
                 .onAppear { layout(in: geo.size) }
                 .onChange(of: geo.size) { _, newSize in layout(in: newSize) }
             }
             .ignoresSafeArea(edges: .bottom)
-            .navigationTitle("框选你的手牌")
+            .overlay(alignment: .bottom) { bottomBar }
+            .navigationTitle(cropRect == nil ? "在手牌上拖动框选（可选）" : "调整选区")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") { onCancel() }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("识别") { performCrop() }
-                        .fontWeight(.semibold)
+                if cropRect != nil {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("重选") { withAnimation { cropRect = nil } }
+                    }
                 }
             }
             .toolbarBackground(.visible, for: .navigationBar)
         }
     }
 
+    // 底部大号识别按钮
+    private var bottomBar: some View {
+        VStack(spacing: 0) {
+            Button {
+                performCrop()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "sparkles")
+                    Text(cropRect == nil ? "识别整张照片" : "识别选中区域")
+                }
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(Theme.accent)
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+        }
+        .background(.ultraThinMaterial)
+    }
+
     // 框外压暗
-    private var dimming: some View {
+    private func dimming(_ rect: CGRect) -> some View {
         Rectangle()
             .fill(.black.opacity(0.55))
             .mask {
                 Rectangle()
                     .overlay(alignment: .topLeading) {
                         Rectangle()
-                            .frame(width: cropRect.width, height: cropRect.height)
-                            .offset(x: cropRect.minX, y: cropRect.minY)
+                            .frame(width: rect.width, height: rect.height)
+                            .offset(x: rect.minX, y: rect.minY)
                             .blendMode(.destinationOut)
                     }
                     .compositingGroup()
@@ -599,18 +628,18 @@ private struct CropView: View {
     }
 
     // 裁剪框 + 四角把手
-    private var cropBox: some View {
+    private func cropBox(_ rect: CGRect) -> some View {
         ZStack(alignment: .topLeading) {
             Rectangle()
                 .strokeBorder(Color.white, lineWidth: 2)
-                .frame(width: cropRect.width, height: cropRect.height)
-                .offset(x: cropRect.minX, y: cropRect.minY)
+                .frame(width: rect.width, height: rect.height)
+                .offset(x: rect.minX, y: rect.minY)
                 .contentShape(Rectangle())
                 .gesture(moveGesture)
 
             ForEach(Corner.allCases, id: \.self) { corner in
                 handle
-                    .position(point(for: corner))
+                    .position(point(for: corner, in: rect))
                     .gesture(resizeGesture(corner))
             }
         }
@@ -625,21 +654,39 @@ private struct CropView: View {
 
     private enum Corner: CaseIterable { case tl, tr, bl, br }
 
-    private func point(for c: Corner) -> CGPoint {
+    private func point(for c: Corner, in rect: CGRect) -> CGPoint {
         switch c {
-        case .tl: return CGPoint(x: cropRect.minX, y: cropRect.minY)
-        case .tr: return CGPoint(x: cropRect.maxX, y: cropRect.minY)
-        case .bl: return CGPoint(x: cropRect.minX, y: cropRect.maxY)
-        case .br: return CGPoint(x: cropRect.maxX, y: cropRect.maxY)
+        case .tl: return CGPoint(x: rect.minX, y: rect.minY)
+        case .tr: return CGPoint(x: rect.maxX, y: rect.minY)
+        case .bl: return CGPoint(x: rect.minX, y: rect.maxY)
+        case .br: return CGPoint(x: rect.maxX, y: rect.maxY)
         }
     }
 
     // MARK: 手势
 
+    /// 在图片上拖动从无到有画出选区
+    private var createGesture: some Gesture {
+        DragGesture(minimumDistance: 10)
+            .onChanged { v in
+                let a = clamp(v.startLocation)
+                let b = clamp(v.location)
+                cropRect = CGRect(x: min(a.x, b.x), y: min(a.y, b.y),
+                                  width: abs(a.x - b.x), height: abs(a.y - b.y))
+            }
+            .onEnded { _ in
+                // 太小当作误触，回到「未框选」
+                if let r = cropRect, r.width < minCrop || r.height < minCrop {
+                    cropRect = nil
+                }
+            }
+    }
+
     private var moveGesture: some Gesture {
         DragGesture()
             .onChanged { v in
-                let base = dragBase ?? cropRect
+                guard let cur = cropRect else { return }
+                let base = dragBase ?? cur
                 if dragBase == nil { dragBase = base }
                 var r = base.offsetBy(dx: v.translation.width, dy: v.translation.height)
                 r.origin.x = min(max(r.minX, imageRect.minX), imageRect.maxX - r.width)
@@ -652,7 +699,8 @@ private struct CropView: View {
     private func resizeGesture(_ corner: Corner) -> some Gesture {
         DragGesture()
             .onChanged { v in
-                let base = dragBase ?? cropRect
+                guard let cur = cropRect else { return }
+                let base = dragBase ?? cur
                 if dragBase == nil { dragBase = base }
                 var minX = base.minX, minY = base.minY, maxX = base.maxX, maxY = base.maxY
                 let tx = v.translation.width, ty = v.translation.height
@@ -679,28 +727,34 @@ private struct CropView: View {
 
     // MARK: 布局 / 裁剪
 
+    private func clamp(_ p: CGPoint) -> CGPoint {
+        CGPoint(x: min(max(p.x, imageRect.minX), imageRect.maxX),
+                y: min(max(p.y, imageRect.minY), imageRect.maxY))
+    }
+
     private func layout(in container: CGSize) {
         let iw = image.size.width, ih = image.size.height
         guard iw > 0, ih > 0, container.width > 0, container.height > 0 else { return }
         let scale = min(container.width / iw, container.height / ih)
         let w = iw * scale, h = ih * scale
-        let rect = CGRect(x: (container.width - w) / 2, y: (container.height - h) / 2, width: w, height: h)
-        imageRect = rect
-        // 默认框选中间 ~70% 区域，方便用户微调到手牌那一排
-        let inset = CGSize(width: w * 0.15, height: h * 0.32)
-        cropRect = rect.insetBy(dx: inset.width, dy: inset.height)
+        imageRect = CGRect(x: (container.width - w) / 2, y: (container.height - h) / 2, width: w, height: h)
     }
 
     private func performCrop() {
         let up = image.normalizedUp()
-        guard let cg = up.cgImage, imageRect.width > 0, imageRect.height > 0 else { onCancel(); return }
+        // 未框选：识别整张
+        guard let rect = cropRect, let cg = up.cgImage,
+              imageRect.width > 0, imageRect.height > 0 else {
+            onCrop(up)
+            return
+        }
         let iw = CGFloat(cg.width), ih = CGFloat(cg.height)
-        let relX = (cropRect.minX - imageRect.minX) / imageRect.width
-        let relY = (cropRect.minY - imageRect.minY) / imageRect.height
-        let relW = cropRect.width / imageRect.width
-        let relH = cropRect.height / imageRect.height
+        let relX = (rect.minX - imageRect.minX) / imageRect.width
+        let relY = (rect.minY - imageRect.minY) / imageRect.height
+        let relW = rect.width / imageRect.width
+        let relH = rect.height / imageRect.height
         let px = CGRect(x: relX * iw, y: relY * ih, width: relW * iw, height: relH * ih).integral
-        guard let cropped = cg.cropping(to: px) else { onCancel(); return }
+        guard let cropped = cg.cropping(to: px) else { onCrop(up); return }
         onCrop(UIImage(cgImage: cropped))
     }
 }
