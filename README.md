@@ -18,9 +18,10 @@ on-device AI model — no network, no API key.
   - Standard form (1 pair + 4 melds) of course.
 - **Partial hands.** Enter 1 / 4 / 7 / 10 / 13 tiles and it computes the waits,
   treating the not-yet-drawn tiles as completable melds — e.g. `1234万` → waits `1万 4万`.
-- **📷 Photo recognition (on-device).** Take or pick a photo of a hand; a bundled
-  YOLOv8 model recognizes the tiles, fills in the hand, and computes the result.
-  Runs fully offline.
+- **📷 Photo recognition (on-device).** Take or pick a photo, **drag the crop box
+  over just your own hand** (so tiles laying around the table — discards, the wall,
+  other players' melds — are excluded), and a bundled YOLOv8 model recognizes the
+  tiles, fills in the hand, and computes the result. Runs fully offline.
 - **Clean tile keypad** for manual entry, with auto-sort and undo.
 
 ## Tiles
@@ -37,7 +38,9 @@ No winds, dragons, flowers, or seasons.
 
 ## How the recognition works
 
-1. The photo is letterbox-resized to 640×640 (gray padding), normalized to RGB/255, CHW.
+0. You crop the photo to just your hand (the model detects *every* tile in frame,
+   so cropping is what disambiguates your tiles from the rest of the table).
+1. The cropped image is letterbox-resized to 640×640 (gray padding), normalized to RGB/255, CHW.
 2. A YOLOv8 model (`Models/mahjong_yolov8.onnx`) runs via **ONNX Runtime**, output
    shape `[1, 46, 8400]` (4 box coords + 42 tile classes).
 3. Confidence threshold + NMS, then boxes are sorted in reading order.

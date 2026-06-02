@@ -238,7 +238,7 @@ actor LocalTileRecognizer {
 
 // MARK: - 方向归一化
 
-private extension UIImage {
+extension UIImage {
     /// 将带 EXIF 方向的图片重绘为 .up，避免输入张量被旋转/镜像
     func normalizedUp() -> UIImage {
         guard imageOrientation != .up else { return self }

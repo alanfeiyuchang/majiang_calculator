@@ -117,6 +117,8 @@ struct ContentView: View {
     @State private var showPhotoPicker = false
     @State private var showCamera = false
     @State private var showSourceDialog = false
+    /// 选中/拍摄后待裁剪的图片（裁剪到只剩自己的手牌再识别）
+    @State private var pendingCrop: PendingImage?
 
     private let handColumns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
 
@@ -175,18 +177,26 @@ struct ContentView: View {
             Task {
                 let data = try? await newItem.loadTransferable(type: Data.self)
                 photoItem = nil
-                if let data {
-                    await viewModel.recognizeAndCalculate(imageData: data)
+                if let data, let image = UIImage(data: data) {
+                    pendingCrop = PendingImage(image: image)
                 }
             }
         }
         .fullScreenCover(isPresented: $showCamera) {
             CameraPicker { image in
-                if let data = image.jpegData(compressionQuality: 0.9) {
+                pendingCrop = PendingImage(image: image)
+            }
+            .ignoresSafeArea()
+        }
+        .fullScreenCover(item: $pendingCrop) { item in
+            CropView(image: item.image) {
+                pendingCrop = nil
+            } onCrop: { cropped in
+                pendingCrop = nil
+                if let data = cropped.jpegData(compressionQuality: 0.9) {
                     Task { await viewModel.recognizeAndCalculate(imageData: data) }
                 }
             }
-            .ignoresSafeArea()
         }
     }
 
@@ -512,6 +522,186 @@ private struct CameraPicker: UIViewControllerRepresentable {
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             parent.dismiss()
         }
+    }
+}
+
+// MARK: - 裁剪到手牌
+
+struct PendingImage: Identifiable {
+    let id = UUID()
+    let image: UIImage
+}
+
+/// 让用户把裁剪框拖到「只剩自己的手牌」，再交给模型识别，
+/// 避免把牌桌上其他人的牌、牌墙、弃牌也识别进来。
+private struct CropView: View {
+    let image: UIImage
+    var onCancel: () -> Void
+    var onCrop: (UIImage) -> Void
+
+    @State private var imageRect: CGRect = .zero    // 图片在视图中的实际显示区域
+    @State private var cropRect: CGRect = .zero      // 当前裁剪框（视图坐标）
+    @State private var dragBase: CGRect? = nil       // 手势开始时的裁剪框快照
+
+    private let handleSize: CGFloat = 28
+    private let minCrop: CGFloat = 44
+
+    var body: some View {
+        NavigationStack {
+            GeometryReader { geo in
+                ZStack {
+                    Color.black.ignoresSafeArea()
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+
+                    if cropRect != .zero {
+                        dimming
+                        cropBox
+                    }
+                }
+                .contentShape(Rectangle())
+                .onAppear { layout(in: geo.size) }
+                .onChange(of: geo.size) { _, newSize in layout(in: newSize) }
+            }
+            .ignoresSafeArea(edges: .bottom)
+            .navigationTitle("框选你的手牌")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") { onCancel() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("识别") { performCrop() }
+                        .fontWeight(.semibold)
+                }
+            }
+            .toolbarBackground(.visible, for: .navigationBar)
+        }
+    }
+
+    // 框外压暗
+    private var dimming: some View {
+        Rectangle()
+            .fill(.black.opacity(0.55))
+            .mask {
+                Rectangle()
+                    .overlay(alignment: .topLeading) {
+                        Rectangle()
+                            .frame(width: cropRect.width, height: cropRect.height)
+                            .offset(x: cropRect.minX, y: cropRect.minY)
+                            .blendMode(.destinationOut)
+                    }
+                    .compositingGroup()
+            }
+            .allowsHitTesting(false)
+            .ignoresSafeArea()
+    }
+
+    // 裁剪框 + 四角把手
+    private var cropBox: some View {
+        ZStack(alignment: .topLeading) {
+            Rectangle()
+                .strokeBorder(Color.white, lineWidth: 2)
+                .frame(width: cropRect.width, height: cropRect.height)
+                .offset(x: cropRect.minX, y: cropRect.minY)
+                .contentShape(Rectangle())
+                .gesture(moveGesture)
+
+            ForEach(Corner.allCases, id: \.self) { corner in
+                handle
+                    .position(point(for: corner))
+                    .gesture(resizeGesture(corner))
+            }
+        }
+    }
+
+    private var handle: some View {
+        Circle()
+            .fill(Color.white)
+            .frame(width: handleSize, height: handleSize)
+            .shadow(radius: 2)
+    }
+
+    private enum Corner: CaseIterable { case tl, tr, bl, br }
+
+    private func point(for c: Corner) -> CGPoint {
+        switch c {
+        case .tl: return CGPoint(x: cropRect.minX, y: cropRect.minY)
+        case .tr: return CGPoint(x: cropRect.maxX, y: cropRect.minY)
+        case .bl: return CGPoint(x: cropRect.minX, y: cropRect.maxY)
+        case .br: return CGPoint(x: cropRect.maxX, y: cropRect.maxY)
+        }
+    }
+
+    // MARK: 手势
+
+    private var moveGesture: some Gesture {
+        DragGesture()
+            .onChanged { v in
+                let base = dragBase ?? cropRect
+                if dragBase == nil { dragBase = base }
+                var r = base.offsetBy(dx: v.translation.width, dy: v.translation.height)
+                r.origin.x = min(max(r.minX, imageRect.minX), imageRect.maxX - r.width)
+                r.origin.y = min(max(r.minY, imageRect.minY), imageRect.maxY - r.height)
+                cropRect = r
+            }
+            .onEnded { _ in dragBase = nil }
+    }
+
+    private func resizeGesture(_ corner: Corner) -> some Gesture {
+        DragGesture()
+            .onChanged { v in
+                let base = dragBase ?? cropRect
+                if dragBase == nil { dragBase = base }
+                var minX = base.minX, minY = base.minY, maxX = base.maxX, maxY = base.maxY
+                let tx = v.translation.width, ty = v.translation.height
+                switch corner {
+                case .tl: minX += tx; minY += ty
+                case .tr: maxX += tx; minY += ty
+                case .bl: minX += tx; maxY += ty
+                case .br: maxX += tx; maxY += ty
+                }
+                // 限制在图片范围内
+                minX = max(minX, imageRect.minX); minY = max(minY, imageRect.minY)
+                maxX = min(maxX, imageRect.maxX); maxY = min(maxY, imageRect.maxY)
+                // 最小尺寸（防止翻转/过小）
+                if maxX - minX < minCrop {
+                    if corner == .tl || corner == .bl { minX = maxX - minCrop } else { maxX = minX + minCrop }
+                }
+                if maxY - minY < minCrop {
+                    if corner == .tl || corner == .tr { minY = maxY - minCrop } else { maxY = minY + minCrop }
+                }
+                cropRect = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+            }
+            .onEnded { _ in dragBase = nil }
+    }
+
+    // MARK: 布局 / 裁剪
+
+    private func layout(in container: CGSize) {
+        let iw = image.size.width, ih = image.size.height
+        guard iw > 0, ih > 0, container.width > 0, container.height > 0 else { return }
+        let scale = min(container.width / iw, container.height / ih)
+        let w = iw * scale, h = ih * scale
+        let rect = CGRect(x: (container.width - w) / 2, y: (container.height - h) / 2, width: w, height: h)
+        imageRect = rect
+        // 默认框选中间 ~70% 区域，方便用户微调到手牌那一排
+        let inset = CGSize(width: w * 0.15, height: h * 0.32)
+        cropRect = rect.insetBy(dx: inset.width, dy: inset.height)
+    }
+
+    private func performCrop() {
+        let up = image.normalizedUp()
+        guard let cg = up.cgImage, imageRect.width > 0, imageRect.height > 0 else { onCancel(); return }
+        let iw = CGFloat(cg.width), ih = CGFloat(cg.height)
+        let relX = (cropRect.minX - imageRect.minX) / imageRect.width
+        let relY = (cropRect.minY - imageRect.minY) / imageRect.height
+        let relW = cropRect.width / imageRect.width
+        let relH = cropRect.height / imageRect.height
+        let px = CGRect(x: relX * iw, y: relY * ih, width: relW * iw, height: relH * ih).integral
+        guard let cropped = cg.cropping(to: px) else { onCancel(); return }
+        onCrop(UIImage(cgImage: cropped))
     }
 }
 
