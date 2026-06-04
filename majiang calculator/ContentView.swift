@@ -23,35 +23,26 @@ private struct MahjongTileChip: View {
     var onTap: (() -> Void)? = nil
     var large: Bool = false
 
-    private var backgroundColor: Color {
-        switch card.suit {
-        case .wan: return Color(red: 0.90, green: 0.30, blue: 0.26)
-        case .tong: return Color(red: 0.20, green: 0.50, blue: 0.90)
-        case .tiao: return Color(red: 0.16, green: 0.65, blue: 0.40)
-        }
-    }
+    /// 牌面宽度（高度按真实麻将牌 3:4 比例）
+    private var width: CGFloat { large ? 46 : 38 }
+    private var height: CGFloat { width * 4 / 3 }
+    private var cornerRadius: CGFloat { width * 0.16 }
 
     var body: some View {
-        VStack(spacing: large ? 2 : 1) {
-            Text(card.rankHanDigit)
-                .font(.system(size: large ? 20 : 17, weight: .bold, design: .rounded))
-            Text(card.suit.rawValue)
-                .font(.system(size: large ? 12 : 10, weight: .semibold, design: .rounded))
-        }
-        .foregroundStyle(.white)
-        .frame(minWidth: large ? 44 : 38, minHeight: large ? 52 : 46)
-        .padding(.horizontal, large ? 6 : 4)
-        .background {
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .fill(backgroundColor.gradient)
-        }
-        .overlay {
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .strokeBorder(.white.opacity(0.2), lineWidth: 1)
-        }
-        .shadow(color: backgroundColor.opacity(0.35), radius: 4, y: 2)
-        .contentShape(Rectangle())
-        .onTapGesture { onTap?() }
+        Image(card.assetName)
+            .resizable()
+            .interpolation(.high)
+            .aspectRatio(3.0 / 4.0, contentMode: .fit)
+            .frame(width: width, height: height)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(Color.black.opacity(0.28), lineWidth: 1.25)
+            }
+            .shadow(color: .black.opacity(0.2), radius: 2.5, x: 0, y: 1.5)
+            .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .onTapGesture { onTap?() }
+            .accessibilityLabel(card.displayText)
     }
 }
 
@@ -478,23 +469,19 @@ struct ContentView: View {
                         Button {
                             viewModel.addCard(card)
                         } label: {
-                            VStack(spacing: 1) {
-                                Text("\(r)")
-                                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                                Text(keyboardSuit.rawValue)
-                                    .font(.system(size: 9, weight: .bold, design: .rounded))
-                            }
-                            .foregroundStyle(viewModel.canAddMore ? suitColor(keyboardSuit) : Color.secondary)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 48)
-                            .background {
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .fill(Color(uiColor: .tertiarySystemFill))
-                            }
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .strokeBorder(suitColor(keyboardSuit).opacity(0.2), lineWidth: 1)
-                            }
+                            Image(card.assetName)
+                                .resizable()
+                                .interpolation(.high)
+                                .aspectRatio(3.0 / 4.0, contentMode: .fit)
+                                .frame(height: 52)
+                                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                        .strokeBorder(Color.black.opacity(0.28), lineWidth: 1)
+                                }
+                                .shadow(color: .black.opacity(0.18), radius: 1.5, y: 1)
+                                .frame(maxWidth: .infinity)
+                                .opacity(viewModel.canAddMore ? 1 : 0.35)
                         }
                         .buttonStyle(.plain)
                         .disabled(!viewModel.canAddMore)

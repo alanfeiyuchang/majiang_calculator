@@ -59,6 +59,17 @@ struct MahjongCard: Hashable, Equatable, Identifiable {
         return Self.rankHan[rank]
     }
 
+    /// 牌面图片资源名（对应 Assets.xcassets 中的 tile_<suit>_<rank>）
+    var assetName: String {
+        let suitKey: String
+        switch suit {
+        case .wan: suitKey = "man"
+        case .tong: suitKey = "pin"
+        case .tiao: suitKey = "sou"
+        }
+        return "tile_\(suitKey)_\(rank)"
+    }
+
     /// 单行：如 「三万」
     var displayText: String { "\(rankHanDigit)\(suit.rawValue)" }
 
