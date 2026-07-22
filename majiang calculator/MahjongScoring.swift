@@ -353,6 +353,64 @@ func scoreWinningHand(
     return WinScore(items: items, totalFan: totalFan, cappedFan: cappedFan, money: money)
 }
 
+// MARK: - 打牌建议评估
+
+/// 一个候选弃牌的完整评估：弃后听哪些牌、各自番数、能达到的最高番
+struct EvaluatedDiscard: Identifiable {
+    var id: UUID { suggestion.id }
+    let suggestion: DiscardSuggestion
+    /// 弃后听牌 → 各自算番（仅弃后听牌时非空；顺序同 suggestion.acceptance）
+    let waitScores: [(card: MahjongCard, score: WinScore)]
+    /// 听牌里能达到的最大番数；弃后未听牌（或空听）= -1
+    let maxFan: Int
+}
+
+/// 给打牌建议补上「弃后听牌 + 各自番数」，并按
+/// 「最高番数降序 → 向听升序 → 进张降序 → 花色/点数」重排。
+/// 番数按点炮基线（不含自摸/杠上开花等场景番），随当前规则设置变化。
+func evaluateDiscards(
+    _ suggestions: [DiscardSuggestion],
+    cards: [MahjongCard],
+    melds: [Meld],
+    settings: RuleSettings
+) -> [EvaluatedDiscard] {
+    let baseFreq = handToFrequency27(cards)
+    let context = WinContext(selfDrawn: false)
+
+    let evaluated = suggestions.map { s -> EvaluatedDiscard in
+        guard s.resultingShanten == 0, !s.acceptance.isEmpty else {
+            return EvaluatedDiscard(suggestion: s, waitScores: [], maxFan: -1)
+        }
+        var afterDiscard = baseFreq
+        afterDiscard[s.discard.tileIndex] -= 1
+        let waitScores = s.acceptance.map { wait -> (card: MahjongCard, score: WinScore) in
+            var winning = afterDiscard
+            winning[wait.tileIndex] += 1
+            return (card: wait, score: scoreWinningHand(
+                concealed: winning, melds: melds, settings: settings, context: context))
+        }
+        return EvaluatedDiscard(
+            suggestion: s,
+            waitScores: waitScores,
+            maxFan: waitScores.map { $0.score.totalFan }.max() ?? -1
+        )
+    }
+
+    return evaluated.sorted { a, b in
+        if a.maxFan != b.maxFan { return a.maxFan > b.maxFan }
+        if a.suggestion.resultingShanten != b.suggestion.resultingShanten {
+            return a.suggestion.resultingShanten < b.suggestion.resultingShanten
+        }
+        if a.suggestion.acceptanceCount != b.suggestion.acceptanceCount {
+            return a.suggestion.acceptanceCount > b.suggestion.acceptanceCount
+        }
+        if a.suggestion.discard.suit.displaySortIndex != b.suggestion.discard.suit.displaySortIndex {
+            return a.suggestion.discard.suit.displaySortIndex < b.suggestion.discard.suit.displaySortIndex
+        }
+        return a.suggestion.discard.rank < b.suggestion.discard.rank
+    }
+}
+
 /// 金额显示：整数不带小数，非整数按需保留（如 ¥0.5）
 func moneyText(_ value: Double) -> String {
     "¥\(String(format: "%g", value))"

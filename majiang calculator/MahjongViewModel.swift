@@ -26,6 +26,8 @@ final class MahjongViewModel: ObservableObject {
     @Published private(set) var melds: [Meld] = []
     @Published private(set) var waitingTiles: [MahjongCard] = []
     @Published var hintMessage: String?
+    /// 拍照识别后的非阻塞提示（如「已自动分组 N 副露，请核对」）；不阻断已算出的结果显示
+    @Published private(set) var recognitionNotice: String?
     /// 正在调用 AI 识别照片
     @Published private(set) var isRecognizing: Bool = false
 
@@ -47,8 +49,14 @@ final class MahjongViewModel: ObservableObject {
     // UI 调试入口（仅 DEBUG 构建）：无头模拟器里注入演示手牌直接出分析结果。
     // 用法：SIMCTL_CHILD_DEMO_HAND="3456799s" SIMCTL_CHILD_DEMO_MELDS="p1m,K2p" simctl launch …
     // 手牌格式：数字+花色字母（m 万 / s 条 / p 筒）；副露前缀 p 碰、k 明杠、K 暗杠。
+    // SIMCTL_CHILD_DEMO_RECOGNIZE=<图片绝对路径> 直接跑拍照识别管线（验证分组/二次放大）。
     init() {
         let env = ProcessInfo.processInfo.environment
+        if let path = env["DEMO_RECOGNIZE"],
+           let data = FileManager.default.contents(atPath: path) {
+            Task { await self.recognizeAndCalculate(imageData: data) }
+            return
+        }
         guard let hand = env["DEMO_HAND"] else { return }
         func parse(_ s: String) -> [MahjongCard] {
             var out: [MahjongCard] = []
@@ -250,7 +258,8 @@ final class MahjongViewModel: ObservableObject {
 
     private let recognizer = LocalTileRecognizer()
 
-    /// 本地 AI 识别照片中的麻将牌，回填手牌并（若张数合法）直接算听
+    /// 本地 AI 识别照片中的麻将牌，回填手牌并自动分析——不需要用户确认。
+    /// 检测到副露/暗杠靠猜/张数截断时，分析结果照常算出，另附一条不阻断显示的提示。
     func recognizeAndCalculate(imageData: Data) async {
         guard !isRecognizing else { return }
         isRecognizing = true
@@ -259,20 +268,22 @@ final class MahjongViewModel: ObservableObject {
 
         do {
             let result = try await recognizer.recognize(imageData: imageData)
-            let truncated = applyRecognition(result)
-
+            let truncated = applyRecognition(result)   // 内部会 clearResult()
             let b = appLanguageBundle()
-            if !melds.isEmpty {
-                // 检测到副露：不自动分析，先让用户核对「桌上的牌」（暗杠靠猜，尤其要看）
-                let kongNote = result.guessedConcealedKong
-                    ? String(localized: "（含暗杠——只露一张、靠猜，尤其请核对）", bundle: b) : ""
-                hintMessage = String(localized: "已自动分组：\(selectedTiles.count) 张手牌 + \(melds.count) 副露\(kongNote)。请核对「桌上的牌」无误后，点『分析手牌』。", bundle: b)
-            } else if truncated {
-                hintMessage = String(localized: "识别到超过 \(maxConcealed) 张牌，已保留前 \(maxConcealed) 张，请核对后再计算。", bundle: b)
-            } else if canAnalyze {
-                completeCalculation()
+
+            if canAnalyze {
+                completeCalculation()   // 内部先 clearResult() 再算；花猪/空手牌等仍会设 hintMessage 阻断
+                if hintMessage == nil {
+                    if result.guessedConcealedKong {
+                        recognitionNotice = String(localized: "已自动分组：\(melds.count) 副露（含暗杠——只露一张、靠猜，建议核对「桌上的牌」）。", bundle: b)
+                    } else if !melds.isEmpty {
+                        recognitionNotice = String(localized: "已自动分组：\(melds.count) 副露，建议核对「桌上的牌」。", bundle: b)
+                    } else if truncated {
+                        recognitionNotice = String(localized: "识别到超过 \(maxConcealed) 张牌，已保留前 \(maxConcealed) 张。", bundle: b)
+                    }
+                }
             } else {
-                hintMessage = String(localized: "已识别 \(selectedTiles.count) 张，请核对后再分析。", bundle: b)
+                hintMessage = String(localized: "已识别 \(selectedTiles.count) 张，张数不构成可分析手牌，请核对后再分析。", bundle: b)
             }
         } catch {
             selectedTiles = []
@@ -284,6 +295,7 @@ final class MahjongViewModel: ObservableObject {
     private func clearResult() {
         waitingTiles = []
         hintMessage = nil
+        recognitionNotice = nil
         shantenValue = nil
         acceptance = []
         discards = []

@@ -119,4 +119,83 @@ do {
            "hand=\(r.hand.count) melds=\(r.melds.map(meldDesc))")
 }
 
+// G8 两组碰紧挨着没有空隙 → 按相邻同牌切段，拆成两个碰
+do {
+    var (boxes, x) = lay(cards(["1m","2m","3m","4m","5m","6m","7m","8m","9m","2p"]), from: 0)
+    x += 8 * tileW
+    let two = lay(cards(["5p","5p","5p","8p","8p","8p"]), from: x)
+    boxes += two.boxes
+    let r = groupTiles(boxes)
+    gcheck(r.hand.count == 10 && r.melds.count == 2
+           && r.melds.contains { meldDesc($0) == "碰五筒" }
+           && r.melds.contains { meldDesc($0) == "碰八筒" }, "G8 紧挨双碰拆成两组",
+           "hand=\(r.hand.count) melds=\(r.melds.map(meldDesc))")
+}
+
+// G9 碰 + 明杠紧挨（3+4 张）
+do {
+    var (boxes, x) = lay(cards(["1m","2m","3m","4m","5m","6m","7m","8m","9m","2p"]), from: 0)
+    x += 8 * tileW
+    let mix = lay(cards(["5p","5p","5p","9p","9p","9p","9p"]), from: x)
+    boxes += mix.boxes
+    let r = groupTiles(boxes)
+    gcheck(r.melds.count == 2
+           && r.melds.contains { meldDesc($0) == "碰五筒" }
+           && r.melds.contains { meldDesc($0) == "明杠九筒" }, "G9 碰+明杠紧挨拆分",
+           "melds=\(r.melds.map(meldDesc))")
+}
+
+// G10 段里有 2 张同牌（认不准）→ 整簇并回手牌
+do {
+    var (boxes, x) = lay(cards(["1m","2m","3m","4m","5m","6m","7m","8m"]), from: 0)
+    x += 8 * tileW
+    let bad = lay(cards(["5p","5p","5p","6p","6p"]), from: x)   // [3][2]：2 张段认不准
+    boxes += bad.boxes
+    let r = groupTiles(boxes)
+    gcheck(r.melds.isEmpty && r.hand.count == 13, "G10 含2张段整簇回手牌",
+           "hand=\(r.hand.count) melds=\(r.melds.map(meldDesc))")
+}
+
+// G11 碰 + 暗杠明牌紧挨（3+1 张）
+do {
+    var (boxes, x) = lay(cards(["1m","2m","3m","4m","5m","6m","7m","8m"]), from: 0)
+    x += 8 * tileW
+    let mix = lay(cards(["7s","7s","7s","2m"]), from: x)
+    boxes += mix.boxes
+    let r = groupTiles(boxes)
+    gcheck(r.melds.count == 2 && r.guessedConcealedKong
+           && r.melds.contains { meldDesc($0) == "碰七条" }
+           && r.melds.contains { meldDesc($0) == "暗杠二万" }, "G11 碰+暗杠明牌紧挨",
+           "melds=\(r.melds.map(meldDesc))")
+}
+
+print("— 二次放大区域 zoomRegion —")
+
+// Z1 牌只占画面一角 → 返回外扩区域，含所有框且不越界
+do {
+    let rects = [CGRect(x: 1000, y: 800, width: 60, height: 80),
+                 CGRect(x: 1070, y: 800, width: 60, height: 80)]
+    let size = CGSize(width: 4000, height: 3000)
+    let region = zoomRegion(boxes: rects, imageSize: size)
+    gcheck(region != nil && region!.contains(rects[0]) && region!.contains(rects[1])
+           && region!.minX >= 0 && region!.minY >= 0
+           && region!.maxX <= size.width && region!.maxY <= size.height,
+           "Z1 一角的牌→外扩区域", "region=\(String(describing: region))")
+}
+
+// Z2 框已占满画面 → nil（放大无意义）
+do {
+    let big = [CGRect(x: 10, y: 10, width: 3900, height: 2900)]
+    gcheck(zoomRegion(boxes: big, imageSize: CGSize(width: 4000, height: 3000)) == nil,
+           "Z2 占满画面→nil")
+}
+
+// Z3 空框 → nil；Z4 横条区域（宽满、高小）→ 仍应放大
+do {
+    gcheck(zoomRegion(boxes: [], imageSize: CGSize(width: 100, height: 100)) == nil, "Z3 空→nil")
+    let strip = [CGRect(x: 100, y: 1400, width: 3700, height: 120)]
+    gcheck(zoomRegion(boxes: strip, imageSize: CGSize(width: 4000, height: 3000)) != nil,
+           "Z4 横条区域→仍放大")
+}
+
 print(gFails == 0 ? "\n分组全部通过 ✅" : "\n❌ 分组 \(gFails) 个失败")

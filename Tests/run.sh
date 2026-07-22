@@ -30,6 +30,7 @@ open(sys.argv[2], "a").write(src)
 PY
 
 # 2) 测试
-cat "$ROOT/Tests/ScoringTests.swift" "$ROOT/Tests/GroupingTests.swift" >> "$OUT"
+cat "$ROOT/Tests/ScoringTests.swift" "$ROOT/Tests/GroupingTests.swift" \
+    "$ROOT/Tests/DiscardEvalTests.swift" >> "$OUT"
 
 swift "$OUT"

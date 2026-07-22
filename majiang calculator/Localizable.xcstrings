@@ -2,6 +2,7 @@
   "sourceLanguage" : "zh-Hans",
   "strings" : {
     "（含暗杠——只露一张、靠猜，尤其请核对）" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -651,6 +652,9 @@
         }
       }
     },
+    "最高 %lld 番" : {
+
+    },
     "凑齐 4 张同牌：杠 / 手握 4 张 / 碰 + 手里第 4 张" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1277,7 +1281,14 @@
         }
       }
     },
+    "已自动分组：%lld 副露，建议核对「桌上的牌」。" : {
+
+    },
+    "已自动分组：%lld 副露（含暗杠——只露一张、靠猜，建议核对「桌上的牌」）。" : {
+
+    },
     "已自动分组：%lld 张手牌 + %lld 副露%@。请核对「桌上的牌」无误后，点『分析手牌』。" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1293,7 +1304,11 @@
         }
       }
     },
+    "已识别 %lld 张，张数不构成可分析手牌，请核对后再分析。" : {
+
+    },
     "已识别 %lld 张，请核对后再分析。" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2417,6 +2432,9 @@
         }
       }
     },
+    "番数与金额按点炮胡、当前规则计；自摸另加。" : {
+
+    },
     "碰" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2790,6 +2808,7 @@
       }
     },
     "识别到超过 %lld 张牌，已保留前 %lld 张，请核对后再计算。" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2801,6 +2820,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "识别到超过 %lld 张牌，已保留前 %lld 张，请核对后再计算。"
+          }
+        }
+      }
+    },
+    "识别到超过 %lld 张牌，已保留前 %lld 张。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "识别到超过 %1$lld 张牌，已保留前 %2$lld 张。"
           }
         }
       }

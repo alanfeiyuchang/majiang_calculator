@@ -199,6 +199,8 @@ struct ContentView: View {
                     VStack(spacing: Theme.sectionSpacing) {
                         handSection
                         meldSection
+                        analyzeButton
+                        recognitionNoticeBanner
                         resultSection
                             .id("result")
                     }
@@ -436,37 +438,46 @@ struct ContentView: View {
                     }
                 }
             }
+        }
+    }
 
-            Button {
-                viewModel.completeCalculation()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "sparkles")
-                    Text("分析手牌")
-                }
-                .font(.headline)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.accent)
-            .disabled(viewModel.selectedTiles.isEmpty || viewModel.isRecognizing)
-            .padding(.top, 4)
+    // MARK: 分析按钮（手牌区 + 桌上副露区之后，结果区之前）
 
-            Button {
-                showSourceDialog = true
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "camera.viewfinder")
-                    Text("拍照识别手牌")
-                }
-                .font(.subheadline.weight(.semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+    private var analyzeButton: some View {
+        Button {
+            viewModel.completeCalculation()
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "sparkles")
+                Text("分析手牌")
             }
-            .buttonStyle(.bordered)
-            .tint(Theme.accent)
-            .disabled(viewModel.isRecognizing)
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(Theme.accent)
+        .disabled(viewModel.selectedTiles.isEmpty || viewModel.isRecognizing)
+    }
+
+    /// 拍照识别后的非阻塞提示（不挡结果，只是提醒核对）
+    @ViewBuilder
+    private var recognitionNoticeBanner: some View {
+        if let notice = viewModel.recognitionNotice {
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "info.circle.fill")
+                    .foregroundStyle(.orange)
+                Text(notice)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+            }
+            .padding(12)
+            .background {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.orange.opacity(0.12))
+            }
         }
     }
 
@@ -760,32 +771,85 @@ struct ContentView: View {
         viewModel.acceptance.reduce(0) { $0 + $1.remaining }
     }
 
-    // 打牌建议（3n+2）
+    // 打牌建议（3n+2）：每个候选弃牌 → 弃后听牌 + 各自番数，能到的最高番在前
     private var discardCard: some View {
         SectionCard(
             title: "打牌建议",
             systemImage: "hand.point.up.left.fill",
             accessory: Text("\(viewModel.discards.count) 种").monospacedDigit()
         ) {
-            VStack(spacing: 10) {
-                ForEach(viewModel.discards.prefix(6)) { s in
-                    HStack(spacing: 10) {
-                        Text("打")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                        MahjongTileChip(card: s.discard)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(s.resultingShanten == 0 ? "听牌" : "向听 \(s.resultingShanten)")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(s.resultingShanten == 0
-                                                 ? Color(red: 0.16, green: 0.65, blue: 0.40) : .primary)
-                            Text("进张 \(s.acceptanceCount) 张 · \(s.acceptance.count) 门")
-                                .font(.caption.monospacedDigit())
-                                .foregroundStyle(.secondary)
+            let evaluated = evaluateDiscards(
+                viewModel.discards,
+                cards: viewModel.selectedTiles.map(\.card),
+                melds: viewModel.melds,
+                settings: ruleStore.settings
+            )
+            VStack(spacing: 12) {
+                ForEach(Array(evaluated.prefix(6).enumerated()), id: \.element.id) { index, e in
+                    if index > 0 { Divider() }
+                    discardRow(e)
+                }
+            }
+            if evaluated.contains(where: { $0.maxFan >= 0 }) {
+                Text("番数与金额按点炮胡、当前规则计；自摸另加。")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+
+    /// 打牌建议单行：弃牌 + 概览，下面列弃后听牌与各自番数/金额
+    @ViewBuilder
+    private func discardRow(_ e: EvaluatedDiscard) -> some View {
+        let s = e.suggestion
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Text("打")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                MahjongTileChip(card: s.discard)
+                VStack(alignment: .leading, spacing: 2) {
+                    if s.resultingShanten == 0 && e.waitScores.isEmpty {
+                        Text("听牌（空听）")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.orange)
+                    } else {
+                        Text(s.resultingShanten == 0 ? "听牌" : "向听 \(s.resultingShanten)")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(s.resultingShanten == 0 ? Self.moneyGreen : .primary)
+                    }
+                    Text("进张 \(s.acceptanceCount) 张 · \(s.acceptance.count) 门")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                if e.maxFan >= 0 {
+                    Text("最高 \(e.maxFan) 番")
+                        .font(.caption.weight(.bold).monospacedDigit())
+                        .foregroundStyle(Self.moneyGreen)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background {
+                            Capsule().fill(Self.moneyGreen.opacity(0.12))
                         }
-                        Spacer(minLength: 0)
+                }
+            }
+            if !e.waitScores.isEmpty {
+                FlowWaitingLayout(spacing: 8) {
+                    ForEach(Array(e.waitScores.enumerated()), id: \.offset) { _, ws in
+                        VStack(spacing: 2) {
+                            MahjongTileChip(card: ws.card)
+                            Text("\(ws.score.totalFan) 番")
+                                .font(.caption2.weight(.semibold).monospacedDigit())
+                                .foregroundStyle(.secondary)
+                            Text(moneyText(ws.score.money))
+                                .font(.caption2.weight(.bold).monospacedDigit())
+                                .foregroundStyle(Self.moneyGreen)
+                        }
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 30)
             }
         }
     }
@@ -796,6 +860,21 @@ struct ContentView: View {
         VStack(spacing: 0) {
             Divider()
             VStack(alignment: .leading, spacing: 12) {
+                Button {
+                    showSourceDialog = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "camera.viewfinder")
+                        Text("拍照识别手牌")
+                        Spacer(minLength: 0)
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .padding(.vertical, 10)
+                }
+                .buttonStyle(.bordered)
+                .tint(Theme.accent)
+                .disabled(viewModel.isRecognizing)
+
                 HStack(spacing: 10) {
                     Text("点选加入")
                         .font(.caption.weight(.semibold))
@@ -1164,7 +1243,9 @@ private struct CameraPreview: UIViewRepresentable {
     func makeUIView(context: Context) -> PreviewView {
         let v = PreviewView()
         v.videoPreviewLayer.session = session
-        v.videoPreviewLayer.videoGravity = .resizeAspectFill
+        // .resizeAspect：完整显示拍摄画幅（按比例留黑边），避免 .resizeAspectFill 裁边导致
+        // 取景框比实际拍到的画面「更窄」——之前拍完看裁剪页会发现四周多出内容，就是这个不一致。
+        v.videoPreviewLayer.videoGravity = .resizeAspect
         return v
     }
     func updateUIView(_ uiView: PreviewView, context: Context) {}

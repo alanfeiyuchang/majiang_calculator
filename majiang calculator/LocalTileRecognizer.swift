@@ -36,6 +36,8 @@ actor LocalTileRecognizer {
     // YOLOv8 模型参数
     private let inputSize = 640
     private let confidenceThreshold: Float = 0.5
+    /// 第一遍估计「牌所在区域」用的低阈值（多找些框，只用于定位，不进结果）
+    private let regionThreshold: Float = 0.35
     private let iouThreshold: Float = 0.45
 
     /// class_names.txt 的 42 个类别（顺序与模型输出通道一致）
@@ -66,10 +68,54 @@ actor LocalTileRecognizer {
 
     func recognize(imageData: Data) throws -> RecognitionResult {
         try loadSessionIfNeeded()
-        guard let session else { throw LocalRecognitionError.modelMissing }
         guard let image = UIImage(data: imageData)?.normalizedUp() else {
             throw LocalRecognitionError.invalidImage
         }
+
+        // 第一遍：整图识别。低阈值的框只用来估计「牌所在区域」，达标（≥ 正式阈值）的作候选结果
+        let first = try detect(image, threshold: regionThreshold)
+        var finalDets = first.dets.filter { $0.score >= confidenceThreshold }
+
+        // 第二遍：牌只占画面一小部分时（整图缩到 640 后每张牌太小），
+        // 把牌区裁出来放大重新识别，用更清晰的结果替换
+        let boxesInImage = first.dets.map { d in
+            CGRect(x: (d.x1 - first.dw) / first.scale,
+                   y: (d.y1 - first.dh) / first.scale,
+                   width: (d.x2 - d.x1) / first.scale,
+                   height: (d.y2 - d.y1) / first.scale)
+        }
+        if let region = zoomRegion(boxes: boxesInImage, imageSize: image.size),
+           let cropped = image.cgImage?.cropping(to: region) {
+            let second = try detect(UIImage(cgImage: cropped), threshold: confidenceThreshold)
+            if second.dets.count >= finalDets.count {   // 保底：第二遍反而更差就保留第一遍
+                finalDets = second.dets
+            }
+        }
+
+        // 只保留 万/筒/条（忽略风/箭等），转成牌盒后做空间聚类分组
+        let boxes: [TileBox] = finalDets.compactMap { d in
+            guard let c = card(for: d.classId) else { return nil }
+            return TileBox(minX: d.x1, maxX: d.x2, cy: d.cy, height: d.h, card: c)
+        }
+        guard !boxes.isEmpty else { throw LocalRecognitionError.noTiles }
+        let result = groupTiles(boxes)
+        guard !result.hand.isEmpty || !result.melds.isEmpty else {
+            throw LocalRecognitionError.noTiles
+        }
+        return result
+    }
+
+    /// 一次完整推理：letterbox → ONNX → 解码 → NMS。
+    /// 检测框在 640 空间；scale/dw/dh 用于映射回原图像素。
+    private struct DetectPass {
+        let dets: [Detection]
+        let scale: CGFloat
+        let dw: CGFloat
+        let dh: CGFloat
+    }
+
+    private func detect(_ image: UIImage, threshold: Float) throws -> DetectPass {
+        guard let session else { throw LocalRecognitionError.modelMissing }
         guard let pre = preprocess(image) else { throw LocalRecognitionError.invalidImage }
 
         // 构造输入张量 [1,3,640,640]
@@ -89,25 +135,13 @@ actor LocalTileRecognizer {
             let outShape = info.shape.map { $0.intValue }   // [1, 4+numClasses, anchors]
             let data = try output.tensorData() as Data
             let floats: [Float] = data.withUnsafeBytes { Array($0.bindMemory(to: Float.self)) }
-            detections = decode(floats, shape: outShape)
+            detections = decode(floats, shape: outShape, threshold: threshold)
         } catch let e as LocalRecognitionError {
             throw e
         } catch {
             throw LocalRecognitionError.inferenceFailed(error.localizedDescription)
         }
-
-        let kept = nms(detections)
-        // 只保留 万/筒/条（忽略风/箭等），转成牌盒后做空间聚类分组
-        let boxes: [TileBox] = kept.compactMap { d in
-            guard let c = card(for: d.classId) else { return nil }
-            return TileBox(minX: d.x1, maxX: d.x2, cy: d.cy, height: d.h, card: c)
-        }
-        guard !boxes.isEmpty else { throw LocalRecognitionError.noTiles }
-        let result = groupTiles(boxes)
-        guard !result.hand.isEmpty || !result.melds.isEmpty else {
-            throw LocalRecognitionError.noTiles
-        }
-        return result
+        return DetectPass(dets: nms(detections), scale: pre.scale, dw: pre.dw, dh: pre.dh)
     }
 
     // MARK: - 预处理（letterbox → RGB/255 → CHW）
@@ -160,7 +194,7 @@ actor LocalTileRecognizer {
     }
 
     /// floats 布局为 [1, channels, anchors]，元素 (c,a) 索引 = c*anchors + a
-    private func decode(_ floats: [Float], shape: [Int]) -> [Detection] {
+    private func decode(_ floats: [Float], shape: [Int], threshold: Float) -> [Detection] {
         guard shape.count == 3 else { return [] }
         let channels = shape[1]
         let anchors = shape[2]
@@ -175,7 +209,7 @@ actor LocalTileRecognizer {
                 let v = floats[(4 + c) * anchors + a]
                 if v > bestScore { bestScore = v; bestId = c }
             }
-            guard bestScore >= confidenceThreshold else { continue }
+            guard bestScore >= threshold else { continue }
 
             let cx = CGFloat(floats[a])
             let cy = CGFloat(floats[anchors + a])
