@@ -21,11 +21,12 @@ enum LocalRecognitionError: LocalizedError {
     case noTiles
 
     var errorDescription: String? {
+        let b = appLanguageBundle()
         switch self {
-        case .modelMissing:    return "未找到本地识别模型文件。"
-        case .invalidImage:    return "无法读取所选图片，请换一张试试。"
-        case .inferenceFailed(let m): return "本地识别失败：\(m)"
-        case .noTiles:         return "未能从图片中识别到麻将牌，请确保牌面清晰、正对镜头、光线充足。"
+        case .modelMissing:    return String(localized: "未找到本地识别模型文件。", bundle: b)
+        case .invalidImage:    return String(localized: "无法读取所选图片，请换一张试试。", bundle: b)
+        case .inferenceFailed(let m): return String(localized: "本地识别失败：\(m)", bundle: b)
+        case .noTiles:         return String(localized: "未能从图片中识别到麻将牌，请确保牌面清晰、正对镜头、光线充足。", bundle: b)
         }
     }
 }
@@ -63,7 +64,7 @@ actor LocalTileRecognizer {
         }
     }
 
-    func recognize(imageData: Data) throws -> [MahjongCard] {
+    func recognize(imageData: Data) throws -> RecognitionResult {
         try loadSessionIfNeeded()
         guard let session else { throw LocalRecognitionError.modelMissing }
         guard let image = UIImage(data: imageData)?.normalizedUp() else {
@@ -82,7 +83,7 @@ actor LocalTileRecognizer {
                                           outputNames: ["output0"],
                                           runOptions: nil)
             guard let output = outputs["output0"] else {
-                throw LocalRecognitionError.inferenceFailed("缺少输出")
+                throw LocalRecognitionError.inferenceFailed(String(localized: "缺少输出", bundle: appLanguageBundle()))
             }
             let info = try output.tensorTypeAndShapeInfo()
             let outShape = info.shape.map { $0.intValue }   // [1, 4+numClasses, anchors]
@@ -96,9 +97,17 @@ actor LocalTileRecognizer {
         }
 
         let kept = nms(detections)
-        let cards = readingOrder(kept).compactMap { card(for: $0.classId) }
-        guard !cards.isEmpty else { throw LocalRecognitionError.noTiles }
-        return cards
+        // 只保留 万/筒/条（忽略风/箭等），转成牌盒后做空间聚类分组
+        let boxes: [TileBox] = kept.compactMap { d in
+            guard let c = card(for: d.classId) else { return nil }
+            return TileBox(minX: d.x1, maxX: d.x2, cy: d.cy, height: d.h, card: c)
+        }
+        guard !boxes.isEmpty else { throw LocalRecognitionError.noTiles }
+        let result = groupTiles(boxes)
+        guard !result.hand.isEmpty || !result.melds.isEmpty else {
+            throw LocalRecognitionError.noTiles
+        }
+        return result
     }
 
     // MARK: - 预处理（letterbox → RGB/255 → CHW）
@@ -201,23 +210,6 @@ actor LocalTileRecognizer {
         let areaB = max(0, b.x2 - b.x1) * max(0, b.y2 - b.y1)
         let union = areaA + areaB - inter
         return union <= 0 ? 0 : Float(inter / union)
-    }
-
-    // MARK: - 阅读顺序（按行从上到下、行内从左到右）
-
-    private func readingOrder(_ dets: [Detection]) -> [Detection] {
-        guard !dets.isEmpty else { return [] }
-        let avgH = dets.map { $0.h }.reduce(0, +) / CGFloat(dets.count)
-        let rowGap = max(avgH * 0.6, 1)
-        var rows: [[Detection]] = []
-        for d in dets.sorted(by: { $0.cy < $1.cy }) {
-            if let i = rows.indices.last, let first = rows[i].first, abs(d.cy - first.cy) <= rowGap {
-                rows[i].append(d)
-            } else {
-                rows.append([d])
-            }
-        }
-        return rows.flatMap { $0.sorted { $0.cx < $1.cx } }
     }
 
     // MARK: - 类别 → MahjongCard（仅 万/筒/条）

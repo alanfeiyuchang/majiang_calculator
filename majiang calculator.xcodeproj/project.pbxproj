@@ -38,6 +38,7 @@
 			isa = PBXGroup;
 			children = (
 				D51C5A962F6A2A1100A6D602 /* majiang calculator */,
+				D5F5C5A72FD128F50048833D /* Frameworks */,
 				D51C5A952F6A2A1100A6D602 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -48,6 +49,13 @@
 				D51C5A942F6A2A1100A6D602 /* majiang calculator.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D5F5C5A72FD128F50048833D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -92,11 +100,12 @@
 				};
 			};
 			buildConfigurationList = D51C5A8F2F6A2A1100A6D602 /* Build configuration list for PBXProject "majiang calculator" */;
-			developmentRegion = en;
+			developmentRegion = "zh-Hans";
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = D51C5A8B2F6A2A1100A6D602;
 			minimizedProjectReferenceProxies = 1;
@@ -187,7 +196,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -245,7 +254,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -261,10 +270,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 5V3HM8L9GT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "用于拍摄牌桌上的麻将牌照片，自动识别手牌。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -300,10 +310,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 5V3HM8L9GT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "用于拍摄牌桌上的麻将牌照片，自动识别手牌。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -361,8 +372,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/microsoft/onnxruntime-swift-package-manager";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.16.0;
+				kind = exactVersion;
+				version = 1.24.2;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

@@ -6,6 +6,7 @@
 import SwiftUI
 import PhotosUI
 import AVFoundation
+import CoreMotion
 import Combine
 
 // MARK: - Design
@@ -49,13 +50,13 @@ private struct MahjongTileChip: View {
 // MARK: - 分区卡片
 
 private struct SectionCard<Content: View>: View {
-    var title: String
+    var title: LocalizedStringKey
     var systemImage: String?
     var accessory: Text?
     @ViewBuilder let content: Content
 
     init(
-        title: String,
+        title: LocalizedStringKey,
         systemImage: String? = nil,
         accessory: Text? = nil,
         @ViewBuilder content: () -> Content
@@ -99,11 +100,76 @@ private struct SectionCard<Content: View>: View {
     }
 }
 
+// MARK: - 副露块
+
+private struct MeldChipGroup: View {
+    let meld: Meld
+    var onRemove: () -> Void
+
+    var body: some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 3) {
+                ForEach(0..<meld.tileCount, id: \.self) { _ in
+                    MahjongTileChip(card: meld.card, onTap: onRemove)
+                }
+            }
+            Text(LocalizedStringKey(meld.kind.rawValue))
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: Self.deleteLabel(meld)))
+    }
+
+    /// 「删除 <碰/明杠/暗杠><牌>」，走应用内语言
+    private static func deleteLabel(_ meld: Meld) -> String {
+        let b = appLanguageBundle()
+        let kind = String(localized: String.LocalizationValue(meld.kind.rawValue), bundle: b)
+        return String(localized: "删除 \(kind)\(meld.card.displayText)", bundle: b)
+    }
+}
+
+// MARK: - 键盘输入去向
+
+private enum InputTarget: String, CaseIterable {
+    case hand = "手牌"
+    case pong = "碰"
+    case exposedKong = "明杠"
+    case concealedKong = "暗杠"
+
+    var meldKind: Meld.Kind? {
+        switch self {
+        case .hand: return nil
+        case .pong: return .pong
+        case .exposedKong: return .exposedKong
+        case .concealedKong: return .concealedKong
+        }
+    }
+}
+
 // MARK: - 主界面
 
 struct ContentView: View {
     @StateObject private var viewModel = MahjongViewModel()
+    @EnvironmentObject private var ruleStore: RuleSettingsStore
+    @EnvironmentObject private var langManager: LanguageManager
     @State private var keyboardSuit: MahjongCard.Suit = .wan
+    /// 底部键盘点牌加到哪：手牌 / 碰 / 明杠 / 暗杠
+    @State private var inputTarget: InputTarget = .hand
+    @State private var showSettings = false
+    /// 听牌金额按 点炮 / 自摸 显示
+    @State private var showSelfDraw = false
+    // 场景番勾选（自摸侧：杠上开花 / 海底捞月 / 天胡；点炮侧：杠上炮 / 抢杠胡 / 地胡）
+    @State private var kongBloom = false
+    @State private var lastTileDraw = false
+    @State private var heavenly = false
+    @State private var kongDischargeWin = false
+    @State private var robbingKong = false
+    @State private var earthly = false
+    /// 点击听牌弹出番型明细
+    @State private var breakdownCard: MahjongCard?
+    /// DEBUG 截图用：直接以 sheet 呈现番型一览
+    @State private var demoShowFanReference = false
 
     // AI 识别相关（本地 ONNX 模型）
     @State private var photoItem: PhotosPickerItem?
@@ -128,14 +194,51 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: Theme.sectionSpacing) {
-                    handSection
-                    resultSection
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(spacing: Theme.sectionSpacing) {
+                        handSection
+                        meldSection
+                        resultSection
+                            .id("result")
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 8)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, 8)
+                .onChange(of: viewModel.hasAnalyzed) { _, analyzed in
+                    if analyzed {
+                        scrollToResult(proxy)
+                    } else {
+                        // 手牌变了：上一局的场景番勾选作废
+                        kongBloom = false; lastTileDraw = false; heavenly = false
+                        kongDischargeWin = false; robbingKong = false; earthly = false
+                    }
+                }
+                .onChange(of: viewModel.hintMessage) { _, hint in
+                    if hint != nil { scrollToResult(proxy) }
+                }
+                .onAppear {
+                    if viewModel.hasAnalyzed { scrollToResult(proxy) }
+#if DEBUG
+                    // UI 调试（配合 MahjongViewModel 的 DEMO_HAND）：
+                    // DEMO_SETTINGS=1 直接打开设置页（=fans 再进番型一览）；
+                    // DEMO_SHEET=8s 弹出听某张牌的番型明细
+                    let env = ProcessInfo.processInfo.environment
+                    if env["DEMO_SETTINGS"] == "fans" {
+                        demoShowFanReference = true
+                    } else if env["DEMO_SETTINGS"] == "1" {
+                        showSettings = true
+                    } else if let spec = env["DEMO_SHEET"], spec.count >= 2,
+                              let rank = spec.first?.wholeNumberValue {
+                        let suit: MahjongCard.Suit = spec.hasSuffix("m") ? .wan
+                            : (spec.hasSuffix("p") ? .tong : .tiao)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                            breakdownCard = MahjongCard(suit: suit, rank: rank)
+                        }
+                    }
+#endif
+                }
             }
             .scrollIndicators(.hidden)
             .background(Color(uiColor: .systemGroupedBackground))
@@ -145,6 +248,27 @@ struct ContentView: View {
             .navigationTitle("听牌计算器")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .font(.body.weight(.medium))
+                    }
+                    .accessibilityLabel("规则设置")
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { langManager.toggle() }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "globe")
+                            Text(verbatim: langManager.toggleLabel)
+                        }
+                        .font(.subheadline.weight(.semibold))
+                    }
+                    .accessibilityLabel(Text("切换语言"))
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         viewModel.reset()
@@ -152,11 +276,28 @@ struct ContentView: View {
                         Image(systemName: "trash")
                             .font(.body.weight(.medium))
                     }
-                    .disabled(viewModel.selectedTiles.isEmpty && viewModel.waitingTiles.isEmpty)
+                    .disabled(viewModel.selectedTiles.isEmpty && viewModel.melds.isEmpty
+                              && viewModel.waitingTiles.isEmpty)
                     .accessibilityLabel("清空全部")
                 }
             }
             .overlay { if viewModel.isRecognizing { recognizingOverlay } }
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
+        }
+        .sheet(isPresented: $demoShowFanReference) {
+            NavigationStack {
+                FanReferenceView(settings: ruleStore.settings)
+            }
+        }
+        .sheet(item: $breakdownCard) { card in
+            FanBreakdownSheet(
+                card: card,
+                scoreDiscard: winScore(adding: card, selfDrawn: false),
+                scoreSelf: winScore(adding: card, selfDrawn: true)
+            )
+            .presentationDetents([.medium, .large])
         }
         .confirmationDialog("选择图片来源", isPresented: $showSourceDialog, titleVisibility: .visible) {
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
@@ -207,6 +348,15 @@ struct ContentView: View {
         }
     }
 
+    /// 分析结束后把结果区滚进视野（等布局稳定后再滚）
+    private func scrollToResult(_ proxy: ScrollViewProxy) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            withAnimation(.easeInOut(duration: 0.35)) {
+                proxy.scrollTo("result", anchor: .top)
+            }
+        }
+    }
+
     private var recognizingOverlay: some View {
         ZStack {
             Color.black.opacity(0.35).ignoresSafeArea()
@@ -230,9 +380,9 @@ struct ContentView: View {
 
     private var handSection: some View {
         SectionCard(
-            title: "手牌",
+            title: "手里的牌",
             systemImage: "square.grid.3x3.fill",
-            accessory: Text("\(viewModel.selectedTiles.count) / 14")
+            accessory: Text("\(viewModel.selectedTiles.count) / \(viewModel.maxConcealed)")
                 .monospacedDigit()
         ) {
             let (hint, hintColor) = countHint
@@ -320,6 +470,76 @@ struct ContentView: View {
         }
     }
 
+    // MARK: 桌上副露区
+
+    private var meldSection: some View {
+        SectionCard(
+            title: "桌上的牌（碰 / 杠）",
+            systemImage: "square.stack.3d.up.fill",
+            accessory: Text("\(viewModel.melds.count) / 4 组").monospacedDigit()
+        ) {
+            if viewModel.melds.isEmpty {
+                Text("已碰、已杠的牌放这里：底部切到「碰 / 明杠 / 暗杠」后点牌加入。")
+                    .font(.footnote)
+                    .foregroundStyle(.tertiary)
+            } else {
+                FlowWaitingLayout(spacing: 14) {
+                    ForEach(viewModel.melds) { meld in
+                        MeldChipGroup(meld: meld) {
+                            viewModel.removeMeld(meld)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    // MARK: 算番（听牌金额 / 已和结算随规则设置即时刷新）
+
+    private var hasKongMeld: Bool {
+        viewModel.melds.contains { $0.kind.isKong }
+    }
+
+    private var kongBloomAvailable: Bool {
+        hasKongMeld && ruleStore.settings.kongBloomEnabled
+    }
+
+    /// 当前勾选的场景番组成胡牌上下文
+    private func winContext(selfDrawn: Bool) -> WinContext {
+        WinContext(
+            selfDrawn: selfDrawn,
+            kongBloom: selfDrawn && kongBloom && kongBloomAvailable,
+            lastTileDraw: selfDrawn && lastTileDraw,
+            kongDischargeWin: !selfDrawn && kongDischargeWin,
+            robbingKong: !selfDrawn && robbingKong,
+            heavenly: selfDrawn && heavenly,
+            earthly: !selfDrawn && earthly
+        )
+    }
+
+    /// 手牌补上 card 后这副胡牌的番与钱
+    private func winScore(adding card: MahjongCard, selfDrawn: Bool? = nil) -> WinScore {
+        var freq = handToFrequency27(viewModel.selectedTiles.map(\.card))
+        freq[card.tileIndex] += 1
+        return scoreWinningHand(
+            concealed: freq,
+            melds: viewModel.melds,
+            settings: ruleStore.settings,
+            context: winContext(selfDrawn: selfDrawn ?? showSelfDraw)
+        )
+    }
+
+    /// 3n+2 已和时整副牌的番与钱
+    private func wonScore(selfDrawn: Bool) -> WinScore {
+        scoreWinningHand(
+            concealed: handToFrequency27(viewModel.selectedTiles.map(\.card)),
+            melds: viewModel.melds,
+            settings: ruleStore.settings,
+            context: winContext(selfDrawn: selfDrawn)
+        )
+    }
+
     // MARK: 结果区
 
     @ViewBuilder
@@ -335,7 +555,7 @@ struct ContentView: View {
             analysisResult
         } else {
             SectionCard(title: "分析结果", systemImage: "questionmark.circle") {
-                Text("选牌后点「分析手牌」：13 张算听牌/向听，14 张给打牌建议。")
+                Text("选牌后点「分析手牌」：手牌 3n+1 张算听牌/向听，3n+2 张给打牌建议；已碰、已杠的牌用底部「碰 / 明杠 / 暗杠」加到桌上。")
                     .font(.footnote)
                     .foregroundStyle(.tertiary)
             }
@@ -346,12 +566,7 @@ struct ContentView: View {
     private var analysisResult: some View {
         let sh = viewModel.shantenValue ?? 99
         if sh == -1 {
-            // 已和（3n+2 且成牌）
-            SectionCard(title: "已和！", systemImage: "checkmark.seal.fill") {
-                Text("这副牌已经胡了（满足缺一门）。")
-                    .font(.subheadline)
-                    .foregroundStyle(Color(red: 0.16, green: 0.65, blue: 0.40))
-            }
+            wonCard
         } else if !viewModel.discards.isEmpty {
             discardCard
         } else if sh == 0 {
@@ -361,7 +576,110 @@ struct ContentView: View {
         }
     }
 
-    // 听牌（含空听）
+    private static let moneyGreen = Color(red: 0.16, green: 0.65, blue: 0.40)
+
+    // MARK: 番型文字本地化
+
+    /// 番型名（中文 key → 本地化）。走应用内语言 bundle。
+    static func localizedFanName(_ key: String) -> String {
+        String(localized: String.LocalizationValue(key), bundle: appLanguageBundle())
+    }
+    /// 单项加成文字（+N 番 / +N 底 / 0 番）本地化
+    static func fanItemText(_ item: FanItem) -> String {
+        let b = appLanguageBundle()
+        if item.baseAdd > 0 { return String(localized: "+\(item.baseAdd) 底", bundle: b) }
+        if item.fan == 0 { return String(localized: "0 番", bundle: b) }
+        return String(localized: "+\(item.fan) 番", bundle: b)
+    }
+    /// 「N 番」或「N 番·封顶 M」本地化
+    static func fanTotalText(_ score: WinScore) -> String {
+        let b = appLanguageBundle()
+        return score.isCapped
+            ? String(localized: "\(score.totalFan) 番·封顶 \(score.cappedFan)", bundle: b)
+            : String(localized: "\(score.totalFan) 番", bundle: b)
+    }
+    /// 一行番型明细：「名 +N 番」
+    static func fanLine(_ item: FanItem) -> String {
+        "\(localizedFanName(item.name)) \(fanItemText(item))"
+    }
+
+    // 已和（3n+2 且成牌）：番型 + 结算金额
+    private var wonCard: some View {
+        SectionCard(title: "已和！", systemImage: "checkmark.seal.fill") {
+            let scoreDiscard = wonScore(selfDrawn: false)
+            let scoreSelf = wonScore(selfDrawn: true)
+
+            Text(verbatim: scoreDiscard.items.map { Self.fanLine($0) }.joined(separator: " · "))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Self.moneyGreen)
+                .fixedSize(horizontal: false, vertical: true)
+
+            specialFanChips(selfDrawn: false)
+            specialFanChips(selfDrawn: true)
+
+            HStack(spacing: 24) {
+                settleColumn("点炮（放炮者付）", scoreDiscard)
+                settleColumn("自摸（三家各付）", scoreSelf)
+            }
+        }
+    }
+
+    private func settleColumn(_ titleKey: LocalizedStringKey, _ score: WinScore) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(titleKey)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Text(verbatim: "\(Self.fanTotalText(score)) \(moneyText(score.money))")
+                .font(.subheadline.weight(.bold).monospacedDigit())
+                .foregroundStyle(Self.moneyGreen)
+        }
+    }
+
+    /// 一行场景番勾选胶囊（点炮侧 / 自摸侧各一组）
+    @ViewBuilder
+    private func specialFanChips(selfDrawn: Bool) -> some View {
+        HStack(spacing: 8) {
+            Text(selfDrawn ? LocalizedStringKey("自摸时") : LocalizedStringKey("点炮时"))
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.tertiary)
+            if selfDrawn {
+                if kongBloomAvailable { fanChip("杠上开花", $kongBloom) }
+                fanChip("海底捞月", $lastTileDraw)
+                fanChip("天胡", $heavenly)
+            } else {
+                fanChip("杠上炮", $kongDischargeWin)
+                fanChip("抢杠胡", $robbingKong)
+                fanChip("地胡", $earthly)
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func fanChip(_ title: LocalizedStringKey, _ isOn: Binding<Bool>) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isOn.wrappedValue.toggle()
+            }
+        } label: {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background {
+                    Capsule().fill(isOn.wrappedValue ? Theme.accent.opacity(0.16) : Color.primary.opacity(0.05))
+                }
+                .overlay {
+                    Capsule().strokeBorder(
+                        isOn.wrappedValue ? Theme.accent : Color.primary.opacity(0.12),
+                        lineWidth: 1.2
+                    )
+                }
+                .foregroundStyle(isOn.wrappedValue ? Theme.accent : .secondary)
+        }
+        .buttonStyle(.plain)
+    }
+
+    // 听牌（含空听）：每张听牌标注番数与单家金额
     @ViewBuilder
     private var tenpaiCard: some View {
         if viewModel.isDeadWait {
@@ -377,12 +695,36 @@ struct ContentView: View {
                 systemImage: "checkmark.seal.fill",
                 accessory: Text("共 \(viewModel.waitingTiles.count) 门").monospacedDigit()
             ) {
-                FlowWaitingLayout(spacing: 8) {
+                Picker("结算方式", selection: $showSelfDraw) {
+                    Text("点炮").tag(false)
+                    Text("自摸").tag(true)
+                }
+                .pickerStyle(.segmented)
+
+                specialFanChips(selfDrawn: showSelfDraw)
+
+                FlowWaitingLayout(spacing: 10) {
                     ForEach(Array(viewModel.waitingTiles.enumerated()), id: \.offset) { _, card in
-                        MahjongTileChip(card: card, large: true)
+                        let score = winScore(adding: card)
+                        VStack(spacing: 3) {
+                            MahjongTileChip(card: card, onTap: {
+                                breakdownCard = card
+                            }, large: true)
+                            Text("\(score.totalFan) 番")
+                                .font(.caption2.weight(.semibold).monospacedDigit())
+                                .foregroundStyle(.secondary)
+                            Text(moneyText(score.money))
+                                .font(.caption.weight(.bold).monospacedDigit())
+                                .foregroundStyle(Self.moneyGreen)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text(showSelfDraw ? "金额为单家：自摸后三家各付这个数。点牌可看番型明细。"
+                                  : "金额为单家：点炮时放炮那家付这个数。点牌可看番型明细。")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
         }
     }
@@ -454,20 +796,38 @@ struct ContentView: View {
         VStack(spacing: 0) {
             Divider()
             VStack(alignment: .leading, spacing: 12) {
-                Text("点选加入")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .textCase(.uppercase)
-                    .tracking(0.5)
-                    .padding(.horizontal, 4)
+                HStack(spacing: 10) {
+                    Text("点选加入")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .textCase(.uppercase)
+                        .tracking(0.5)
+                        .padding(.horizontal, 4)
+                    Spacer(minLength: 0)
+                    Picker("加入到", selection: $inputTarget) {
+                        ForEach(InputTarget.allCases, id: \.self) { target in
+                            Text(LocalizedStringKey(target.rawValue)).tag(target)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(maxWidth: 270)
+                }
 
                 suitPicker
 
                 HStack(spacing: 6) {
                     ForEach(1...9, id: \.self) { r in
                         let card = MahjongCard(suit: keyboardSuit, rank: r)
+                        let enabled = keyboardCanAdd(card)
                         Button {
-                            viewModel.addCard(card)
+                            if let kind = inputTarget.meldKind {
+                                viewModel.addMeld(kind, of: card)
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    inputTarget = .hand
+                                }
+                            } else {
+                                viewModel.addCard(card)
+                            }
                         } label: {
                             Image(card.assetName)
                                 .resizable()
@@ -481,10 +841,10 @@ struct ContentView: View {
                                 }
                                 .shadow(color: .black.opacity(0.18), radius: 1.5, y: 1)
                                 .frame(maxWidth: .infinity)
-                                .opacity(viewModel.canAddMore ? 1 : 0.35)
+                                .opacity(enabled ? 1 : 0.35)
                         }
                         .buttonStyle(.plain)
-                        .disabled(!viewModel.canAddMore)
+                        .disabled(!enabled)
                     }
                 }
             }
@@ -525,11 +885,147 @@ struct ContentView: View {
         }
     }
 
+    /// 当前输入去向下，键盘上这张牌能不能点
+    private func keyboardCanAdd(_ card: MahjongCard) -> Bool {
+        if let kind = inputTarget.meldKind {
+            return viewModel.canAddMeld(kind, of: card)
+        }
+        return viewModel.canAddMore && viewModel.usedCount(of: card) < 4
+    }
+
     private func suitColor(_ suit: MahjongCard.Suit) -> Color {
         switch suit {
         case .wan: return Color(red: 0.88, green: 0.28, blue: 0.24)
         case .tong: return Color(red: 0.18, green: 0.48, blue: 0.88)
         case .tiao: return Color(red: 0.15, green: 0.62, blue: 0.36)
+        }
+    }
+}
+
+// MARK: - 番型含义
+
+/// 番型 → 一句话含义（key 为中文，随应用内语言本地化）
+enum FanInfo {
+    private static let table: [String: String.LocalizationValue] = [
+        "平胡": "普通牌型，没有特殊番型，0 番。",
+        "碰碰胡": "四副面子全是刻子（碰 / 杠），没有顺子。",
+        "清一色": "整副牌只用一种花色（全万 / 全筒 / 全条）。",
+        "七小对": "由 7 个对子组成（非标准面子牌型）。",
+        "豪华七小对": "七小对里有 1 个「龙」（4 张相同），每多一龙再 +1 番。",
+        "双豪华七小对": "七小对里有 2 个「龙」（各 4 张相同）。",
+        "三豪华七小对": "七小对里有 3 个「龙」（各 4 张相同）。",
+        "门清": "没有碰、没有明杠（暗杠可以），点炮或自摸都算。",
+        "断幺九": "整副牌完全没有 1 和 9。",
+        "金钩钓": "四副都已碰 / 杠，手里只剩一对单钓将；已含碰碰胡。",
+        "将对": "碰碰胡，且所有牌都是 2 / 5 / 8。",
+        "将七对": "七小对，且所有牌都是 2 / 5 / 8。",
+        "十八罗汉": "金钩钓且四副都是杠（4 个杠 = 4 根）。",
+        "根": "凑齐 4 张相同的牌（杠 / 手握 4 张 / 碰 + 第 4 张）。",
+        "自摸": "自己摸到胡的那张牌。",
+        "杠上开花": "开杠后补摸到的那张牌自摸胡。",
+        "海底捞月": "摸走最后一张牌自摸胡。",
+        "天胡": "庄家起手（发完牌）即胡。",
+        "杠上炮": "别家开杠后打出的牌被你胡。",
+        "抢杠胡": "别家补杠的那张牌正是你要胡的，抢过来胡。",
+        "地胡": "闲家胡第一圈打出的第一张牌。",
+    ]
+
+    /// 番型名（如「根」）的含义；未知则 nil
+    static func explanation(_ name: String) -> String? {
+        guard let value = table[name] else { return nil }
+        return String(localized: value, bundle: appLanguageBundle())
+    }
+}
+
+// MARK: - 番型明细
+
+private struct FanBreakdownSheet: View {
+    let card: MahjongCard
+    /// 点炮结算（其番型项即基础番型）
+    let scoreDiscard: WinScore
+    /// 自摸结算（含自摸/杠上开花加成）
+    let scoreSelf: WinScore
+    @Environment(\.dismiss) private var dismiss
+    /// 点开番型的解释
+    @State private var explainItem: FanItem?
+
+    private static let moneyGreen = Color(red: 0.16, green: 0.65, blue: 0.40)
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    HStack(spacing: 12) {
+                        MahjongTileChip(card: card, large: true)
+                        Text("胡「\(card.displayText)」")
+                            .font(.headline)
+                    }
+                    .listRowBackground(Color.clear)
+                }
+
+                Section("结算（单家）") {
+                    settleRow("点炮 · 放炮者付", scoreDiscard)
+                    settleRow("自摸 · 三家各付", scoreSelf)
+                }
+
+                Section {
+                    ForEach(scoreDiscard.items) { item in
+                        let hasInfo = FanInfo.explanation(item.name) != nil
+                        Button {
+                            if hasInfo { explainItem = item }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Text(ContentView.localizedFanName(item.name))
+                                    .foregroundStyle(.primary)
+                                if hasInfo {
+                                    Image(systemName: "info.circle")
+                                        .font(.caption)
+                                        .foregroundStyle(.tertiary)
+                                }
+                                Spacer()
+                                Text(ContentView.fanItemText(item))
+                                    .monospacedDigit()
+                                    .foregroundStyle(.secondary)
+                            }
+                            .contentShape(Rectangle())   // 整行（含中间空白）都可点
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(!hasInfo)
+                    }
+                } header: {
+                    Text("番型")
+                } footer: {
+                    Text("点番型看含义")
+                }
+            }
+            .navigationTitle("番型明细")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("完成") { dismiss() }
+                }
+            }
+            .alert(
+                explainItem.map { ContentView.localizedFanName($0.name) } ?? "",
+                isPresented: Binding(get: { explainItem != nil },
+                                     set: { if !$0 { explainItem = nil } })
+            ) {
+                Button("完成", role: .cancel) {}
+            } message: {
+                if let item = explainItem, let text = FanInfo.explanation(item.name) {
+                    Text(verbatim: text)
+                }
+            }
+        }
+    }
+
+    private func settleRow(_ titleKey: LocalizedStringKey, _ score: WinScore) -> some View {
+        HStack {
+            Text(titleKey)
+            Spacer()
+            Text(verbatim: "\(ContentView.fanTotalText(score)) \(moneyText(score.money))")
+                .font(.body.weight(.semibold).monospacedDigit())
+                .foregroundStyle(Self.moneyGreen)
         }
     }
 }
@@ -586,8 +1082,29 @@ private final class CameraModel: NSObject, ObservableObject, AVCapturePhotoCaptu
     private var configured = false
 
     var onCapture: ((UIImage) -> Void)?
-    /// 拍摄时根据界面方向设置的旋转角度
+    /// 拍摄时的旋转角度
     var captureAngle: CGFloat = 90
+
+    // 用重力（加速度计）判断手机实际朝向——即使界面锁定竖屏也有效
+    private let motion = CMMotionManager()
+    /// 由重力推得的拍摄旋转角（0 / 90 / 180 / 270）
+    private(set) var gravityCaptureAngle: CGFloat = 90
+
+    func startMotion() {
+        guard motion.isAccelerometerAvailable, !motion.isAccelerometerActive else { return }
+        motion.accelerometerUpdateInterval = 0.1
+        motion.startAccelerometerUpdates(to: .main) { [weak self] data, _ in
+            guard let a = data?.acceleration else { return }
+            // 平放时 |x|、|y| 都很小 → 保持上一次朝向，避免乱跳
+            if abs(a.y) >= abs(a.x) {
+                if abs(a.y) > 0.4 { self?.gravityCaptureAngle = a.y < 0 ? 90 : 270 }   // 竖握 / 倒握
+            } else {
+                if abs(a.x) > 0.4 { self?.gravityCaptureAngle = a.x < 0 ? 0 : 180 }    // 横握两方向（如颠倒，把 0/180 对调）
+            }
+        }
+    }
+
+    func stopMotion() { motion.stopAccelerometerUpdates() }
 
     func start() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -685,7 +1202,7 @@ private struct CameraView: View {
                 Spacer()
 
                 Button {
-                    model.captureAngle = Self.currentCaptureAngle()
+                    model.captureAngle = model.gravityCaptureAngle
                     model.capture()
                 } label: {
                     ZStack {
@@ -700,19 +1217,11 @@ private struct CameraView: View {
         .onAppear {
             model.onCapture = { onCapture($0) }
             model.start()
+            model.startMotion()
         }
-        .onDisappear { model.stop() }
-    }
-
-    /// 依据当前界面方向得到拍摄旋转角度（让照片方向正确）
-    private static func currentCaptureAngle() -> CGFloat {
-        let io = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.interfaceOrientation ?? .portrait
-        switch io {
-        case .portrait:            return 90
-        case .portraitUpsideDown:  return 270
-        case .landscapeLeft:       return 180
-        case .landscapeRight:      return 0
-        default:                   return 90
+        .onDisappear {
+            model.stopMotion()
+            model.stop()
         }
     }
 }
@@ -738,7 +1247,6 @@ private struct CropView: View {
 
     @State private var working: UIImage? = nil        // 当前（可旋转后）的图片
     @State private var containerSize: CGSize = .zero
-    @State private var didSetup = false
     @State private var imageRect: CGRect = .zero    // 图片在视图中的实际显示区域
     @State private var cropRect: CGRect? = nil        // 裁剪框；nil = 未框选，识别整张
     @State private var dragBase: CGRect? = nil        // 移动/缩放手势开始时的快照
@@ -952,15 +1460,10 @@ private struct CropView: View {
                 y: min(max(p.y, imageRect.minY), imageRect.maxY))
     }
 
-    /// 首次出现：相机拍的横图（宽 > 高）自动逆时针旋转为竖向，方便竖屏裁剪
+    /// 首次出现：照片已按拍摄时手机的实际朝向（重力）摆正，这里不再按宽高猜测旋转；
+    /// 若个别照片方向仍不对，用右上角「旋转」按钮手动纠正。
     private func setup(in container: CGSize) {
         containerSize = container
-        if !didSetup {
-            didSetup = true
-            if source == .camera, image.size.width > image.size.height {
-                working = image.rotated90(clockwise: false)
-            }
-        }
         layout()
     }
 
@@ -1000,4 +1503,6 @@ private struct CropView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(RuleSettingsStore())
+        .environmentObject(LanguageManager())
 }

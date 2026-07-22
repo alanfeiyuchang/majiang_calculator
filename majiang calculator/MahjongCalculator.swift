@@ -10,6 +10,10 @@
 //  ① 牌型成立——标准形「1 将对 + 4 面子（刻子/顺子）」，或 七对（含龙七对）。
 //  ② 缺一门——整副胡牌手牌最多只含两门花色；三门齐全即「花猪」，不能胡。
 //
+//  副露（碰 / 明杠 / 暗杠）单独建模：每组副露固定占一个面子名额，
+//  手牌（暗牌）部分只需拆出剩余的面子；缺一门按「手牌 + 副露」合并判定。
+//  七对要求门清（无副露）且手牌恰 14 张。
+//
 
 import Foundation
 
@@ -105,27 +109,29 @@ private func isSevenPairs(_ freq: [Int]) -> Bool {
 
 // MARK: - 胡牌判定
 
-/// 频率数组是否构成一副可胡的牌：牌型成立 且 满足缺一门（≤ 2 门花色）。
+/// 暗牌频率数组（可含副露）是否构成一副可胡的牌：牌型成立 且 满足缺一门。
 ///
-/// 支持任意「3n+2」张（n = 0...4），即 2 / 5 / 8 / 11 / 14 张：
-/// 拆成「1 将对 + n 面子」即可。对不满 14 张的部分手牌，等价于把尚未补齐的
-/// 面子视为「默认能凑成」，从而 4 / 7 / 10 张也能正确算听。
-/// 七对仅适用于完整的 14 张。
-func isCompleteHand(_ freq: [Int]) -> Bool {
+/// freq 只含手中暗牌；每组副露固定占一个面子名额，暗牌部分拆成
+/// 「1 将对 + sum/3 面子」即可。副露 m 组时完整暗牌应为 14 − 3m 张；
+/// 不满时（部分手牌）等价于把尚未补齐的面子视为「默认能凑成」。
+/// 缺一门按「暗牌 + 副露」合并判定；七对要求门清且恰 14 张。
+func isCompleteHand(_ freq: [Int], melds: [Meld] = []) -> Bool {
     guard freq.count == 27 else { return false }
     let sum = freq.reduce(0, +)
-    guard sum >= 2, sum % 3 == 2 else { return false }
+    guard sum >= 2, sum % 3 == 2, sum + 3 * melds.count <= 14 else { return false }
 
-    // 缺一门：三门齐全为「花猪」，不能胡
-    guard suitCount(freq) <= 2 else { return false }
+    // 缺一门：手牌 + 副露合并后三门齐全为「花猪」，不能胡
+    var combined = freq
+    for m in melds { combined[m.card.tileIndex] += m.tileCount }
+    guard suitCount(combined) <= 2 else { return false }
 
-    if sum == 14, isSevenPairs(freq) { return true }
+    if melds.isEmpty, sum == 14, isSevenPairs(freq) { return true }
     return isStandardForm(freq)
 }
 
-/// 完整 14 张是否可胡（四川麻将）
-func isWinningHand14(_ freq: [Int]) -> Bool {
-    freq.reduce(0, +) == 14 && isCompleteHand(freq)
+/// 完整一副牌（暗牌 + 副露）是否可胡（四川麻将）
+func isWinningHand(_ freq: [Int], melds: [Meld] = []) -> Bool {
+    freq.reduce(0, +) + 3 * melds.count == 14 && isCompleteHand(freq, melds: melds)
 }
 
 // MARK: - 向听数 / 进张 / 打牌建议
@@ -181,14 +187,18 @@ private func chiitoiShanten(_ counts: [Int]) -> Int {
     return 6 - pairs
 }
 
-/// 频率数组的向听数（含缺一门：取「保留两门」的最优；整手时并入七对）
-func shantenOf(_ freq: [Int]) -> Int {
+/// 暗牌频率数组的向听数（含缺一门：取「保留两门」的最优；门清整手时并入七对）。
+/// 副露的花色已固定在成品牌里，「打缺哪一门」只能选副露没占的花色；
+/// 副露若已含三门花色则永远是花猪，不可能胡。
+func shantenOf(_ freq: [Int], melds: [Meld] = []) -> Int {
     let size = freq.reduce(0, +)
     guard size >= 1 else { return 8 }
+    let meldSuits = Set(melds.map { $0.card.tileIndex / 9 })
+    guard meldSuits.count <= 2 else { return 8 }
     let n = size / 3
-    let whole = (size == 13 || size == 14)
+    let whole = melds.isEmpty && (size == 13 || size == 14)
     var best = Int.max
-    for drop in 0..<3 {
+    for drop in 0..<3 where !meldSuits.contains(drop) {
         var c = freq
         for r in 0..<9 { c[drop * 9 + r] = 0 }
         best = min(best, standardShantenN(c, neededMelds: n))
@@ -198,22 +208,24 @@ func shantenOf(_ freq: [Int]) -> Int {
 }
 
 /// 手牌向听数
-func handShanten(_ cards: [MahjongCard]) -> Int {
-    shantenOf(handToFrequency27(cards))
+func handShanten(_ cards: [MahjongCard], melds: [Meld] = []) -> Int {
+    shantenOf(handToFrequency27(cards), melds: melds)
 }
 
-/// 3n+1 手牌的进张：加入后能降低向听的牌，及各自剩余张数（4 − 手中张数）
-func acceptanceTiles(cards: [MahjongCard]) -> [(card: MahjongCard, remaining: Int)] {
+/// 3n+1 暗牌的进张：加入后能降低向听的牌，
+/// 及各自剩余张数（4 − 手中张数 − 副露占用张数）
+func acceptanceTiles(cards: [MahjongCard], melds: [Meld] = []) -> [(card: MahjongCard, remaining: Int)] {
     let base = handToFrequency27(cards)
+    let meldFreq = meldsToFrequency27(melds)
     let size = base.reduce(0, +)
-    guard size % 3 == 1, size <= 13 else { return [] }
-    let s0 = shantenOf(base)
+    guard size % 3 == 1, size + 3 * melds.count <= 13 else { return [] }
+    let s0 = shantenOf(base, melds: melds)
     var result: [(MahjongCard, Int)] = []
-    for i in 0..<27 where base[i] < 4 {
+    for i in 0..<27 where base[i] + meldFreq[i] < 4 {
         var trial = base
         trial[i] += 1
-        if shantenOf(trial) < s0 {
-            result.append((MahjongCard.fromTileIndex(i), 4 - base[i]))
+        if shantenOf(trial, melds: melds) < s0 {
+            result.append((MahjongCard.fromTileIndex(i), 4 - base[i] - meldFreq[i]))
         }
     }
     return result.sorted { a, b in
@@ -234,11 +246,11 @@ struct DiscardSuggestion: Identifiable {
     let acceptanceCount: Int
 }
 
-/// 3n+2 手牌的打牌建议：每个可弃的牌 → 弃后向听 + 进张，按「向听升序、进张降序」排序
-func discardSuggestions(cards: [MahjongCard]) -> [DiscardSuggestion] {
+/// 3n+2 暗牌的打牌建议：每个可弃的牌 → 弃后向听 + 进张，按「向听升序、进张降序」排序
+func discardSuggestions(cards: [MahjongCard], melds: [Meld] = []) -> [DiscardSuggestion] {
     var base = handToFrequency27(cards)
     let size = base.reduce(0, +)
-    guard size % 3 == 2, size <= 14 else { return [] }
+    guard size % 3 == 2, size + 3 * melds.count <= 14 else { return [] }
 
     var out: [DiscardSuggestion] = []
     for d in 0..<27 where base[d] > 0 {
@@ -246,8 +258,8 @@ func discardSuggestions(cards: [MahjongCard]) -> [DiscardSuggestion] {
         let remainingCards = (0..<27).flatMap { idx in
             Array(repeating: MahjongCard.fromTileIndex(idx), count: base[idx])
         }
-        let sh = shantenOf(base)
-        let acc = acceptanceTiles(cards: remainingCards)
+        let sh = shantenOf(base, melds: melds)
+        let acc = acceptanceTiles(cards: remainingCards, melds: melds)
         base[d] += 1
         out.append(DiscardSuggestion(
             discard: MahjongCard.fromTileIndex(d),
@@ -268,20 +280,22 @@ func discardSuggestions(cards: [MahjongCard]) -> [DiscardSuggestion] {
 
 // MARK: - 听牌
 
-/// 当前 3n+1 张手牌（n = 0...4，即 1 / 4 / 7 / 10 / 13 张），
+/// 当前 3n+1 张暗牌（副露 m 组时 n = 4 − m，整手即 13 − 3m 张），
 /// 枚举加入哪一张后能凑成「1 将对 + n 面子」（标准形 / 七对，且满足缺一门）。
-/// 不满 13 张时，未补齐的面子按「默认凑成」处理。
-func calculateWaiting(cards: [MahjongCard]) -> [MahjongCard] {
+/// 不满整手时，未补齐的面子按「默认凑成」处理。
+/// 手中 + 副露已用满 4 张的牌不可能再摸到，不计入听牌。
+func calculateWaiting(cards: [MahjongCard], melds: [Meld] = []) -> [MahjongCard] {
     let base = handToFrequency27(cards)
+    let meldFreq = meldsToFrequency27(melds)
     let n = base.reduce(0, +)
-    guard n % 3 == 1, n <= 13 else { return [] }
+    guard n % 3 == 1, n + 3 * melds.count <= 13 else { return [] }
 
     var waits: [MahjongCard] = []
     for i in 0..<27 {
-        guard base[i] < 4 else { continue }
+        guard base[i] + meldFreq[i] < 4 else { continue }
         var trial = base
         trial[i] += 1
-        if isCompleteHand(trial) {
+        if isCompleteHand(trial, melds: melds) {
             waits.append(MahjongCard.fromTileIndex(i))
         }
     }

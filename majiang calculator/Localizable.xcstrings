@@ -1,0 +1,3179 @@
+{
+  "sourceLanguage" : "zh-Hans",
+  "strings" : {
+    "（含暗杠——只露一张、靠猜，尤其请核对）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " (incl. a guessed concealed kong — only one tile shown; please double-check)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "（含暗杠——只露一张、靠猜，尤其请核对）"
+          }
+        }
+      }
+    },
+    "「%@」在手牌和副露里已用满 4 张。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All 4 of 「%@」are already used across hand and melds."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」在手牌和副露里已用满 4 张。"
+          }
+        }
+      }
+    },
+    "「%@」总数会超过 4 张，无法%@。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That would exceed 4 of 「%@」— can't %@."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」总数会超过 4 张，无法%@。"
+          }
+        }
+      }
+    },
+    "%lld / %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "%lld / 4 组" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld / 4 sets"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld / 4 组"
+          }
+        }
+      }
+    },
+    "%lld 番" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld fan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 番"
+          }
+        }
+      }
+    },
+    "%lld 番·封顶 %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld fan · cap %lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 番·封顶 %lld"
+          }
+        }
+      }
+    },
+    "%lld 种" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld options"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 种"
+          }
+        }
+      }
+    },
+    "+%lld 底" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld base"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld 底"
+          }
+        }
+      }
+    },
+    "+%lld 番" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld fan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld 番"
+          }
+        }
+      }
+    },
+    "+1 底" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+1 base"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+1 底"
+          }
+        }
+      }
+    },
+    "+1 番" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+1 fan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+1 番"
+          }
+        }
+      }
+    },
+    "+4 番" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+4 fan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+4 番"
+          }
+        }
+      }
+    },
+    "0 番" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0 fan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0 番"
+          }
+        }
+      }
+    },
+    "1" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1"
+          }
+        }
+      }
+    },
+    "1 番" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 fan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 番"
+          }
+        }
+      }
+    },
+    "2 番" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 fan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 番"
+          }
+        }
+      }
+    },
+    "3 番" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 fan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 番"
+          }
+        }
+      }
+    },
+    "3 番（8 倍）" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 fan (8×)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 番（8 倍）"
+          }
+        }
+      }
+    },
+    "4 张同牌：杠 / 手握 4 张 / 碰 + 手里第 4 张" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four identical tiles: a kong, four in hand, or a pong + the 4th in hand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4 张同牌：杠 / 手握 4 张 / 碰 + 手里第 4 张"
+          }
+        }
+      }
+    },
+    "4 番" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4 fan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4 番"
+          }
+        }
+      }
+    },
+    "4 番（16 倍）" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4 fan (16×)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4 番（16 倍）"
+          }
+        }
+      }
+    },
+    "5 番" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 fan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 番"
+          }
+        }
+      }
+    },
+    "5 番（32 倍）" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 fan (32×)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 番（32 倍）"
+          }
+        }
+      }
+    },
+    "AI 正在识别牌面…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recognizing tiles…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 正在识别牌面…"
+          }
+        }
+      }
+    },
+    "七小对" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seven Pairs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七小对"
+          }
+        }
+      }
+    },
+    "七小对，且所有牌都是 2 / 5 / 8。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seven Pairs where every tile is a 2, 5, or 8."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七小对，且所有牌都是 2 / 5 / 8。"
+          }
+        }
+      }
+    },
+    "七小对（2 番）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seven Pairs (2 fan)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七小对（2 番）"
+          }
+        }
+      }
+    },
+    "七小对且全是 2/5/8" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seven Pairs, all 2/5/8"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七小对且全是 2/5/8"
+          }
+        }
+      }
+    },
+    "七小对里有 1 个「龙」（4 张相同），每多一龙再 +1 番。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A seven-pairs hand with one dragon (4 identical tiles); +1 fan per extra dragon."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七小对里有 1 个「龙」（4 张相同），每多一龙再 +1 番。"
+          }
+        }
+      }
+    },
+    "七小对里有 2 个「龙」（各 4 张相同）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A seven-pairs hand with two dragons (4 identical tiles each)."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七小对里有 2 个「龙」（各 4 张相同）。"
+          }
+        }
+      }
+    },
+    "七小对里有 3 个「龙」（各 4 张相同）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A seven-pairs hand with three dragons (4 identical tiles each)."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七小对里有 3 个「龙」（各 4 张相同）。"
+          }
+        }
+      }
+    },
+    "三豪华七小对" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Triple Deluxe Seven Pairs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三豪华七小对"
+          }
+        }
+      }
+    },
+    "不封顶" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No cap"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不封顶"
+          }
+        }
+      }
+    },
+    "不计" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not counted"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不计"
+          }
+        }
+      }
+    },
+    "从相册选择" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose from Library"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从相册选择"
+          }
+        }
+      }
+    },
+    "元" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "unit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "元"
+          }
+        }
+      }
+    },
+    "兜底" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fallback"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "兜底"
+          }
+        }
+      }
+    },
+    "共 %lld 门" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld waits"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "共 %lld 门"
+          }
+        }
+      }
+    },
+    "关闭" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
+          }
+        }
+      }
+    },
+    "最多 4 组副露。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At most 4 melds."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最多 4 组副露。"
+          }
+        }
+      }
+    },
+    "凑齐 4 张同牌：杠 / 手握 4 张 / 碰 + 手里第 4 张" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four identical tiles: a kong, four in hand, or a pong + the 4th in hand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "凑齐 4 张同牌：杠 / 手握 4 张 / 碰 + 手里第 4 张"
+          }
+        }
+      }
+    },
+    "凑齐 4 张相同的牌（杠 / 手握 4 张 / 碰 + 第 4 张）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four identical tiles (a kong, four in hand, or a pong + the 4th tile)."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "凑齐 4 张相同的牌（杠 / 手握 4 张 / 碰 + 第 4 张）。"
+          }
+        }
+      }
+    },
+    "分析手牌" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyze"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分析手牌"
+          }
+        }
+      }
+    },
+    "分析结果" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Result"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分析结果"
+          }
+        }
+      }
+    },
+    "切换语言" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch language"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换语言"
+          }
+        }
+      }
+    },
+    "删除 %@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove %@%@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除 %@%@"
+          }
+        }
+      }
+    },
+    "别家开杠后打出的牌被你胡。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You win on a tile discarded by another player right after they declared a kong."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "别家开杠后打出的牌被你胡。"
+          }
+        }
+      }
+    },
+    "别家补杠的那张牌正是你要胡的，抢过来胡。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You win by robbing the tile another player used to add to a kong."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "别家补杠的那张牌正是你要胡的，抢过来胡。"
+          }
+        }
+      }
+    },
+    "剩%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld left"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "剩%lld"
+          }
+        }
+      }
+    },
+    "加入到" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入到"
+          }
+        }
+      }
+    },
+    "加底（+1 底分）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add base (+1 base)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加底（+1 底分）"
+          }
+        }
+      }
+    },
+    "加番（+1 番）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add fan (+1 fan)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加番（+1 番）"
+          }
+        }
+      }
+    },
+    "十八罗汉" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eighteen Arhats"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "十八罗汉"
+          }
+        }
+      }
+    },
+    "双豪华七小对" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double Deluxe Seven Pairs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双豪华七小对"
+          }
+        }
+      }
+    },
+    "取消" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
+        }
+      }
+    },
+    "只有杠：明杠 / 暗杠" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kongs only: exposed / concealed kong"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只有杠：明杠 / 暗杠"
+          }
+        }
+      }
+    },
+    "只有杠才算根" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only kongs count as root"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只有杠才算根"
+          }
+        }
+      }
+    },
+    "向听 %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld away"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向听 %lld"
+          }
+        }
+      }
+    },
+    "听牌" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenpai"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "听牌"
+          }
+        }
+      }
+    },
+    "听牌（空听）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenpai (Dead Wait)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "听牌（空听）"
+          }
+        }
+      }
+    },
+    "听牌计算器" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenpai Calculator"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "听牌计算器"
+          }
+        }
+      }
+    },
+    "四副都已碰 / 杠，手里只剩一对单钓将；已含碰碰胡。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All four melds are ponged/konged, leaving only a single pair waiting; includes All Pungs."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四副都已碰 / 杠，手里只剩一对单钓将；已含碰碰胡。"
+          }
+        }
+      }
+    },
+    "四副面子全是刻子（碰 / 杠），没有顺子。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All four melds are triplets (pong/kong), with no sequences."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四副面子全是刻子（碰 / 杠），没有顺子。"
+          }
+        }
+      }
+    },
+    "在底部选择花色与点数加入；点击已选牌可删除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add tiles from the keyboard below; tap a tile to remove it"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在底部选择花色与点数加入；点击已选牌可删除"
+          }
+        }
+      }
+    },
+    "地胡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earthly Hand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地胡"
+          }
+        }
+      }
+    },
+    "场景番（胡牌时勾选）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Situational Fans (check at win)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "场景番（胡牌时勾选）"
+          }
+        }
+      }
+    },
+    "基础牌型（自动识别，可叠加）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base Patterns (auto-detected, stackable)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基础牌型（自动识别，可叠加）"
+          }
+        }
+      }
+    },
+    "天胡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heavenly Hand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "天胡"
+          }
+        }
+      }
+    },
+    "完成" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成"
+          }
+        }
+      }
+    },
+    "封顶" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cap"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "封顶"
+          }
+        }
+      }
+    },
+    "将七对" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jiang Seven Pairs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将七对"
+          }
+        }
+      }
+    },
+    "将对" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jiang Pungs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将对"
+          }
+        }
+      }
+    },
+    "将对 / 将七对（3 / 4 番）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jiang Pungs / Jiang Seven Pairs (3 / 4 fan)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将对 / 将七对（3 / 4 番）"
+          }
+        }
+      }
+    },
+    "尚未选牌" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No tiles yet"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未选牌"
+          }
+        }
+      }
+    },
+    "已关闭" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已关闭"
+          }
+        }
+      }
+    },
+    "已含碰碰胡，不叠加" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Includes All Pungs; not stacked"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已含碰碰胡，不叠加"
+          }
+        }
+      }
+    },
+    "已听牌，但可胡的牌都已在手中（4 张用尽），无法再胡——空听。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're ready, but every winning tile is already in your hand (all 4 used) — a dead wait, no win possible."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已听牌，但可胡的牌都已在手中（4 张用尽），无法再胡——空听。"
+          }
+        }
+      }
+    },
+    "已和！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Won!"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已和！"
+          }
+        }
+      }
+    },
+    "已碰、已杠的牌放这里：底部切到「碰 / 明杠 / 暗杠」后点牌加入。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Melded (ponged/konged) tiles go here: switch the bottom keyboard to Pong / Exposed Kong / Concealed Kong, then tap a tile."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已碰、已杠的牌放这里：底部切到「碰 / 明杠 / 暗杠」后点牌加入。"
+          }
+        }
+      }
+    },
+    "已自动分组：%lld 张手牌 + %lld 副露%@。请核对「桌上的牌」无误后，点『分析手牌』。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto-grouped: %lld hand tiles + %lld melds%@. Check the Table Tiles, then tap Analyze."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已自动分组：%lld 张手牌 + %lld 副露%@。请核对「桌上的牌」无误后，点『分析手牌』。"
+          }
+        }
+      }
+    },
+    "已识别 %lld 张，请核对后再分析。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recognized %lld tiles; please double-check before analyzing."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已识别 %lld 张，请核对后再分析。"
+          }
+        }
+      }
+    },
+    "常见组合（自动叠出，不单列）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Common Combos (auto-stacked, not listed separately)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常见组合（自动叠出，不单列）"
+          }
+        }
+      }
+    },
+    "平胡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basic Win"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平胡"
+          }
+        }
+      }
+    },
+    "庄家起手（发完牌）即胡。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The dealer wins immediately on the opening hand."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "庄家起手（发完牌）即胡。"
+          }
+        }
+      }
+    },
+    "庄家起手胡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dealer wins on the opening hand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "庄家起手胡"
+          }
+        }
+      }
+    },
+    "底分" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base stake"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "底分"
+          }
+        }
+      }
+    },
+    "开杠后补摸到的那张牌自摸胡。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You self-draw and win on the replacement tile drawn after declaring a kong."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开杠后补摸到的那张牌自摸胡。"
+          }
+        }
+      }
+    },
+    "当前副露 %lld 组，手牌需为 %@ 张（听牌）或再多 1 张（打牌建议）。当前手牌 %lld 张。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With %lld melds, the hand needs %@ tiles (tenpai) or one more (discard advice). Currently %lld tiles."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前副露 %lld 组，手牌需为 %@ 张（听牌）或再多 1 张（打牌建议）。当前手牌 %lld 张。"
+          }
+        }
+      }
+    },
+    "恢复默认规则" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore Default Rules"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复默认规则"
+          }
+        }
+      }
+    },
+    "手牌" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手牌"
+          }
+        }
+      }
+    },
+    "手牌与副露合计含万、筒、条三门花色（花猪）。四川麻将需缺一门，请打缺其中一门。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hand and melds together use all three suits — Characters, Dots, and Bamboo (a \"flower pig\"). Sichuan mahjong requires dropping one suit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手牌与副露合计含万、筒、条三门花色（花猪）。四川麻将需缺一门，请打缺其中一门。"
+          }
+        }
+      }
+    },
+    "手牌太多，放不下这组副露——先删几张手牌（碰/杠会占掉 3 张名额）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Too many hand tiles to add this meld — remove some first (a pong/kong takes 3 slots)."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手牌太多，放不下这组副露——先删几张手牌（碰/杠会占掉 3 张名额）。"
+          }
+        }
+      }
+    },
+    "手里的牌" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hand Tiles"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手里的牌"
+          }
+        }
+      }
+    },
+    "打" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打"
+          }
+        }
+      }
+    },
+    "打牌建议" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard Suggestions"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打牌建议"
+          }
+        }
+      }
+    },
+    "抢杠胡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Robbing the Kong"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "抢杠胡"
+          }
+        }
+      }
+    },
+    "拍照" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take Photo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍照"
+          }
+        }
+      }
+    },
+    "拍照识别手牌" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recognize from Photo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍照识别手牌"
+          }
+        }
+      }
+    },
+    "拖动框选 · 可旋转" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag to crop · rotatable"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拖动框选 · 可旋转"
+          }
+        }
+      }
+    },
+    "换一张" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "换一张"
+          }
+        }
+      }
+    },
+    "提示" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notice"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提示"
+          }
+        }
+      }
+    },
+    "摸走最后一张牌自摸胡。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You self-draw and win on the very last tile of the wall."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "摸走最后一张牌自摸胡。"
+          }
+        }
+      }
+    },
+    "撤销" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "撤销"
+          }
+        }
+      }
+    },
+    "整副牌只用一种花色（全万 / 全筒 / 全条）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The whole hand uses a single suit (all Characters / Dots / Bamboo)."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌只用一种花色（全万 / 全筒 / 全条）。"
+          }
+        }
+      }
+    },
+    "整副牌完全没有 1 和 9" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No 1s or 9s anywhere in the hand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌完全没有 1 和 9"
+          }
+        }
+      }
+    },
+    "整副牌完全没有 1 和 9。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The whole hand contains no 1s or 9s."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌完全没有 1 和 9。"
+          }
+        }
+      }
+    },
+    "断幺九" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Simples"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "断幺九"
+          }
+        }
+      }
+    },
+    "断幺九（+1 番）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Simples (+1 fan)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "断幺九（+1 番）"
+          }
+        }
+      }
+    },
+    "旋转" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rotate"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "旋转"
+          }
+        }
+      }
+    },
+    "无有效进张（受缺一门所限）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No useful draws (limited by the missing-suit rule)."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无有效进张（受缺一门所限）。"
+          }
+        }
+      }
+    },
+    "无法读取所选图片，请换一张试试。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not read the image; please try another."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法读取所选图片，请换一张试试。"
+          }
+        }
+      }
+    },
+    "明杠" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exposed Kong"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "明杠"
+          }
+        }
+      }
+    },
+    "普通牌型，没有特殊番型，0 番。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An ordinary winning hand with no special fan — 0 fan."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "普通牌型，没有特殊番型，0 番。"
+          }
+        }
+      }
+    },
+    "暗杠" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concealed Kong"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗杠"
+          }
+        }
+      }
+    },
+    "未找到本地识别模型文件。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On-device recognition model not found."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未找到本地识别模型文件。"
+          }
+        }
+      }
+    },
+    "未能从图片中识别到麻将牌，请确保牌面清晰、正对镜头、光线充足。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No tiles recognized. Make sure the tiles are clear, facing the camera, and well lit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未能从图片中识别到麻将牌，请确保牌面清晰、正对镜头、光线充足。"
+          }
+        }
+      }
+    },
+    "本地识别失败：%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On-device recognition failed: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本地识别失败：%@"
+          }
+        }
+      }
+    },
+    "杠上开花" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After-Kong Bloom"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "杠上开花"
+          }
+        }
+      }
+    },
+    "杠上开花（+1 番）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After-Kong Bloom (+1 fan)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "杠上开花（+1 番）"
+          }
+        }
+      }
+    },
+    "杠上炮" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After-Kong Discard"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "杠上炮"
+          }
+        }
+      }
+    },
+    "根" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Root"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "根"
+          }
+        }
+      }
+    },
+    "根 = 4 张同牌。默认「碰 + 手里第 4 张」「手握 4 张」也算根；开启「只有杠才算根」后仅明杠/暗杠算。加底/关闭时，杠只按刮风下雨即时结算，不再翻倍进胡牌金额。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Root = four identical tiles. By default a pong + 4th tile and four-in-hand also count; turn on “Only kongs count as root” to count exposed/concealed kongs only. On Add-base/Off, kongs settle instantly (wind/rain) and no longer double the win amount."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "根 = 4 张同牌。默认「碰 + 手里第 4 张」「手握 4 张」也算根；开启「只有杠才算根」后仅明杠/暗杠算。加底/关闭时，杠只按刮风下雨即时结算，不再翻倍进胡牌金额。"
+          }
+        }
+      }
+    },
+    "根 = 凑齐 4 张同牌（杠 / 手握 4 张 / 碰 + 第 4 张）。加底/关闭时，杠只按刮风下雨即时结算，不再翻倍进胡牌金额。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Root = four identical tiles (a kong, four in hand, or a pong + 4th tile). On Add-base/Off, kongs settle instantly (wind/rain) and no longer double the win amount."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "根 = 凑齐 4 张同牌（杠 / 手握 4 张 / 碰 + 第 4 张）。加底/关闭时，杠只按刮风下雨即时结算，不再翻倍进胡牌金额。"
+          }
+        }
+      }
+    },
+    "桌上的牌（碰 / 杠）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Table Tiles (Pong / Kong)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "桌上的牌（碰 / 杠）"
+          }
+        }
+      }
+    },
+    "每个 +1 底" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+1 base each"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个 +1 底"
+          }
+        }
+      }
+    },
+    "每个 +1 番" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+1 fan each"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个 +1 番"
+          }
+        }
+      }
+    },
+    "每多一龙再 +1：双豪华 4 番、三豪华 5 番" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+1 per extra dragon: Double Deluxe 4 fan, Triple Deluxe 5 fan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每多一龙再 +1：双豪华 4 番、三豪华 5 番"
+          }
+        }
+      }
+    },
+    "没有碰、没有明杠（暗杠可），点炮/自摸都算" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pong, no exposed kong (concealed kong OK); counts on discard and self-draw"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有碰、没有明杠（暗杠可），点炮/自摸都算"
+          }
+        }
+      }
+    },
+    "没有碰、没有明杠（暗杠可以），点炮或自摸都算。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pong and no exposed kong (concealed kong is OK); counts on discard or self-draw."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有碰、没有明杠（暗杠可以），点炮或自摸都算。"
+          }
+        }
+      }
+    },
+    "海底捞月" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last-Tile Draw"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "海底捞月"
+          }
+        }
+      }
+    },
+    "清一色" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pure Suit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清一色"
+          }
+        }
+      }
+    },
+    "清一色（2 番）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pure Suit (2 fan)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清一色（2 番）"
+          }
+        }
+      }
+    },
+    "清七对" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pure Seven Pairs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清七对"
+          }
+        }
+      }
+    },
+    "清对（清一色 + 碰碰胡）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pure Pungs (Pure Suit + All Pungs)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清对（清一色 + 碰碰胡）"
+          }
+        }
+      }
+    },
+    "清空全部" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear all"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清空全部"
+          }
+        }
+      }
+    },
+    "清豪七" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pure Deluxe Seven Pairs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清豪七"
+          }
+        }
+      }
+    },
+    "清金钩钓" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pure Golden Hook"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清金钩钓"
+          }
+        }
+      }
+    },
+    "清除框选" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear selection"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除框选"
+          }
+        }
+      }
+    },
+    "点炮" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点炮"
+          }
+        }
+      }
+    },
+    "点炮 · 放炮者付" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard · discarder pays"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点炮 · 放炮者付"
+          }
+        }
+      }
+    },
+    "点炮（放炮者付）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard (discarder pays)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点炮（放炮者付）"
+          }
+        }
+      }
+    },
+    "点炮侧" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "discard side"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点炮侧"
+          }
+        }
+      }
+    },
+    "点炮时" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On discard:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点炮时"
+          }
+        }
+      }
+    },
+    "点番型看含义" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap a fan to see what it means"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点番型看含义"
+          }
+        }
+      }
+    },
+    "点选加入" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap to add"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点选加入"
+          }
+        }
+      }
+    },
+    "由 7 个对子组成（非标准面子牌型）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Made of seven pairs (not the standard melds-and-pair shape)."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "由 7 个对子组成（非标准面子牌型）。"
+          }
+        }
+      }
+    },
+    "番型" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fans"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "番型"
+          }
+        }
+      }
+    },
+    "番型一览" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fan Reference"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "番型一览"
+          }
+        }
+      }
+    },
+    "番型开关" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fan Toggles"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "番型开关"
+          }
+        }
+      }
+    },
+    "番型明细" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fan Breakdown"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "番型明细"
+          }
+        }
+      }
+    },
+    "碰" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pong"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "碰"
+          }
+        }
+      }
+    },
+    "碰碰胡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Pungs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "碰碰胡"
+          }
+        }
+      }
+    },
+    "碰碰胡，且所有牌都是 2 / 5 / 8。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Pungs where every tile is a 2, 5, or 8."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "碰碰胡，且所有牌都是 2 / 5 / 8。"
+          }
+        }
+      }
+    },
+    "碰碰胡（1 番）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Pungs (1 fan)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "碰碰胡（1 番）"
+          }
+        }
+      }
+    },
+    "碰碰胡且全是 2/5/8" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Pungs, all 2/5/8"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "碰碰胡且全是 2/5/8"
+          }
+        }
+      }
+    },
+    "结算（单家）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settlement (per opponent)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "结算（单家）"
+          }
+        }
+      }
+    },
+    "结算方式" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settlement"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "结算方式"
+          }
+        }
+      }
+    },
+    "绝张" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Tile"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "绝张"
+          }
+        }
+      }
+    },
+    "绝张（+1 番）" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Tile (+1 fan)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "绝张（+1 番）"
+          }
+        }
+      }
+    },
+    "缺少输出" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "missing output"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "缺少输出"
+          }
+        }
+      }
+    },
+    "胡「%@」" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Win on 「%@」"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "胡「%@」"
+          }
+        }
+      }
+    },
+    "胡的那张，自己已有 3 张（手里 / 碰），胡它=第 4 张" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You already hold 3 of the winning tile (in hand / pong) and win the 4th"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "胡的那张，自己已有 3 张（手里 / 碰），胡它=第 4 张"
+          }
+        }
+      }
+    },
+    "胡第一张打出的牌" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Win on the first discard"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "胡第一张打出的牌"
+          }
+        }
+      }
+    },
+    "自动排序" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto-sort"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动排序"
+          }
+        }
+      }
+    },
+    "自己摸到胡的那张牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You draw the winning tile yourself."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自己摸到胡的那张牌。"
+          }
+        }
+      }
+    },
+    "自摸" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Self-draw"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自摸"
+          }
+        }
+      }
+    },
+    "自摸 · 三家各付" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Self-draw · each of 3 pays"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自摸 · 三家各付"
+          }
+        }
+      }
+    },
+    "自摸（三家各付）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Self-draw (each of 3 pays)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自摸（三家各付）"
+          }
+        }
+      }
+    },
+    "自摸侧" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "self-draw side"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自摸侧"
+          }
+        }
+      }
+    },
+    "自摸时" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On self-draw:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自摸时"
+          }
+        }
+      }
+    },
+    "规则设置" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rule Settings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "规则设置"
+          }
+        }
+      }
+    },
+    "计法" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scoring Method"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "计法"
+          }
+        }
+      }
+    },
+    "计钱" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Money"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "计钱"
+          }
+        }
+      }
+    },
+    "识别到超过 %lld 张牌，已保留前 %lld 张，请核对后再计算。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recognized more than %lld tiles; kept the first %lld. Please double-check before calculating."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "识别到超过 %lld 张牌，已保留前 %lld 张，请核对后再计算。"
+          }
+        }
+      }
+    },
+    "识别整张照片" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recognize whole photo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "识别整张照片"
+          }
+        }
+      }
+    },
+    "识别选中区域" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recognize selection"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "识别选中区域"
+          }
+        }
+      }
+    },
+    "请先选择手牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please select hand tiles first."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请先选择手牌。"
+          }
+        }
+      }
+    },
+    "调整选区" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust selection"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "调整选区"
+          }
+        }
+      }
+    },
+    "豪华七小对" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deluxe Seven Pairs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "豪华七小对"
+          }
+        }
+      }
+    },
+    "豪华七小对（每龙 +1 番）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deluxe Seven Pairs (+1 fan per dragon)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "豪华七小对（每龙 +1 番）"
+          }
+        }
+      }
+    },
+    "豪华七小对（豪七）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deluxe Seven Pairs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "豪华七小对（豪七）"
+          }
+        }
+      }
+    },
+    "进张 %lld 张" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld tiles improve"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "进张 %lld 张"
+          }
+        }
+      }
+    },
+    "进张 %lld 张 · %lld 门" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld tiles · %lld kinds"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "进张 %lld 张 · %lld 门"
+          }
+        }
+      }
+    },
+    "选择图片来源" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Image Source"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择图片来源"
+          }
+        }
+      }
+    },
+    "选牌后点「分析手牌」：手牌 3n+1 张算听牌/向听，3n+2 张给打牌建议；已碰、已杠的牌用底部「碰 / 明杠 / 暗杠」加到桌上。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After picking tiles, tap Analyze: a 3n+1 hand gives tenpai/shanten, a 3n+2 hand gives discard advice. Add ponged/konged tiles to the table with Pong / Exposed Kong / Concealed Kong below."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选牌后点「分析手牌」：手牌 3n+1 张算听牌/向听，3n+2 张给打牌建议；已碰、已杠的牌用底部「碰 / 明杠 / 暗杠」加到桌上。"
+          }
+        }
+      }
+    },
+    "重拍" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retake"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重拍"
+          }
+        }
+      }
+    },
+    "金钩钓" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Golden Hook"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "金钩钓"
+          }
+        }
+      }
+    },
+    "金钩钓 + 4 杠（含 4 根）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Golden Hook + 4 kongs (incl. 4 roots)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "金钩钓 + 4 杠（含 4 根）"
+          }
+        }
+      }
+    },
+    "金钩钓且四副都是杠（4 个杠 = 4 根）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Golden Hook where all four melds are kongs (4 kongs = 4 roots)."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "金钩钓且四副都是杠（4 个杠 = 4 根）。"
+          }
+        }
+      }
+    },
+    "金额 = 底分 × 2^番数（封顶截断），为单家输赢：点炮由放炮者付，自摸三家各付。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount = base × 2^fan (capped), per opponent: on a discard win the discarder pays; on self-draw each of the three pays."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "金额 = 底分 × 2^番数（封顶截断），为单家输赢：点炮由放炮者付，自摸三家各付。"
+          }
+        }
+      }
+    },
+    "金额为单家：点炮时放炮那家付这个数。点牌可看番型明细。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amounts are per opponent: on a discard win the discarder pays this. Tap a tile for the fan breakdown."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "金额为单家：点炮时放炮那家付这个数。点牌可看番型明细。"
+          }
+        }
+      }
+    },
+    "金额为单家：自摸后三家各付这个数。点牌可看番型明细。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amounts are per opponent: on self-draw each of the other three pays this. Tap a tile for the fan breakdown."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "金额为单家：自摸后三家各付这个数。点牌可看番型明细。"
+          }
+        }
+      }
+    },
+    "门清" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concealed Hand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "门清"
+          }
+        }
+      }
+    },
+    "门清 = 没有碰、没有明杠（暗杠可），点炮/自摸都算。断幺九 = 整副牌完全没有 1 和 9。七小对关闭后，七对牌型不计基础 2 番；豪华关闭则龙七对按平七小对计。将对 = 碰碰胡且全是 2/5/8（关闭时按普通碰碰胡/七小对计）。金钩钓已含碰碰胡，不叠加。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concealed Hand = no pong and no exposed kong (concealed kong OK); counts on both discard and self-draw. All Simples = no 1s or 9s anywhere. With Seven Pairs off, seven-pair hands score no base 2 fan; with Deluxe off, a dragon seven pairs scores as plain Seven Pairs. Jiang Pungs = All Pungs all 2/5/8 (off → scored as ordinary All Pungs / Seven Pairs). Golden Hook already includes All Pungs and does not stack."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "门清 = 没有碰、没有明杠（暗杠可），点炮/自摸都算。断幺九 = 整副牌完全没有 1 和 9。七小对关闭后，七对牌型不计基础 2 番；豪华关闭则龙七对按平七小对计。将对 = 碰碰胡且全是 2/5/8（关闭时按普通碰碰胡/七小对计）。金钩钓已含碰碰胡，不叠加。"
+          }
+        }
+      }
+    },
+    "门清（+1 番）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concealed Hand (+1 fan)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "门清（+1 番）"
+          }
+        }
+      }
+    },
+    "闲家胡第一圈打出的第一张牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A non-dealer wins on the first tile discarded in the first round."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "闲家胡第一圈打出的第一张牌。"
+          }
+        }
+      }
+    },
+    "附加番" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Additional Fans"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "附加番"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
