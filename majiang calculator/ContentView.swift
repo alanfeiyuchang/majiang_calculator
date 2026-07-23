@@ -350,6 +350,9 @@ struct ContentView: View {
 
     /// 分析结束后把结果区滚进视野（等布局稳定后再滚）
     private func scrollToResult(_ proxy: ScrollViewProxy) {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["DEMO_NOSCROLL"] == "1" { return }
+        #endif
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             withAnimation(.easeInOut(duration: 0.35)) {
                 proxy.scrollTo("result", anchor: .top)
