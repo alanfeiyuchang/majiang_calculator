@@ -1041,6 +1041,54 @@
         }
       }
     },
+    "在照片上按住并拖动，画一个框只圈住你自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别会更准。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Press and drag on the photo to draw a box around just your own tiles (including pongs/kongs). Excluding other players' tiles and the discard pile improves accuracy."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在照片上按住并拖动，画一个框只圈住你自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别会更准。"
+          }
+        }
+      }
+    },
+    "圈出自己的手牌" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Circle your own tiles"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圈出自己的手牌"
+          }
+        }
+      }
+    },
+    "知道了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Got it"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "知道了"
+          }
+        }
+      }
+    },
     "地胡" : {
       "localizations" : {
         "en" : {

@@ -1332,6 +1332,9 @@ private struct CropView: View {
     @State private var cropRect: CGRect? = nil        // 裁剪框；nil = 未框选，识别整张
     @State private var dragBase: CGRect? = nil        // 移动/缩放手势开始时的快照
 
+    @AppStorage("hasSeenCropTutorial") private var hasSeenCropTutorial = false
+    @State private var showTutorialPopup = false
+
     private let handleSize: CGFloat = 28
     private let minCrop: CGFloat = 44
 
@@ -1383,7 +1386,49 @@ private struct CropView: View {
                 }
             }
             .toolbarBackground(.visible, for: .navigationBar)
+            .overlay { if showTutorialPopup { cropTutorialPopup } }
+            .onAppear {
+                if !hasSeenCropTutorial { showTutorialPopup = true }
+            }
         }
+    }
+
+    // 首次进入裁剪页时弹出一次：教用户拖框圈出自己的手牌
+    private var cropTutorialPopup: some View {
+        ZStack {
+            Color.black.opacity(0.45).ignoresSafeArea()
+            VStack(spacing: 14) {
+                Image(systemName: "hand.draw.fill")
+                    .font(.system(size: 34))
+                    .foregroundStyle(Theme.accent)
+                Text("圈出自己的手牌")
+                    .font(.headline)
+                Text("在照片上按住并拖动，画一个框只圈住你自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别会更准。")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button {
+                    hasSeenCropTutorial = true
+                    withAnimation { showTutorialPopup = false }
+                } label: {
+                    Text("知道了")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Theme.accent)
+                .padding(.top, 4)
+            }
+            .padding(24)
+            .frame(maxWidth: 320)
+            .background {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.regularMaterial)
+            }
+            .padding(.horizontal, 32)
+        }
+        .transition(.opacity)
     }
 
     // 底部：清除框选（有框时）+ 大号识别按钮
