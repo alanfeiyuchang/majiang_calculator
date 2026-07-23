@@ -1369,8 +1369,11 @@ private struct CropView: View {
                 }
             }
             .ignoresSafeArea(edges: .bottom)
+            .overlay(alignment: .top) {
+                if cropRect == nil { cropTutorialBanner }
+            }
             .overlay(alignment: .bottom) { bottomBar }
-            .navigationTitle(cropRect == nil ? "拖动框选 · 可旋转" : "调整选区")
+            .navigationTitle(cropRect == nil ? "框选自己的手牌 · 可旋转" : "调整选区")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -1394,6 +1397,27 @@ private struct CropView: View {
                 if !hasSeenCropTutorial { showTutorialPopup = true }
             }
         }
+    }
+
+    // 顶部：未框选时的常驻提示——教用户圈出自己的手牌以提高识别准确率
+    private var cropTutorialBanner: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "hand.draw.fill")
+                .font(.subheadline)
+            Text("圈出自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别更准")
+                .font(.caption.weight(.medium))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background {
+            Capsule()
+                .fill(.black.opacity(0.55))
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 8)
+        .allowsHitTesting(false)   // 不挡住下面的拖拽画框手势
     }
 
     // 首次进入裁剪页时弹出一次：教用户拖框圈出自己的手牌
@@ -1447,24 +1471,48 @@ private struct CropView: View {
                 .tint(.secondary)
             }
 
-            Button {
-                performCrop()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "sparkles")
-                    Text(cropRect == nil ? "识别整张照片" : "识别选中区域")
+            // 未框选时降为次要样式，引导优先框选；已框选则是推荐操作，用主色实心
+            if cropRect == nil {
+                Button {
+                    performCrop()
+                } label: {
+                    recognizeButtonLabel
                 }
-                .font(.headline)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
+                .buttonStyle(.bordered)
+                .tint(Theme.accent)
+            } else {
+                Button {
+                    performCrop()
+                } label: {
+                    recognizeButtonLabel
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Theme.accent)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.accent)
+
+            if cropRect == nil {
+                Text("不划区域也能识别，但整桌入镜时牌小、易混入别人的牌，准确率会下降；建议先圈出自己的手牌。")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 8)
+            }
         }
         .padding(.horizontal, 20)
         .padding(.top, 12)
         .padding(.bottom, 8)
         .background(.ultraThinMaterial)
+    }
+
+    private var recognizeButtonLabel: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "sparkles")
+            Text(cropRect == nil ? "识别整张照片" : "识别选中区域")
+        }
+        .font(.headline)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
     }
 
     // 框外压暗（与裁剪框、手势同处 GeometryReader 坐标系，不能 ignoresSafeArea，否则会错位）

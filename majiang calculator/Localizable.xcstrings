@@ -522,6 +522,22 @@
         }
       }
     },
+    "不划区域也能识别，但整桌入镜时牌小、易混入别人的牌，准确率会下降；建议先圈出自己的手牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recognition works without drawing a box too, but a whole-table shot makes tiles small and easy to mix up with other players' — circling your own tiles first is recommended."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不划区域也能识别，但整桌入镜时牌小、易混入别人的牌，准确率会下降；建议先圈出自己的手牌。"
+          }
+        }
+      }
+    },
     "不封顶" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1069,6 +1085,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "圈出自己的手牌"
+          }
+        }
+      }
+    },
+    "圈出自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别更准" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Circle just your own tiles (including pongs/kongs) — excluding other players' tiles and the discard pile improves accuracy"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圈出自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别更准"
           }
         }
       }
@@ -1645,18 +1677,18 @@
         }
       }
     },
-    "拖动框选 · 可旋转" : {
+    "框选自己的手牌 · 可旋转" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Drag to crop · rotatable"
+            "value" : "Circle your tiles · rotatable"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拖动框选 · 可旋转"
+            "value" : "框选自己的手牌 · 可旋转"
           }
         }
       }
