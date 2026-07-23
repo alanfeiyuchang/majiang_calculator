@@ -9,6 +9,8 @@
 import SwiftUI
 
 struct SettingsView: View {
+    /// 点击「从相册选择」后调用：关闭设置页并打开相册选择器（由 ContentView 负责实际弹出）
+    var onPickFromLibrary: () -> Void = {}
     @EnvironmentObject private var store: RuleSettingsStore
     @Environment(\.dismiss) private var dismiss
 
@@ -86,6 +88,16 @@ struct SettingsView: View {
                     Button("恢复默认规则", role: .destructive) {
                         store.resetToDefaults()
                     }
+                }
+
+                Section {
+                    Button {
+                        onPickFromLibrary()
+                    } label: {
+                        Label("从相册选择识别手牌", systemImage: "photo.on.rectangle")
+                    }
+                } footer: {
+                    Text("拍照识别在主界面底部；这里是从相册里选一张已有的照片来识别。")
                 }
             }
             .navigationTitle("规则设置")

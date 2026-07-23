@@ -175,7 +175,6 @@ struct ContentView: View {
     @State private var photoItem: PhotosPickerItem?
     @State private var showPhotoPicker = false
     @State private var showCamera = false
-    @State private var showSourceDialog = false
     /// 选中/拍摄后待裁剪的图片（裁剪到只剩自己的手牌再识别）
     @State private var pendingCrop: PendingImage?
 
@@ -286,7 +285,13 @@ struct ContentView: View {
             .overlay { if viewModel.isRecognizing { recognizingOverlay } }
         }
         .sheet(isPresented: $showSettings) {
-            SettingsView()
+            SettingsView(onPickFromLibrary: {
+                showSettings = false
+                // 等设置页关闭后再打开相册选择器，避免「已在展示」冲突
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    showPhotoPicker = true
+                }
+            })
         }
         .sheet(isPresented: $demoShowFanReference) {
             NavigationStack {
@@ -300,13 +305,6 @@ struct ContentView: View {
                 scoreSelf: winScore(adding: card, selfDrawn: true)
             )
             .presentationDetents([.medium, .large])
-        }
-        .confirmationDialog("选择图片来源", isPresented: $showSourceDialog, titleVisibility: .visible) {
-            if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                Button("拍照") { showCamera = true }
-            }
-            Button("从相册选择") { showPhotoPicker = true }
-            Button("取消", role: .cancel) {}
         }
         .photosPicker(isPresented: $showPhotoPicker, selection: $photoItem, matching: .images)
         .onChange(of: photoItem) { _, newItem in
@@ -861,7 +859,12 @@ struct ContentView: View {
             Divider()
             VStack(alignment: .leading, spacing: 12) {
                 Button {
-                    showSourceDialog = true
+                    // 直接开相机；没有相机硬件时（模拟器）退回相册，避免黑屏死路
+                    if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                        showCamera = true
+                    } else {
+                        showPhotoPicker = true
+                    }
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "camera.viewfinder")

@@ -555,18 +555,18 @@
         }
       }
     },
-    "从相册选择" : {
+    "从相册选择识别手牌" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose from Library"
+            "value" : "Choose Photo to Recognize"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "从相册选择"
+            "value" : "从相册选择识别手牌"
           }
         }
       }
@@ -3027,18 +3027,18 @@
         }
       }
     },
-    "选择图片来源" : {
+    "拍照识别在主界面底部；这里是从相册里选一张已有的照片来识别。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose Image Source"
+            "value" : "Photo recognition is at the bottom of the main screen; this picks an existing photo from your library instead."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "选择图片来源"
+            "value" : "拍照识别在主界面底部；这里是从相册里选一张已有的照片来识别。"
           }
         }
       }
