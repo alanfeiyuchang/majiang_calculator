@@ -1401,12 +1401,12 @@
         }
       }
     },
-    "已自动框出你的牌，框得不准可拖动四角调整": {
+    "已自动框出你的牌，框不准可拖四角或四边调整": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your tiles are framed — drag the corners if it's off"
+            "value": "Your tiles are framed — drag a corner or an edge if it's off"
           }
         }
       }
@@ -1679,12 +1679,12 @@
         }
       }
     },
-    "拍完会自动框住你自己的牌（含碰/杠），排除别人的牌和弃牌堆。框得不准就拖动四角调整，或在照片上重新拖一个框。": {
+    "拍完会自动框住你自己的牌（含碰/杠），排除别人的牌和弃牌堆。框得不准就拖四角或四边调整，或在照片上重新拖一个框。": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "After the shot, your own tiles (including pongs and kongs) are framed automatically, leaving out other players' tiles and the discard pile. If the frame is off, drag its corners — or drag a new one anywhere on the photo."
+            "value": "After the shot, your own tiles (including pongs and kongs) are framed automatically, leaving out other players' tiles and the discard pile. If the frame is off, drag a corner or an edge — or drag a new one anywhere on the photo."
           }
         }
       }

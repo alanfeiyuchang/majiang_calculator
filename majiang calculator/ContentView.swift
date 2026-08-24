@@ -1420,7 +1420,7 @@ private struct CropView: View {
         if isSuggesting {
             banner(icon: "viewfinder", text: "正在自动框选你的牌…", showsSpinner: true)
         } else if cropRect != nil, didAutoFrame {
-            banner(icon: "checkmark.viewfinder", text: "已自动框出你的牌，框得不准可拖动四角调整")
+            banner(icon: "checkmark.viewfinder", text: "已自动框出你的牌，框不准可拖四角或四边调整")
         } else if cropRect == nil {
             banner(icon: "hand.draw.fill", text: "圈出自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别更准")
         }
@@ -1462,7 +1462,7 @@ private struct CropView: View {
                     .foregroundStyle(Theme.accent)
                 Text("会自动框出你的牌")
                     .font(.headline)
-                Text("拍完会自动框住你自己的牌（含碰/杠），排除别人的牌和弃牌堆。框得不准就拖动四角调整，或在照片上重新拖一个框。")
+                Text("拍完会自动框住你自己的牌（含碰/杠），排除别人的牌和弃牌堆。框得不准就拖四角或四边调整，或在照片上重新拖一个框。")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -1575,30 +1575,52 @@ private struct CropView: View {
                 .contentShape(Rectangle())
                 .gesture(moveGesture)
 
-            ForEach(Corner.allCases, id: \.self) { corner in
-                handle
-                    .position(point(for: corner, in: rect))
-                    .gesture(resizeGesture(corner))
+            // 四边在前、四角在后：ZStack 里后画的在上层，小框时四角压住四边不抢手势
+            ForEach(Handle.allCases, id: \.self) { h in
+                handleView(h)
+                    .position(point(for: h, in: rect))
+                    .gesture(resizeGesture(h))
             }
         }
     }
 
-    private var handle: some View {
-        Circle()
-            .fill(Color.white)
-            .frame(width: handleSize, height: handleSize)
+    /// 四角画圆点、四边画胶囊条——形状本身就提示这个把手只动一条边还是两条
+    private func handleView(_ h: Handle) -> some View {
+        ZStack {
+            Color.clear                                   // 撑开触摸区，比可见图形大一圈
+                .frame(width: handleSize + 16, height: handleSize + 16)
+            Group {
+                if h.isCorner {
+                    Circle().frame(width: handleSize, height: handleSize)
+                } else {
+                    Capsule().frame(width: h.isHorizontalEdge ? 36 : 10,
+                                    height: h.isHorizontalEdge ? 10 : 36)
+                }
+            }
+            .foregroundStyle(.white)
             .shadow(radius: 2)
+        }
+        .contentShape(Rectangle())
     }
 
-    private enum Corner: CaseIterable { case tl, tr, bl, br }
+    /// 可拖动的把手：四角 + 四边中点。每个把手只记录自己牵动哪几条边，
+    /// 缩放逻辑因此对角和边是同一套，不用分情况写。
+    private enum Handle: CaseIterable {
+        case top, bottom, left, right
+        case topLeft, topRight, bottomLeft, bottomRight
 
-    private func point(for c: Corner, in rect: CGRect) -> CGPoint {
-        switch c {
-        case .tl: return CGPoint(x: rect.minX, y: rect.minY)
-        case .tr: return CGPoint(x: rect.maxX, y: rect.minY)
-        case .bl: return CGPoint(x: rect.minX, y: rect.maxY)
-        case .br: return CGPoint(x: rect.maxX, y: rect.maxY)
-        }
+        var movesLeft: Bool   { self == .left  || self == .topLeft  || self == .bottomLeft }
+        var movesRight: Bool  { self == .right || self == .topRight || self == .bottomRight }
+        var movesTop: Bool    { self == .top    || self == .topLeft    || self == .topRight }
+        var movesBottom: Bool { self == .bottom || self == .bottomLeft || self == .bottomRight }
+
+        var isCorner: Bool { (movesLeft || movesRight) && (movesTop || movesBottom) }
+        var isHorizontalEdge: Bool { self == .top || self == .bottom }
+    }
+
+    private func point(for h: Handle, in rect: CGRect) -> CGPoint {
+        CGPoint(x: h.movesLeft ? rect.minX : (h.movesRight ? rect.maxX : rect.midX),
+                y: h.movesTop  ? rect.minY : (h.movesBottom ? rect.maxY : rect.midY))
     }
 
     // MARK: 手势
@@ -1635,7 +1657,7 @@ private struct CropView: View {
             .onEnded { _ in dragBase = nil }
     }
 
-    private func resizeGesture(_ corner: Corner) -> some Gesture {
+    private func resizeGesture(_ h: Handle) -> some Gesture {
         DragGesture()
             .onChanged { v in
                 guard let cur = cropRect else { return }
@@ -1643,21 +1665,22 @@ private struct CropView: View {
                 if dragBase == nil { dragBase = base }
                 var minX = base.minX, minY = base.minY, maxX = base.maxX, maxY = base.maxY
                 let tx = v.translation.width, ty = v.translation.height
-                switch corner {
-                case .tl: minX += tx; minY += ty
-                case .tr: maxX += tx; minY += ty
-                case .bl: minX += tx; maxY += ty
-                case .br: maxX += tx; maxY += ty
-                }
+                // 只动这个把手牵着的边：四边把手动一条，四角动两条
+                if h.movesLeft   { minX += tx }
+                if h.movesRight  { maxX += tx }
+                if h.movesTop    { minY += ty }
+                if h.movesBottom { maxY += ty }
                 // 限制在图片范围内
                 minX = max(minX, imageRect.minX); minY = max(minY, imageRect.minY)
                 maxX = min(maxX, imageRect.maxX); maxY = min(maxY, imageRect.maxY)
-                // 最小尺寸（防止翻转/过小）
+                // 最小尺寸（防止翻转/过小）：把没被拖的那条边固定住
                 if maxX - minX < minCrop {
-                    if corner == .tl || corner == .bl { minX = maxX - minCrop } else { maxX = minX + minCrop }
+                    if h.movesLeft { minX = maxX - minCrop }
+                    else if h.movesRight { maxX = minX + minCrop }
                 }
                 if maxY - minY < minCrop {
-                    if corner == .tl || corner == .tr { minY = maxY - minCrop } else { maxY = minY + minCrop }
+                    if h.movesTop { minY = maxY - minCrop }
+                    else if h.movesBottom { maxY = minY + minCrop }
                 }
                 cropRect = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
             }
