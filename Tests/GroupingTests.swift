@@ -67,9 +67,10 @@ do {
            "G3 手牌+明杠9筒", "melds=\(r.melds.map(meldDesc))")
 }
 
-// G4 手牌 + 暗杠（只露一张 → 孤立单张）
+// G4 手牌 + 暗杠（只露一张 → 孤立单张）。手牌 10 张 + 暗杠 3 张名额 = 13，张数成立，
+//    「猜暗杠」才会被采纳——这正是现在判定暗杠的依据。
 do {
-    var (boxes, x) = lay(cards(["1m","2m","3m","4m","5m","6m","7m","2p"]), from: 0)
+    var (boxes, x) = lay(cards(["1m","2m","3m","4m","5m","6m","7m","2p","3p","4p"]), from: 0)
     x += 8 * tileW
     let kong = lay(cards(["3p"]), from: x)           // 只露的那张明牌
     boxes += kong.boxes
@@ -167,6 +168,116 @@ do {
            && r.melds.contains { meldDesc($0) == "碰七条" }
            && r.melds.contains { meldDesc($0) == "暗杠二万" }, "G11 碰+暗杠明牌紧挨",
            "melds=\(r.melds.map(meldDesc))")
+}
+
+// G12 整桌入镜：自己的手牌（近、框大）+ 桌上一堆弃牌（远、框只有一半大）
+//     → 弃牌被近景过滤剔除，不混进手牌
+do {
+    let (hand, _) = lay(cards(["1m","2m","3m","4m","5m","6m","7m","8m","9m","1p","2p","3p","5p"]),
+                        from: 0, cy: 200)
+    // 桌上 16 张弃牌：高度只有一半，位置在上方（离镜头远）
+    var table: [TileBox] = []
+    var tx: CGFloat = 0
+    for i in 0..<16 {
+        table.append(TileBox(minX: tx, maxX: tx + tileW / 2, cy: CGFloat(20 + (i / 8) * 10),
+                             height: tileH / 2, card: c("7p")))
+        tx += tileW / 2 + 1
+        if i == 7 { tx = 0 }
+    }
+    let r = groupTiles(hand + table)
+    // 契约：桌上的牌不会被静默丢弃（丢弃同样会吃掉平摊的碰/杠），
+    // 而是并回手牌让张数对不上 → 由 hasValidTileCount 拦下并提示用户核对。
+    // 手牌簇本身仍要选对：排在最前面的 13 张就是自己的牌。
+    gcheck(Array(r.hand.prefix(13)) == cards(["1m","2m","3m","4m","5m","6m","7m","8m","9m","1p","2p","3p","5p"])
+           && !r.hasValidTileCount,
+           "G12 整桌入镜：手牌簇选对，多余的牌让张数对不上而被拦下",
+           "hand=\(r.hand.count) valid=\(r.hasValidTileCount)")
+}
+
+// G13 桌上的牌比自己的手牌还多 → 仍以「近」为准，不会被张数压过去
+do {
+    let (hand, _) = lay(cards(["1m","2m","3m","4m","5m","6m","7m","8m","9m","1p"]), from: 0, cy: 200)
+    var table: [TileBox] = []
+    var tx: CGFloat = 0
+    for _ in 0..<30 {
+        table.append(TileBox(minX: tx, maxX: tx + tileW / 2, cy: 20,
+                             height: tileH / 2, card: c("9s")))
+        tx += tileW / 2 + 1
+    }
+    let r = groupTiles(hand + table)
+    gcheck(Array(r.hand.prefix(10)) == cards(["1m","2m","3m","4m","5m","6m","7m","8m","9m","1p"])
+           && !r.hasValidTileCount,
+           "G13 远处 30 张多过手牌 10 张，手牌簇仍选对",
+           "hand=\(r.hand.count) valid=\(r.hasValidTileCount)")
+}
+
+// G14 认不准的簇 → 并回手牌，绝不静默丢弃（丢弃会连带吃掉真实的碰/杠）
+do {
+    let (hand, _) = lay(cards(["1m","2m","3m","4m","5m","6m","7m","8m","9m","1p","2p","3p","5p"]),
+                        from: 0, cy: 200)
+    // 稍远一排的两张杂牌：高度 0.7 倍（过得了近景过滤），但不同排、大小对不上
+    let stray = [TileBox(minX: 0, maxX: tileW * 0.7, cy: 100, height: tileH * 0.7, card: c("2p")),
+                 TileBox(minX: tileW, maxX: tileW * 1.7, cy: 100, height: tileH * 0.7, card: c("4p"))]
+    let r = groupTiles(hand + stray)
+    gcheck(r.hand.count == 15 && r.melds.isEmpty && !r.hasValidTileCount,
+           "G14 异排杂牌并回手牌，张数对不上被拦下",
+           "hand=\(r.hand.count) valid=\(r.hasValidTileCount)")
+}
+
+// G14b 手牌摆成两排（大小相当、不同排）→ 合并成一副手牌，不丢弃
+do {
+    let (front, _) = lay(cards(["3m","5m","8m","8m","5p","6p","7p"]), from: 0, cy: 200)
+    // 后排略小（0.88 倍，透视），另起一行
+    var back: [TileBox] = []
+    var bx: CGFloat = 0
+    for card in cards(["2s","3s","4s","5s","6s","7s"]) {
+        back.append(TileBox(minX: bx, maxX: bx + tileW * 0.88, cy: 140,
+                            height: tileH * 0.88, card: card))
+        bx += tileW * 0.88 + 1
+    }
+    let r = groupTiles(front + back)
+    gcheck(r.hand.count == 13 && r.melds.isEmpty && r.hasValidTileCount,
+           "G14b 两排手牌合并成 13 张", "hand=\(r.hand.count)")
+}
+
+// G14c 平摊在桌上的碰/杠被透视压扁（高度只有手牌的一半）→ 必须仍然识别成碰。
+//      这是核心回归测试：任何「按大小丢框」的过滤都会先吃掉这一组。
+do {
+    let (hand, _) = lay(cards(["1m","2m","3m","4m","5m","6m","7m","8m","9m","2p"]), from: 0, cy: 200)
+    // 副露：同宽、压扁一半（俯拍角度下平摊牌的典型压缩比），另起一行
+    var pong: [TileBox] = []
+    var px = 20 * tileW
+    for card in cards(["5p","5p","5p"]) {
+        pong.append(TileBox(minX: px, maxX: px + tileW, cy: 120,
+                            height: tileH * 0.5, card: card))
+        px += tileW + 1
+    }
+    let r = groupTiles(hand + pong)
+    gcheck(r.hand.count == 10 && r.melds.count == 1 && meldDesc(r.melds[0]) == "碰五筒"
+           && r.hasValidTileCount,
+           "G14c 压扁一半的平摊碰仍识别为碰",
+           "hand=\(r.hand.count) melds=\(r.melds.map(meldDesc))")
+}
+
+// G15 张数不变量：手牌 + 3×副露
+do {
+    var (boxes, x) = lay(cards(["1m","2m","3m","4m","5m","6m","7m","8m","9m","2p"]), from: 0)
+    x += 8 * tileW
+    boxes += lay(cards(["5p","5p","5p"]), from: x).boxes
+    let r = groupTiles(boxes)
+    gcheck(r.effectiveTileCount == 13 && r.hasValidTileCount, "G15 手牌10+碰1组=13 张合法",
+           "effective=\(r.effectiveTileCount)")
+
+    let (short, _) = lay(cards(["1m","2m","3m","4m","5m"]), from: 0)
+    gcheck(!groupTiles(short).hasValidTileCount, "G15b 只识别到 5 张 → 张数不合法")
+}
+
+// G16 只拍自己的牌 → 13 张一张不少
+do {
+    let (boxes, _) = lay(cards(["1m","2m","3m","4m","5m","6m","7m","8m","9m","1p","2p","3p","5p"]), from: 0)
+    let r = groupTiles(boxes)
+    gcheck(r.hand.count == 13 && r.melds.isEmpty && r.hasValidTileCount,
+           "G16 只拍自己的牌一张不少", "hand=\(r.hand.count)")
 }
 
 print("— 二次放大区域 zoomRegion —")

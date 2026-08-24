@@ -74,17 +74,21 @@ actor LocalTileRecognizer {
 
         // 第一遍：整图识别。低阈值的框只用来估计「牌所在区域」，达标（≥ 正式阈值）的作候选结果
         let first = try detect(image, threshold: regionThreshold)
+
+        // 识别链路上不做任何按大小的丢弃——那会静默吃掉平摊在桌上的碰/杠。
+        // 桌上其他人的牌由裁剪页的自动框在像素层面先排除；万一没排干净，
+        // 由 hasValidTileCount 把张数对不上的情况提示给用户，而不是偷偷删掉。
         var finalDets = first.dets.filter { $0.score >= confidenceThreshold }
 
-        // 第二遍：牌只占画面一小部分时（整图缩到 640 后每张牌太小），
-        // 把牌区裁出来放大重新识别，用更清晰的结果替换
-        let boxesInImage = first.dets.map { d in
+        // 第二遍：牌只占画面一小部分时（整图缩到 640 后每张牌太小），把牌区裁出来放大重识别。
+        // 区域取「所有达标检测框」的并集，保证放大时不会裁掉任何一张已经认出来的牌。
+        let confidentRects = finalDets.map { d in
             CGRect(x: (d.x1 - first.dw) / first.scale,
                    y: (d.y1 - first.dh) / first.scale,
                    width: (d.x2 - d.x1) / first.scale,
                    height: (d.y2 - d.y1) / first.scale)
         }
-        if let region = zoomRegion(boxes: boxesInImage, imageSize: image.size),
+        if let region = zoomRegion(boxes: confidentRects, imageSize: image.size),
            let cropped = image.cgImage?.cropping(to: region) {
             let second = try detect(UIImage(cgImage: cropped), threshold: confidenceThreshold)
             if second.dets.count >= finalDets.count {   // 保底：第二遍反而更差就保留第一遍
@@ -103,6 +107,43 @@ actor LocalTileRecognizer {
             throw LocalRecognitionError.noTiles
         }
         return result
+    }
+
+    /// 只跑第一遍粗检 + 近景过滤，返回「自己的牌」所在区域的**相对位置**（0…1，左上原点）。
+    /// 供裁剪页在用户进入时自动画好选框；返回相对坐标是为了不受旋转/显示缩放影响。
+    /// 找不到近景牌时返回 nil（此时裁剪页退回「不画框」的老行为）。
+    func suggestHandRegion(imageData: Data) throws -> CGRect? {
+        try loadSessionIfNeeded()
+        guard let image = UIImage(data: imageData)?.normalizedUp(),
+              image.size.width > 0, image.size.height > 0 else {
+            throw LocalRecognitionError.invalidImage
+        }
+
+        let pass = try detect(image, threshold: regionThreshold)
+        guard !pass.dets.isEmpty else { return nil }
+
+        func toImageRect(_ d: Detection) -> CGRect {
+            CGRect(x: (d.x1 - pass.dw) / pass.scale,
+                   y: (d.y1 - pass.dh) / pass.scale,
+                   width: (d.x2 - d.x1) / pass.scale,
+                   height: (d.y2 - d.y1) / pass.scale)
+        }
+        let allRects = pass.dets.map(toImageRect)
+
+        // 按框高选种子 + 闭包 + 小幅外扩，见 myTilesRegion
+        guard var region = myTilesRegion(boxes: allRects, imageSize: image.size) else { return nil }
+
+        // 区域已经铺满整张画面 → 「没把握把你的牌单独框出来」，
+        // 裁剪页退回手动引导、识别整张照片，绝不画一个假装很准的框。
+        if region.width > image.size.width * 0.85 && region.height > image.size.height * 0.85 {
+            return nil
+        }
+        region = region.integral
+
+        return CGRect(x: region.minX / image.size.width,
+                      y: region.minY / image.size.height,
+                      width: region.width / image.size.width,
+                      height: region.height / image.size.height)
     }
 
     /// 一次完整推理：letterbox → ONNX → 解码 → NMS。
@@ -144,6 +185,28 @@ actor LocalTileRecognizer {
         return DetectPass(dets: nms(detections), scale: pre.scale, dw: pre.dw, dh: pre.dh)
     }
 
+#if DEBUG
+    /// 仅调试：把第一遍粗检的所有框（相对坐标 0…1，左上原点）连同置信度导出，
+    /// 用来在离线脚本里迭代「怎么从这些框里圈出自己的牌」，不必每次改算法都重编 App。
+    func debugDetections(imageData: Data) throws -> [[Double]] {
+        try loadSessionIfNeeded()
+        guard let image = UIImage(data: imageData)?.normalizedUp(),
+              image.size.width > 0, image.size.height > 0 else {
+            throw LocalRecognitionError.invalidImage
+        }
+        let pass = try detect(image, threshold: regionThreshold)
+        let W = image.size.width, H = image.size.height
+        return pass.dets.map { d in
+            let x = (d.x1 - pass.dw) / pass.scale
+            let y = (d.y1 - pass.dh) / pass.scale
+            return [Double(x / W), Double(y / H),
+                    Double((d.x2 - d.x1) / pass.scale / W),
+                    Double((d.y2 - d.y1) / pass.scale / H),
+                    Double(d.score), Double(d.classId)]
+        }
+    }
+#endif
+
     // MARK: - 预处理（letterbox → RGB/255 → CHW）
 
     private func preprocess(_ image: UIImage) -> (tensor: [Float], scale: CGFloat, dw: CGFloat, dh: CGFloat)? {
@@ -165,9 +228,8 @@ actor LocalTileRecognizer {
                                   bitsPerComponent: 8, bytesPerRow: bytesPerRow,
                                   space: CGColorSpaceCreateDeviceRGB(),
                                   bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
-        // 翻转坐标系，使绘制结果为「左上原点」的栅格，牌面朝上
-        ctx.translateBy(x: 0, y: s)
-        ctx.scaleBy(x: 1, y: -1)
+        // 位图上下文原点在左下，而其内存首行对应图像顶行：直接 draw 得到的就是
+        // 「左上原点、牌面朝上」的栅格。此处不能再翻转 y——那会把整张图倒过来喂给模型。
         ctx.interpolationQuality = .medium
         ctx.draw(cg, in: CGRect(x: dw, y: dh, width: newW, height: newH))
 
@@ -190,6 +252,7 @@ actor LocalTileRecognizer {
         var classId: Int
         var cx: CGFloat { (x1 + x2) / 2 }
         var cy: CGFloat { (y1 + y2) / 2 }
+        var w: CGFloat { x2 - x1 }
         var h: CGFloat { y2 - y1 }
     }
 

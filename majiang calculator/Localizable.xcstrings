@@ -587,6 +587,9 @@
         }
       }
     },
+    "会自动框出你的牌" : {
+
+    },
     "元" : {
       "localizations" : {
         "en" : {
@@ -1041,6 +1044,40 @@
         }
       }
     },
+    "圈出自己的手牌" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Circle your own tiles"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圈出自己的手牌"
+          }
+        }
+      }
+    },
+    "圈出自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别更准" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Circle just your own tiles (including pongs/kongs) — excluding other players' tiles and the discard pile improves accuracy"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圈出自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别更准"
+          }
+        }
+      }
+    },
     "在底部选择花色与点数加入；点击已选牌可删除" : {
       "localizations" : {
         "en" : {
@@ -1058,6 +1095,7 @@
       }
     },
     "在照片上按住并拖动，画一个框只圈住你自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别会更准。" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1069,54 +1107,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在照片上按住并拖动，画一个框只圈住你自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别会更准。"
-          }
-        }
-      }
-    },
-    "圈出自己的手牌" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Circle your own tiles"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "圈出自己的手牌"
-          }
-        }
-      }
-    },
-    "圈出自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别更准" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Circle just your own tiles (including pongs/kongs) — excluding other players' tiles and the discard pile improves accuracy"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "圈出自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别更准"
-          }
-        }
-      }
-    },
-    "知道了" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Got it"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "知道了"
           }
         }
       }
@@ -1645,6 +1635,9 @@
         }
       }
     },
+    "拍完会自动框住你自己的牌（含碰/杠），排除别人的牌和弃牌堆。框得不准就拖动四角调整，或在照片上重新拖一个框。" : {
+
+    },
     "拍照" : {
       "localizations" : {
         "en" : {
@@ -1661,6 +1654,22 @@
         }
       }
     },
+    "拍照识别在主界面底部；这里是从相册里选一张已有的照片来识别。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo recognition is at the bottom of the main screen; this picks an existing photo from your library instead."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍照识别在主界面底部；这里是从相册里选一张已有的照片来识别。"
+          }
+        }
+      }
+    },
     "拍照识别手牌" : {
       "localizations" : {
         "en" : {
@@ -1673,22 +1682,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拍照识别手牌"
-          }
-        }
-      }
-    },
-    "框选自己的手牌 · 可旋转" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Circle your tiles · rotatable"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "框选自己的手牌 · 可旋转"
           }
         }
       }
@@ -2076,6 +2069,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "根 = 凑齐 4 张同牌（杠 / 手握 4 张 / 碰 + 第 4 张）。加底/关闭时，杠只按刮风下雨即时结算，不再翻倍进胡牌金额。"
+          }
+        }
+      }
+    },
+    "框选自己的手牌 · 可旋转" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Circle your tiles · rotatable"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "框选自己的手牌 · 可旋转"
           }
         }
       }
@@ -2515,6 +2524,22 @@
     "番数与金额按点炮胡、当前规则计；自摸另加。" : {
 
     },
+    "知道了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Got it"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "知道了"
+          }
+        }
+      }
+    },
     "碰" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2887,6 +2912,9 @@
         }
       }
     },
+    "识别到 %lld 张牌（应为 13 或 14），可能混入了桌上其他人的牌，或有漏识别。已回填识别结果，请核对后再分析。" : {
+
+    },
     "识别到超过 %lld 张牌，已保留前 %lld 张，请核对后再计算。" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3055,22 +3083,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "进张 %lld 张 · %lld 门"
-          }
-        }
-      }
-    },
-    "拍照识别在主界面底部；这里是从相册里选一张已有的照片来识别。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photo recognition is at the bottom of the main screen; this picks an existing photo from your library instead."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "拍照识别在主界面底部；这里是从相册里选一张已有的照片来识别。"
           }
         }
       }

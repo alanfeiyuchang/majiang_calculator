@@ -1,0 +1,12 @@
+.DS_Store
+
+# Xcode 个人设置
+xcuserdata/
+*.xcuserstate
+
+# 实拍评测数据集：照片不进仓库
+# 背景拍到了住处，且 26MB 进 git 历史就删不掉了。
+# 标注（labels.md / labels.json）、框（boxes.json）、编辑器与评测脚本都在版本控制里，
+# 照片本身请自行放回 data/ 后用 data/README.md 的步骤重新生成 preview/。
+data/*.HEIC
+data/preview/

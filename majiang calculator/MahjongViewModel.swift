@@ -5,6 +5,7 @@
 
 import Foundation
 import Combine
+import UIKit
 
 @MainActor
 final class MahjongViewModel: ObservableObject {
@@ -258,6 +259,13 @@ final class MahjongViewModel: ObservableObject {
 
     private let recognizer = LocalTileRecognizer()
 
+    /// 拍照/选图后自动定位「自己的牌」所在区域（相对坐标 0…1，左上原点），
+    /// 供裁剪页预先把选框画好。失败返回 nil——裁剪页退回不画框，用户仍可手动拖。
+    func suggestHandRegion(for image: UIImage) async -> CGRect? {
+        guard let data = image.jpegData(compressionQuality: 0.9) else { return nil }
+        return try? await recognizer.suggestHandRegion(imageData: data)
+    }
+
     /// 本地 AI 识别照片中的麻将牌，回填手牌并自动分析——不需要用户确认。
     /// 检测到副露/暗杠靠猜/张数截断时，分析结果照常算出，另附一条不阻断显示的提示。
     func recognizeAndCalculate(imageData: Data) async {
@@ -271,16 +279,25 @@ final class MahjongViewModel: ObservableObject {
             let truncated = applyRecognition(result)   // 内部会 clearResult()
             let b = appLanguageBundle()
 
+            // 张数不变量：手牌 + 3×副露 必须是 13 或 14。对不上说明混进了桌上其他人的牌、
+            // 或者有漏识别——这种情况下算出来的番数一定是错的，所以回填让用户改，但不自动分析。
+            guard result.hasValidTileCount else {
+                hintMessage = String(localized: "识别到 \(result.effectiveTileCount) 张牌（应为 13 或 14），可能混入了桌上其他人的牌，或有漏识别。已回填识别结果，请核对后再分析。", bundle: b)
+                return
+            }
+
             if canAnalyze {
                 completeCalculation()   // 内部先 clearResult() 再算；花猪/空手牌等仍会设 hintMessage 阻断
                 if hintMessage == nil {
+                    var notes: [String] = []
                     if result.guessedConcealedKong {
-                        recognitionNotice = String(localized: "已自动分组：\(melds.count) 副露（含暗杠——只露一张、靠猜，建议核对「桌上的牌」）。", bundle: b)
+                        notes.append(String(localized: "已自动分组：\(melds.count) 副露（含暗杠——只露一张、靠猜，建议核对「桌上的牌」）。", bundle: b))
                     } else if !melds.isEmpty {
-                        recognitionNotice = String(localized: "已自动分组：\(melds.count) 副露，建议核对「桌上的牌」。", bundle: b)
+                        notes.append(String(localized: "已自动分组：\(melds.count) 副露，建议核对「桌上的牌」。", bundle: b))
                     } else if truncated {
-                        recognitionNotice = String(localized: "识别到超过 \(maxConcealed) 张牌，已保留前 \(maxConcealed) 张。", bundle: b)
+                        notes.append(String(localized: "识别到超过 \(maxConcealed) 张牌，已保留前 \(maxConcealed) 张。", bundle: b))
                     }
+                    if !notes.isEmpty { recognitionNotice = notes.joined(separator: " ") }
                 }
             } else {
                 hintMessage = String(localized: "已识别 \(selectedTiles.count) 张，张数不构成可分析手牌，请核对后再分析。", bundle: b)

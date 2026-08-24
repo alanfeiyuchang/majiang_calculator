@@ -327,7 +327,8 @@ struct ContentView: View {
             .ignoresSafeArea()
         }
         .fullScreenCover(item: $pendingCrop) { item in
-            CropView(image: item.image, source: item.source) {
+            CropView(image: item.image, source: item.source,
+                     suggestRegion: { await viewModel.suggestHandRegion(for: $0) }) {
                 pendingCrop = nil
             } onRetake: {
                 let source = item.source
@@ -1323,11 +1324,13 @@ struct PendingImage: Identifiable {
     let source: ImageSource
 }
 
-/// 让用户把裁剪框拖到「只剩自己的手牌」，再交给模型识别，
-/// 避免把牌桌上其他人的牌、牌墙、弃牌也识别进来。
+/// 进页面先跑一遍粗检，自动把选框画在「自己的牌」上（含碰/杠），
+/// 框得不准用户可以拖动四角调整或重画——避免把牌桌上其他人的牌、牌墙、弃牌也识别进来。
 private struct CropView: View {
     let image: UIImage
     let source: ImageSource
+    /// 返回「自己的牌」区域的相对位置（0…1，左上原点）；nil = 没定位到，退回手动框选
+    var suggestRegion: (UIImage) async -> CGRect?
     var onCancel: () -> Void
     var onRetake: () -> Void
     var onCrop: (UIImage) -> Void
@@ -1337,6 +1340,11 @@ private struct CropView: View {
     @State private var imageRect: CGRect = .zero    // 图片在视图中的实际显示区域
     @State private var cropRect: CGRect? = nil        // 裁剪框；nil = 未框选，识别整张
     @State private var dragBase: CGRect? = nil        // 移动/缩放手势开始时的快照
+
+    @State private var isSuggesting = false           // 正在自动定位
+    @State private var suggestedUnitRect: CGRect? = nil   // 自动定位结果（相对坐标），待 layout 后落到视图坐标
+    @State private var didAutoFrame = false           // 本张图是否已自动画过框（用于文案提示）
+    @State private var frameToken = 0                 // 自动定位的代次，丢弃被旋转作废的旧结果
 
     @AppStorage("hasSeenCropTutorial") private var hasSeenCropTutorial = false
     @State private var showTutorialPopup = false
@@ -1365,16 +1373,18 @@ private struct CropView: View {
                         cropBox(rect)
                     }
                 }
-                .onAppear { setup(in: geo.size) }
+                .onAppear {
+                    setup(in: geo.size)
+                    autoFrame()
+                }
                 .onChange(of: geo.size) { _, newSize in
                     containerSize = newSize
                     layout()
+                    applySuggestionIfPossible()
                 }
             }
             .ignoresSafeArea(edges: .bottom)
-            .overlay(alignment: .top) {
-                if cropRect == nil { cropTutorialBanner }
-            }
+            .overlay(alignment: .top) { topBanner }
             .overlay(alignment: .bottom) { bottomBar }
             .navigationTitle(cropRect == nil ? "框选自己的手牌 · 可旋转" : "调整选区")
             .navigationBarTitleDisplayMode(.inline)
@@ -1402,12 +1412,27 @@ private struct CropView: View {
         }
     }
 
-    // 顶部：未框选时的常驻提示——教用户圈出自己的手牌以提高识别准确率
-    private var cropTutorialBanner: some View {
+    // 顶部常驻提示：定位中 / 已自动框好（可调整）/ 没定位到（请手动框）
+    @ViewBuilder
+    private var topBanner: some View {
+        if isSuggesting {
+            banner(icon: "viewfinder", text: "正在自动框选你的牌…", showsSpinner: true)
+        } else if cropRect != nil, didAutoFrame {
+            banner(icon: "checkmark.viewfinder", text: "已自动框出你的牌，框得不准可拖动四角调整")
+        } else if cropRect == nil {
+            banner(icon: "hand.draw.fill", text: "圈出自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别更准")
+        }
+    }
+
+    private func banner(icon: String, text: String, showsSpinner: Bool = false) -> some View {
         HStack(alignment: .top, spacing: 8) {
-            Image(systemName: "hand.draw.fill")
-                .font(.subheadline)
-            Text("圈出自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别更准")
+            if showsSpinner {
+                ProgressView().controlSize(.mini).tint(.white)
+            } else {
+                Image(systemName: icon)
+                    .font(.subheadline)
+            }
+            Text(text)
                 .font(.caption.weight(.medium))
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -1423,17 +1448,17 @@ private struct CropView: View {
         .allowsHitTesting(false)   // 不挡住下面的拖拽画框手势
     }
 
-    // 首次进入裁剪页时弹出一次：教用户拖框圈出自己的手牌
+    // 首次进入裁剪页时弹出一次：说明会自动画框，以及框不准时怎么改
     private var cropTutorialPopup: some View {
         ZStack {
             Color.black.opacity(0.45).ignoresSafeArea()
             VStack(spacing: 14) {
-                Image(systemName: "hand.draw.fill")
+                Image(systemName: "checkmark.viewfinder")
                     .font(.system(size: 34))
                     .foregroundStyle(Theme.accent)
-                Text("圈出自己的手牌")
+                Text("会自动框出你的牌")
                     .font(.headline)
-                Text("在照片上按住并拖动，画一个框只圈住你自己的手牌（含碰/杠），排除别人的牌和弃牌堆，识别会更准。")
+                Text("拍完会自动框住你自己的牌（含碰/杠），排除别人的牌和弃牌堆。框得不准就拖动四角调整，或在照片上重新拖一个框。")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -1466,6 +1491,7 @@ private struct CropView: View {
         VStack(spacing: 8) {
             if cropRect != nil {
                 Button {
+                    didAutoFrame = false
                     withAnimation { cropRect = nil }
                 } label: {
                     Label("清除框选", systemImage: "xmark.circle")
@@ -1587,6 +1613,7 @@ private struct CropView: View {
                 if let r = cropRect, r.width < minCrop || r.height < minCrop {
                     cropRect = nil
                 }
+                didAutoFrame = false   // 用户自己画过了，顶部不再显示「已自动框出」
             }
     }
 
@@ -1660,6 +1687,46 @@ private struct CropView: View {
         working = current.rotated90(clockwise: false)   // 逆时针
         cropRect = nil
         layout()
+        autoFrame()   // 旋转后原来的框没有意义了，按新朝向重新定位
+    }
+
+    // MARK: 自动框选
+
+    /// 跑一遍粗检定位「自己的牌」，把选框预先画好。用户随后可以拖动调整或清除。
+    private func autoFrame() {
+        let target = current
+        frameToken &+= 1
+        let token = frameToken
+        isSuggesting = true
+        didAutoFrame = false
+        Task {
+            let unit = await suggestRegion(target)
+            guard token == frameToken else { return }   // 期间又转了一次图，这次结果作废
+            isSuggesting = false
+            // 期间用户已经自己拖了框 → 不覆盖他的操作
+            guard let unit, cropRect == nil else { return }
+            suggestedUnitRect = unit
+            applySuggestionIfPossible()
+        }
+    }
+
+    /// 把相对坐标（0…1）的定位结果换算到当前显示区域并落成选框。
+    /// layout() 之后才有 imageRect，所以尺寸变化时会再调一次。
+    private func applySuggestionIfPossible() {
+        guard let unit = suggestedUnitRect, imageRect.width > 0, imageRect.height > 0 else { return }
+        var r = CGRect(x: imageRect.minX + unit.minX * imageRect.width,
+                       y: imageRect.minY + unit.minY * imageRect.height,
+                       width: unit.width * imageRect.width,
+                       height: unit.height * imageRect.height)
+            .intersection(imageRect)
+        guard r.width >= minCrop, r.height >= minCrop else {
+            suggestedUnitRect = nil
+            return
+        }
+        r = r.standardized
+        suggestedUnitRect = nil
+        didAutoFrame = true
+        withAnimation(.easeOut(duration: 0.25)) { cropRect = r }
     }
 
     private func performCrop() {

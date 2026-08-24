@@ -21,6 +21,9 @@ struct majiang_calculatorApp: App {
                 .environmentObject(langManager)
                 .environment(\.locale, langManager.locale)
                 .id(langManager.language)   // 切换语言时重建视图树，确保全部刷新
+                #if DEBUG
+                .task { if BoxEval.isRequested { await BoxEval.run() } }
+                #endif
         }
     }
 }
