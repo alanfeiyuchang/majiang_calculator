@@ -11,8 +11,8 @@
 | 项目 | 值 |
 |---|---|
 | Bundle ID | `ACM.majiang-calculator` |
-| 版本号 (Marketing Version) | `1.0` |
-| 构建号 (Build) | 提交前以 Xcode 工程当前值为准（写此文档时为 `5`） |
+| 版本号 (Marketing Version) | `1.2` |
+| 构建号 (Build) | 由 Xcode Cloud 递增，提交前以实际上传的为准 |
 | 最低系统 | iOS 17.0 |
 | 设备 | 仅 iPhone（TARGETED_DEVICE_FAMILY = 1） |
 | 开发团队 ID | `5V3HM8L9GT` |
@@ -94,6 +94,17 @@
 ```
 
 **更新内容（What's New / Release Notes，≤4000 字符）**
+
+> **1.2（当前版本）**
+```
+这一版重做了拍照识别。
+
+• 拍完自动框出你的牌：手牌和已经碰/杠的牌都在框里，桌上别人的牌、中间的弃牌堆留在框外。框得不准，拖四角或四边随手改。
+• 认牌更准。修好了一处影响识别质量的老问题，牌面认得比以前稳不少。
+• 桌上的碰/杠不再漏。平摊在桌上的副露以前常被当成别人的牌丢掉，现在能正常认出来。
+• 张数不对会明说。识别结果凑不齐 13 或 14 张时会提示你核对，不会闷头算出一副根本不存在的牌。
+• 修好了英文界面下几处仍显示中文的文案。
+```
 
 > 1.0 是首次发布，可填：
 ```
@@ -260,6 +271,17 @@ Note: this is a calculator and study tool. It contains no real-money or simulate
 **Keywords (English, ≤100, comma-separated)**
 ```
 mahjong,tenpai,shanten,sichuan mahjong,tile efficiency,waits,discard,calculator,fan,scoring,payout
+```
+
+**What's New (1.2, current)**
+```
+This update rebuilds photo recognition.
+
+• Your tiles get framed automatically. The box covers your hand and anything you've ponged or konged, and leaves out other players' tiles and the discard pile. If it's off, drag a corner or an edge.
+• Better recognition. Fixed a long-standing problem that was hurting accuracy — tiles read far more reliably now.
+• Melds on the table are no longer dropped. Pongs and kongs lying flat used to get mistaken for other players' tiles.
+• It tells you when the tile count is wrong. If what it read doesn't add up to 13 or 14, you get a prompt to check, instead of a score for a hand that was never on the table.
+• Fixed several labels that stayed in Chinese in the English interface.
 ```
 
 **What's New (1.0)**
