@@ -126,6 +126,7 @@ def compose(raw_path, out_path, caption, headline, subtitle, crop_top=0, crop_bo
 #   3_shanten  DEMO_HAND=1245678m123567p                       (13 tiles, 1-shanten, auto-scrolls to result)
 #   4_input    DEMO_HAND=345s123p DEMO_ANALYZE=0                (partial hand, stays unanalyzed)
 #   5_scoring  DEMO_HAND=1111223344556m DEMO_SHEET=6m           (清豪七 tenpai, pops fan-breakdown sheet)
+#   6_photo    从设置里「从相册选择识别手牌」挑一张 data/preview/*.jpg，停在裁剪页（自动框已画好）
 # DEMO_NOSCROLL=1 is a scratch-only env var (see ContentView.scrollToResult) — keep it if still present,
 # it just skips the auto-scroll-to-result animation so the top-of-page framing is captured cleanly.
 SCREENS = [
@@ -161,6 +162,13 @@ SCREENS = [
         headline="算番算钱，一步到位",
         subtitle="点开任意听牌，看番型明细与点炮/自摸金额",
         crop_top=140,
+    ),
+    dict(
+        raw="6_photo.png",
+        caption="四川麻将 · 听牌计算器",
+        headline="拍一张，自动认牌",
+        subtitle="自动框出你的手牌与碰杠，桌上别人的牌不会算进来",
+        crop_top=130,
     ),
 ]
 
