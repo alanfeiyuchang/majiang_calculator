@@ -180,7 +180,9 @@ struct ContentView: View {
 
     private let handColumns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
 
-    private var countHint: (String, Color) {
+    // 返回 LocalizedStringKey 而不是 String：Text(String) 不查本地化表，
+    // 英文界面下会一直显示中文。
+    private var countHint: (LocalizedStringKey, Color) {
         let n = viewModel.selectedTiles.count
         let green = Color(red: 0.2, green: 0.72, blue: 0.45)
         if n == 0 { return ("选入手牌", .secondary) }
@@ -1424,7 +1426,9 @@ private struct CropView: View {
         }
     }
 
-    private func banner(icon: String, text: String, showsSpinner: Bool = false) -> some View {
+    // text 必须是 LocalizedStringKey：换成普通 String 的话 Text 不会查本地化表，
+    // 界面会一直显示中文（之前重构横幅时就踩过这个坑）。
+    private func banner(icon: String, text: LocalizedStringKey, showsSpinner: Bool = false) -> some View {
         HStack(alignment: .top, spacing: 8) {
             if showsSpinner {
                 ProgressView().controlSize(.mini).tint(.white)
