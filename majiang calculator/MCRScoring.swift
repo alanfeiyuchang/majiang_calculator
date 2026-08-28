@@ -25,14 +25,47 @@
 //       一副面子不可能同时进两个块。
 //
 //  ── 需要说明的取舍 ────────────────────────────────────────────────
-//  · 杠的番：四杠 88（独占）；三杠 32 + 每个杠各自的 明杠 1 / 暗杠 2；
-//    两个及以下时 双明杠 4（吃掉两个明杠）、双暗杠 6（吃掉两个暗杠）。
-//  · 七对允许「4 张相同 = 两对」，与多数国标实现一致。
 //  · 无番和：除 花牌、自摸 外没有任何番型时计 8 分。
 //  · 和绝张、妙手回春、海底捞月、抢杠和 等场景番无法从牌面推断，由用户勾选。
+//  · 各地规则书有分歧的 5 处（字一色计不计混幺九、九莲宝灯计不计双暗刻、
+//    七对里 4 张能不能当两对、三杠之外要不要再单独计每个杠、边张/坎张/单钓将
+//    要不要跨解法就高）已经做成用户可选项，见 `MCROptions`；默认值 = 本文件
+//    一直以来的算法，设置页「规则细则」里改。
 //
 
 import Foundation
+
+// MARK: - 规则细则（各地规则书有分歧的地方）
+
+/// 国标各地规则书写法不一致的 5 处，交给用户按自己桌上的打法选。
+/// 5 项全部默认 `true` = App 一直以来的算法，改动才会影响分数。
+/// 字段名与两端设置键一一对应（iOS `RuleSettings` / Android 同名 camelCase）。
+struct MCROptions: Equatable {
+    /// 字一色是否同时计混幺九（+32）
+    var mcrZiYiSeCountsHunYaoJiu: Bool = true
+    /// 九莲宝灯是否同时计双暗刻（+2）
+    var mcrJiuLianCountsShuangAnKe: Bool = true
+    /// 七对里「4 张相同」是否可以当两对
+    var mcrSevenPairsAllowsQuadAsTwoPairs: Bool = true
+    /// 三杠时是否在 32 分之外再单独计每个杠（明杠 1 / 暗杠 2）
+    var mcrPerKongFanWithThreeKongs: Bool = true
+    /// 边张 / 坎张 / 单钓将：true = 跨解法就高不就低取最优；false = 只有听法唯一时才计
+    var mcrWaitFanHighestReading: Bool = true
+
+    init(
+        mcrZiYiSeCountsHunYaoJiu: Bool = true,
+        mcrJiuLianCountsShuangAnKe: Bool = true,
+        mcrSevenPairsAllowsQuadAsTwoPairs: Bool = true,
+        mcrPerKongFanWithThreeKongs: Bool = true,
+        mcrWaitFanHighestReading: Bool = true
+    ) {
+        self.mcrZiYiSeCountsHunYaoJiu = mcrZiYiSeCountsHunYaoJiu
+        self.mcrJiuLianCountsShuangAnKe = mcrJiuLianCountsShuangAnKe
+        self.mcrSevenPairsAllowsQuadAsTwoPairs = mcrSevenPairsAllowsQuadAsTwoPairs
+        self.mcrPerKongFanWithThreeKongs = mcrPerKongFanWithThreeKongs
+        self.mcrWaitFanHighestReading = mcrWaitFanHighestReading
+    }
+}
 
 // MARK: - 面子
 
@@ -206,8 +239,16 @@ private struct FanHit {
 
 private func points(_ name: String) -> Int { mcrFanPoints[name] ?? 0 }
 
+/// 由「规则细则」开关追加的排除：关掉某条时，让高番型把对应低番型吃掉
+private func mcrOptionalExcludes(_ options: MCROptions) -> [String: [String]] {
+    var extra: [String: [String]] = [:]
+    if !options.mcrZiYiSeCountsHunYaoJiu { extra["字一色"] = ["混幺九"] }
+    if !options.mcrJiuLianCountsShuangAnKe { extra["九莲宝灯"] = ["双暗刻"] }
+    return extra
+}
+
 /// 应用排除表并折算成 FanItem 列表 + 总分
-private func mcrFinalize(_ hits: [FanHit], flowers: Int) -> MCRScore {
+private func mcrFinalize(_ hits: [FanHit], flowers: Int, options: MCROptions) -> MCRScore {
     var merged: [String: Int] = [:]
     var order: [String] = []
     for h in hits where h.count > 0 {
@@ -217,9 +258,11 @@ private func mcrFinalize(_ hits: [FanHit], flowers: Int) -> MCRScore {
 
     // 不可重复原则：按原始命中集合一次性删除被包含的低番型
     let present = Set(merged.keys)
+    let optional = mcrOptionalExcludes(options)
     var removed = Set<String>()
     for name in present {
-        for victim in mcrFanExcludes[name] ?? [] where victim != name {
+        let victims = (mcrFanExcludes[name] ?? []) + (optional[name] ?? [])
+        for victim in victims where victim != name {
             removed.insert(victim)
         }
     }
@@ -558,7 +601,7 @@ private func mcrHonorFan(_ sets: [MCRSet], pair: MCRSet, ctx: MCRContext) -> [Fa
 }
 
 /// 暗刻 / 杠。`pungConcealed` 已把「点炮成刻」降为明刻。
-private func mcrConcealmentFan(_ sets: [MCRSet]) -> [FanHit] {
+private func mcrConcealmentFan(_ sets: [MCRSet], options: MCROptions) -> [FanHit] {
     var hits: [FanHit] = []
     let concealedPungs = sets.filter { $0.isPungLike && $0.concealed }.count
     switch concealedPungs {
@@ -576,8 +619,11 @@ private func mcrConcealmentFan(_ sets: [MCRSet]) -> [FanHit] {
         hits.append(FanHit(name: "四杠"))
     case 3:
         hits.append(FanHit(name: "三杠"))
-        if exposed > 0 { hits.append(FanHit(name: "明杠", count: exposed)) }
-        if hidden > 0 { hits.append(FanHit(name: "暗杠", count: hidden)) }
+        // 规则细则：三杠的 32 分之外要不要再单独算每个杠
+        if options.mcrPerKongFanWithThreeKongs {
+            if exposed > 0 { hits.append(FanHit(name: "明杠", count: exposed)) }
+            if hidden > 0 { hits.append(FanHit(name: "暗杠", count: hidden)) }
+        }
     default:
         if exposed == 2 { hits.append(FanHit(name: "双明杠")) }
         else if exposed == 1 { hits.append(FanHit(name: "明杠")) }
@@ -658,6 +704,20 @@ private func mcrWaitFan(winSet: MCRSet, winningTile: Int) -> [FanHit] {
     }
 }
 
+/// 严格读法下的听牌番：把和牌张在所有拆解里的读法都列出来，
+/// 只有全部读法一致（且确实是边张/坎张/单钓将）时才计，否则一分不给。
+private func mcrUniqueWaitFan(concealed: [Int], melds: [Meld], winningTile: Int) -> [FanHit] {
+    guard winningTile >= 0 else { return [] }
+    var readings = Set<String>()
+    for decomp in mcrDecompose(concealed: concealed, meldCount: melds.count) {
+        for set in decomp.handSets + [decomp.pair] where set.tiles.contains(winningTile) {
+            readings.insert(mcrWaitFan(winSet: set, winningTile: winningTile).first?.name ?? "")
+        }
+    }
+    guard readings.count == 1, let only = readings.first, !only.isEmpty else { return [] }
+    return [FanHit(name: only)]
+}
+
 // MARK: - 主入口
 
 /// 对一副完整的国标和牌算番。
@@ -665,7 +725,11 @@ private func mcrWaitFan(winSet: MCRSet, winningTile: Int) -> [FanHit] {
 ///   - concealed: 暗牌频率数组（长度 34，含所和那张，不含花牌）
 ///   - melds: 副露（吃/碰/明杠/暗杠）
 ///   - context: 和牌场景（自摸/点炮、圈风门风、场景番、花牌数）
-func scoreMCRHand(concealed: [Int], melds: [Meld], context: MCRContext) -> MCRScore {
+///   - options: 规则细则（各地有分歧的 5 处）；默认值 = 一直以来的算法
+func scoreMCRHand(
+    concealed: [Int], melds: [Meld], context: MCRContext,
+    options: MCROptions = MCROptions()
+) -> MCRScore {
     var full = concealed
     let meldFreq = meldsToFrequency34(melds)
     for i in 0..<mcrTileKinds { full[i] += meldFreq[i] }
@@ -678,7 +742,7 @@ func scoreMCRHand(concealed: [Int], melds: [Meld], context: MCRContext) -> MCRSc
 
     var best: MCRScore?
     func consider(_ hits: [FanHit]) {
-        let s = mcrFinalize(hits, flowers: flowers)
+        let s = mcrFinalize(hits, flowers: flowers, options: options)
         if best == nil || s.scoringPoints > best!.scoringPoints { best = s }
     }
 
@@ -695,7 +759,8 @@ func scoreMCRHand(concealed: [Int], melds: [Meld], context: MCRContext) -> MCRSc
             consider(hits)
         }
         // 七对 / 连七对
-        if mcrIsSevenPairs(full) {
+        if mcrIsSevenPairs(full,
+                           allowQuadAsTwoPairs: options.mcrSevenPairsAllowsQuadAsTwoPairs) {
             var hits: [FanHit] = [FanHit(name: mcrIsSevenShiftedPairs(full) ? "连七对" : "七对")]
             hits += mcrWholeHandFan(stats)
             hits += mcrSituationalFan(ctx: context, fullyConcealed: true,
@@ -734,6 +799,10 @@ func scoreMCRHand(concealed: [Int], melds: [Meld], context: MCRContext) -> MCRSc
 
     // ── 标准型：枚举所有拆解 × 和牌张归属 ────────────────────────
     let meldSets = mcrMeldSets(melds)
+    // 严格读法下听牌番与拆解无关，先一次算好
+    let strictWaitFan = options.mcrWaitFanHighestReading
+        ? []
+        : mcrUniqueWaitFan(concealed: concealed, melds: melds, winningTile: context.winningTile)
     for decomp in mcrDecompose(concealed: concealed, meldCount: melds.count) {
         let handAll = decomp.handSets + [decomp.pair]
         // 和牌张可能落在多副手内面子上，逐一试，取最优
@@ -760,12 +829,18 @@ func scoreMCRHand(concealed: [Int], melds: [Meld], context: MCRContext) -> MCRSc
             if mcrIsNineGates(full, melds: melds) { hits.append(FanHit(name: "九莲宝灯")) }
             hits += mcrStructureFan(sets, pair: pair)
             hits += mcrHonorFan(sets, pair: pair, ctx: context)
-            hits += mcrConcealmentFan(sets)
+            hits += mcrConcealmentFan(sets, options: options)
             hits += mcrCompositionFan(sets, pair: pair, stats: stats)
 
             let winSet: MCRSet? = winIdx >= 0 ? handAll[winIdx] : nil
             let singleWait = winSet?.kind == .pair
-            if let w = winSet { hits += mcrWaitFan(winSet: w, winningTile: context.winningTile) }
+            if options.mcrWaitFanHighestReading {
+                if let w = winSet {
+                    hits += mcrWaitFan(winSet: w, winningTile: context.winningTile)
+                }
+            } else {
+                hits += strictWaitFan
+            }
             hits += mcrSituationalFan(ctx: context, fullyConcealed: fullyConcealed,
                                       allMelded: allMelded, singleWait: singleWait)
             consider(hits)
@@ -821,7 +896,9 @@ func mcrEvaluateDiscards(
                 seatWind: settings.mcrSeatWind,
                 flowers: flowers
             )
-            return (card: wait, score: scoreMCRHand(concealed: winning, melds: melds, context: ctx))
+            return (card: wait,
+                    score: scoreMCRHand(concealed: winning, melds: melds, context: ctx,
+                                        options: settings.mcrOptions))
         }
         return MCREvaluatedDiscard(
             suggestion: s,

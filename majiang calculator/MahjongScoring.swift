@@ -40,6 +40,29 @@ struct RuleSettings: Codable, Equatable {
     /// 门风（自己的座位风）0–3 = 东南西北
     var mcrSeatWind: Int = 0
 
+    // MARK: 国标规则细则（各地规则书有分歧的 5 处，默认值 = 一直以来的算法）
+    /// 字一色是否同时计混幺九（+32）
+    var mcrZiYiSeCountsHunYaoJiu: Bool = true
+    /// 九莲宝灯是否同时计双暗刻（+2）
+    var mcrJiuLianCountsShuangAnKe: Bool = true
+    /// 七对里「四张相同」是否可以当两对
+    var mcrSevenPairsAllowsQuadAsTwoPairs: Bool = true
+    /// 三杠时是否再单独计每个杠（明杠 1 / 暗杠 2）
+    var mcrPerKongFanWithThreeKongs: Bool = true
+    /// 边张 / 坎张 / 单钓将：true = 跨解法就高不就低；false = 只有听法唯一时才计
+    var mcrWaitFanHighestReading: Bool = true
+
+    /// 打包成算番引擎用的选项
+    var mcrOptions: MCROptions {
+        MCROptions(
+            mcrZiYiSeCountsHunYaoJiu: mcrZiYiSeCountsHunYaoJiu,
+            mcrJiuLianCountsShuangAnKe: mcrJiuLianCountsShuangAnKe,
+            mcrSevenPairsAllowsQuadAsTwoPairs: mcrSevenPairsAllowsQuadAsTwoPairs,
+            mcrPerKongFanWithThreeKongs: mcrPerKongFanWithThreeKongs,
+            mcrWaitFanHighestReading: mcrWaitFanHighestReading
+        )
+    }
+
     /// 底分（0 番平胡的单家金额）
     var baseStake: Double = 1
     /// 封顶番数；0 = 不封顶（默认）
@@ -91,6 +114,9 @@ struct RuleSettings: Codable, Equatable {
         case qiXiaoDuiEnabled, haoHuaEnabled, menQingEnabled, duanYaoJiuEnabled
         case goldenHookFan, jiangEnabled, genMode, onlyKongCountsAsGen, kongBloomEnabled
         case gameMode, mcrPrevalentWind, mcrSeatWind
+        case mcrZiYiSeCountsHunYaoJiu, mcrJiuLianCountsShuangAnKe
+        case mcrSevenPairsAllowsQuadAsTwoPairs, mcrPerKongFanWithThreeKongs
+        case mcrWaitFanHighestReading
         case kongCountsAsGen  // 旧键，仅用于迁移
     }
 
@@ -99,6 +125,16 @@ struct RuleSettings: Codable, Equatable {
         gameMode = try c.decodeIfPresent(GameMode.self, forKey: .gameMode) ?? .sichuan
         mcrPrevalentWind = try c.decodeIfPresent(Int.self, forKey: .mcrPrevalentWind) ?? 0
         mcrSeatWind = try c.decodeIfPresent(Int.self, forKey: .mcrSeatWind) ?? 0
+        mcrZiYiSeCountsHunYaoJiu =
+            try c.decodeIfPresent(Bool.self, forKey: .mcrZiYiSeCountsHunYaoJiu) ?? true
+        mcrJiuLianCountsShuangAnKe =
+            try c.decodeIfPresent(Bool.self, forKey: .mcrJiuLianCountsShuangAnKe) ?? true
+        mcrSevenPairsAllowsQuadAsTwoPairs =
+            try c.decodeIfPresent(Bool.self, forKey: .mcrSevenPairsAllowsQuadAsTwoPairs) ?? true
+        mcrPerKongFanWithThreeKongs =
+            try c.decodeIfPresent(Bool.self, forKey: .mcrPerKongFanWithThreeKongs) ?? true
+        mcrWaitFanHighestReading =
+            try c.decodeIfPresent(Bool.self, forKey: .mcrWaitFanHighestReading) ?? true
         baseStake = try c.decodeIfPresent(Double.self, forKey: .baseStake) ?? 1
         fanCap = try c.decodeIfPresent(Int.self, forKey: .fanCap) ?? 0
         selfDrawAddsFan = try c.decodeIfPresent(Bool.self, forKey: .selfDrawAddsFan) ?? true
@@ -128,6 +164,11 @@ struct RuleSettings: Codable, Equatable {
         try c.encode(gameMode, forKey: .gameMode)
         try c.encode(mcrPrevalentWind, forKey: .mcrPrevalentWind)
         try c.encode(mcrSeatWind, forKey: .mcrSeatWind)
+        try c.encode(mcrZiYiSeCountsHunYaoJiu, forKey: .mcrZiYiSeCountsHunYaoJiu)
+        try c.encode(mcrJiuLianCountsShuangAnKe, forKey: .mcrJiuLianCountsShuangAnKe)
+        try c.encode(mcrSevenPairsAllowsQuadAsTwoPairs, forKey: .mcrSevenPairsAllowsQuadAsTwoPairs)
+        try c.encode(mcrPerKongFanWithThreeKongs, forKey: .mcrPerKongFanWithThreeKongs)
+        try c.encode(mcrWaitFanHighestReading, forKey: .mcrWaitFanHighestReading)
         try c.encode(baseStake, forKey: .baseStake)
         try c.encode(fanCap, forKey: .fanCap)
         try c.encode(selfDrawAddsFan, forKey: .selfDrawAddsFan)

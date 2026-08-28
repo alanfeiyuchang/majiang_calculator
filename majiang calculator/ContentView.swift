@@ -667,7 +667,8 @@ struct ContentView: View {
         return scoreMCRHand(
             concealed: freq,
             melds: viewModel.melds,
-            context: mcrContext(selfDrawn: selfDrawn ?? showSelfDraw, winningTile: i)
+            context: mcrContext(selfDrawn: selfDrawn ?? showSelfDraw, winningTile: i),
+            options: ruleStore.settings.mcrOptions
         )
     }
 
@@ -676,7 +677,8 @@ struct ContentView: View {
         scoreMCRHand(
             concealed: handToFrequency34(viewModel.handTiles),
             melds: viewModel.melds,
-            context: mcrContext(selfDrawn: selfDrawn, winningTile: -1)
+            context: mcrContext(selfDrawn: selfDrawn, winningTile: -1),
+            options: ruleStore.settings.mcrOptions
         )
     }
 

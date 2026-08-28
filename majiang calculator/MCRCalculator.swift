@@ -104,8 +104,13 @@ func mcrIsStandardForm(_ freq: [Int]) -> Bool {
 // MARK: - 牌型：七对 / 十三幺 / 全不靠
 
 /// 14 张是否七对（4 张相同按两对计，与国标常见实现一致）
-func mcrIsSevenPairs(_ freq: [Int]) -> Bool {
-    freq.reduce(0, +) == 14 && freq.allSatisfy { $0 % 2 == 0 }
+/// 七对：14 张两两成对。`allowQuadAsTwoPairs` 是规则细则开关——
+/// 关掉后「4 张相同」不能当两对，必须是 7 种各 2 张。
+func mcrIsSevenPairs(_ freq: [Int], allowQuadAsTwoPairs: Bool = true) -> Bool {
+    guard freq.reduce(0, +) == 14 else { return false }
+    return allowQuadAsTwoPairs
+        ? freq.allSatisfy { $0 % 2 == 0 }
+        : freq.allSatisfy { $0 == 0 || $0 == 2 }
 }
 
 /// 连七对：同一花色 7 个连续点数各成对（1–7 / 2–8 / 3–9）
