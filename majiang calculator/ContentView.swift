@@ -758,8 +758,35 @@ struct ContentView: View {
         if gameMode.isMCR { mcrWonCard } else { sichuanWonCard }
     }
 
+    /// 手牌 + 副露是否凑够真正的一副牌（14 张）。不满时只判牌型，不算番。
+    private var isFullMCRHand: Bool {
+        viewModel.handTiles.count + 3 * viewModel.melds.count == 14
+    }
+
+    /// 3n+1 侧：手牌 + 副露是否凑够 13 张。不满时听牌成立但算不出番分。
+    private var isFullMCRTenpai: Bool {
+        viewModel.handTiles.count + 3 * viewModel.melds.count == 13
+    }
+
+    /// 国标下这次分析能不能给出可信的番分（部分手牌不能）
+    private var mcrScoringAvailable: Bool { isFullMCRHand || isFullMCRTenpai }
+
     // 已和（国标）：番型明细 + 总分 + 起和判定
+    @ViewBuilder
     private var mcrWonCard: some View {
+        if !isFullMCRHand {
+            SectionCard(title: "牌型成立", systemImage: "checkmark.seal.fill") {
+                Text("这副牌的牌型能和，但手牌加副露还不满 14 张——缺的面子按「能凑成」处理，所以不算番分。补齐 14 张后才会给出番分与起和判定。")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        } else {
+            mcrWonScoreCard
+        }
+    }
+
+    private var mcrWonScoreCard: some View {
         SectionCard(title: "已和！", systemImage: "checkmark.seal.fill") {
             let scoreDiscard = mcrWonScore(selfDrawn: false)
             let scoreSelf = mcrWonScore(selfDrawn: true)
@@ -927,7 +954,7 @@ struct ContentView: View {
                 .pickerStyle(.segmented)
 
                 if gameMode.isMCR {
-                    mcrSpecialFanChips(selfDrawn: showSelfDraw)
+                    if mcrScoringAvailable { mcrSpecialFanChips(selfDrawn: showSelfDraw) }
                 } else {
                     specialFanChips(selfDrawn: showSelfDraw)
                 }
@@ -936,17 +963,19 @@ struct ContentView: View {
                     ForEach(Array(viewModel.waitingTiles.enumerated()), id: \.offset) { _, card in
                         VStack(spacing: 3) {
                             MahjongTileChip(card: card, onTap: {
-                                breakdownCard = card
+                                if !gameMode.isMCR || mcrScoringAvailable { breakdownCard = card }
                             }, large: true)
                             if gameMode.isMCR {
-                                let score = mcrScore(adding: card)
-                                Text("\(score.totalPoints) 分")
-                                    .font(.caption.weight(.bold).monospacedDigit())
-                                    .foregroundStyle(score.meetsMinimum ? Self.moneyGreen : .orange)
-                                if !score.meetsMinimum {
-                                    Text("不够起和")
-                                        .font(.caption2.weight(.semibold))
-                                        .foregroundStyle(.orange)
+                                if mcrScoringAvailable {
+                                    let score = mcrScore(adding: card)
+                                    Text("\(score.totalPoints) 分")
+                                        .font(.caption.weight(.bold).monospacedDigit())
+                                        .foregroundStyle(score.meetsMinimum ? Self.moneyGreen : .orange)
+                                    if !score.meetsMinimum {
+                                        Text("不够起和")
+                                            .font(.caption2.weight(.semibold))
+                                            .foregroundStyle(.orange)
+                                    }
                                 }
                             } else {
                                 let score = winScore(adding: card)
@@ -963,7 +992,9 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 if gameMode.isMCR {
-                    Text("国标起和 8 分：橙色的听牌即使和了也不够起和。点牌可看番型明细。")
+                    Text(mcrScoringAvailable
+                         ? "国标起和 8 分：橙色的听牌即使和了也不够起和。点牌可看番型明细。"
+                         : "手牌加副露不满 13 张，缺的面子按「能凑成」处理，所以这里只列听牌不算番分。")
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                 } else {
@@ -1029,7 +1060,9 @@ struct ContentView: View {
                     }
                 }
                 if evaluated.contains(where: { $0.maxPoints >= 0 }) {
-                    Text("分数按点炮和计；自摸、场景番另加。国标起和 8 分。")
+                    Text(mcrScoringAvailable
+                         ? "分数按点炮和计；自摸、场景番另加。国标起和 8 分。"
+                         : "手牌加副露不满 14 张，缺的面子按「能凑成」处理，所以只排向听/进张，不算番分。")
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                 }
@@ -1080,7 +1113,7 @@ struct ContentView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)
-                if e.maxPoints >= 0 {
+                if e.maxPoints >= 0, mcrScoringAvailable {
                     Text("最高 \(e.maxPoints) 分")
                         .font(.caption.weight(.bold).monospacedDigit())
                         .foregroundStyle(e.maxPoints >= mcrMinimumPoints ? Self.moneyGreen : .orange)
@@ -1097,9 +1130,11 @@ struct ContentView: View {
                     ForEach(Array(e.waitScores.enumerated()), id: \.offset) { _, ws in
                         VStack(spacing: 2) {
                             MahjongTileChip(card: ws.card)
-                            Text("\(ws.score.totalPoints) 分")
-                                .font(.caption2.weight(.bold).monospacedDigit())
-                                .foregroundStyle(ws.score.meetsMinimum ? Self.moneyGreen : .orange)
+                            if mcrScoringAvailable {
+                                Text("\(ws.score.totalPoints) 分")
+                                    .font(.caption2.weight(.bold).monospacedDigit())
+                                    .foregroundStyle(ws.score.meetsMinimum ? Self.moneyGreen : .orange)
+                            }
                         }
                     }
                 }
@@ -1303,6 +1338,10 @@ struct ContentView: View {
     private func keyboardCanAdd(_ card: MahjongCard) -> Bool {
         if let kind = inputTarget.meldKind {
             return viewModel.canAddMeld(kind, of: card)
+        }
+        // 花牌不占手牌名额（手牌满了也还能补花），每种只有一张
+        if card.suit.isFlower {
+            return gameMode.isMCR && viewModel.usedCount(of: card) < 1
         }
         return viewModel.canAddMore && viewModel.usedCount(of: card) < 4
     }

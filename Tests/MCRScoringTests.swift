@@ -459,6 +459,14 @@ do {
            "Q4 无番和 8 分", "got \(s.scoringPoints) \(mnames(s))")
 }
 
+do {
+    // 部分手牌（不满 14 张）牌型能成立，但不该给「无番和 8 分」
+    let s = scoreMCRHand(concealed: mfreq("123m456p789s11z"), melds: [],
+                         context: MCRContext(selfDrawn: false, winningTile: 27))
+    mcheck(s.scoringPoints == 0 && !s.meetsMinimum && !mnames(s).contains("无番和"),
+           "Q5 部分手牌不算无番和", "got \(s.scoringPoints) \(mnames(s))")
+}
+
 // MARK: - 打牌建议（国标）
 
 print("— 国标打牌建议 —")

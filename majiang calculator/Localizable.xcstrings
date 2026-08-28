@@ -6631,6 +6631,70 @@
           }
         }
       }
+    },
+    "牌型成立" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shape is valid"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "牌型成立"
+          }
+        }
+      }
+    },
+    "这副牌的牌型能和，但手牌加副露还不满 14 张——缺的面子按「能凑成」处理，所以不算番分。补齐 14 张后才会给出番分与起和判定。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This shape can win, but hand plus melds is still short of 14 tiles — the missing sets are assumed completable, so no points are scored. Fill it to 14 tiles to get points and the 8-point check."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这副牌的牌型能和，但手牌加副露还不满 14 张——缺的面子按「能凑成」处理，所以不算番分。补齐 14 张后才会给出番分与起和判定。"
+          }
+        }
+      }
+    },
+    "手牌加副露不满 13 张，缺的面子按「能凑成」处理，所以这里只列听牌不算番分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hand plus melds is short of 13 tiles — the missing sets are assumed completable, so waits are listed without points."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手牌加副露不满 13 张，缺的面子按「能凑成」处理，所以这里只列听牌不算番分。"
+          }
+        }
+      }
+    },
+    "手牌加副露不满 14 张，缺的面子按「能凑成」处理，所以只排向听/进张，不算番分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hand plus melds is short of 14 tiles — the missing sets are assumed completable, so discards are ranked by shanten and draws only, without points."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手牌加副露不满 14 张，缺的面子按「能凑成」处理，所以只排向听/进张，不算番分。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

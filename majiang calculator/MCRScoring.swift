@@ -774,7 +774,13 @@ func scoreMCRHand(concealed: [Int], melds: [Meld], context: MCRContext) -> MCRSc
         }
     }
 
-    return best ?? mcrFinalize([], flowers: flowers)
+    // 没有任何和牌拆解成立（手牌不满 14 张的「部分手牌」会走到这里）：
+    // 这时候不能给「无番和 8 分」——那是给真正和了却一个番种都没有的牌的。
+    return best ?? MCRScore(
+        items: flowers > 0 ? [FanItem(name: "花牌", fan: flowers, count: flowers)] : [],
+        totalPoints: flowers,
+        scoringPoints: 0
+    )
 }
 
 // MARK: - 打牌建议评估（国标）
