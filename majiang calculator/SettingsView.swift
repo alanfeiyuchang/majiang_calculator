@@ -14,9 +14,54 @@ struct SettingsView: View {
     @EnvironmentObject private var store: RuleSettingsStore
     @Environment(\.dismiss) private var dismiss
 
+    private var isMCR: Bool { store.settings.gameMode.isMCR }
+    private static let windNames = ["东", "南", "西", "北"]
+
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Picker("玩法", selection: $store.settings.gameMode) {
+                        ForEach(GameMode.allCases, id: \.self) { mode in
+                            Text(LocalizedStringKey(mode.label)).tag(mode)
+                        }
+                    }
+                } header: {
+                    Text("玩法")
+                } footer: {
+                    Text(LocalizedStringKey(store.settings.gameMode.summary))
+                }
+
+                if isMCR {
+                    Section {
+                        Picker("圈风", selection: $store.settings.mcrPrevalentWind) {
+                            ForEach(0..<4, id: \.self) { i in
+                                Text(LocalizedStringKey(Self.windNames[i])).tag(i)
+                            }
+                        }
+                        Picker("门风", selection: $store.settings.mcrSeatWind) {
+                            ForEach(0..<4, id: \.self) { i in
+                                Text(LocalizedStringKey(Self.windNames[i])).tag(i)
+                            }
+                        }
+                    } header: {
+                        Text("圈风 / 门风")
+                    } footer: {
+                        Text("影响圈风刻、门风刻（各 2 分）。门风就是自己的座位风。")
+                    }
+
+                    Section {
+                        NavigationLink {
+                            MCRFanReferenceView()
+                        } label: {
+                            Label("番型一览（81 种）", systemImage: "list.bullet.rectangle")
+                        }
+                    } footer: {
+                        Text("国标不按底分翻倍算钱，只算番分，起和 8 分。花牌每张 1 分，不计入起和分。拍照识别只认万/筒/条，风牌、箭牌、花牌需手动补入。")
+                    }
+                }
+
+                if !isMCR {
                 Section {
                     HStack {
                         Text("底分")
@@ -83,6 +128,7 @@ struct SettingsView: View {
                         Label("番型一览", systemImage: "list.bullet.rectangle")
                     }
                 }
+                }   // end if !isMCR
 
                 Section {
                     Button("恢复默认规则", role: .destructive) {
@@ -229,4 +275,57 @@ struct FanReferenceView: View {
 #Preview {
     SettingsView()
         .environmentObject(RuleSettingsStore())
+}
+
+// MARK: - 番型一览（国标 81 种）
+
+/// 国标 81 种番型，按分值分档列出，点开看含义
+struct MCRFanReferenceView: View {
+    @State private var explainName: String?
+
+    var body: some View {
+        List {
+            Section {
+                Text("国标起和 8 分：一副牌的番分（不含花牌）达到 8 分才能和。番型之间遵守不重复计算原则——已经被高番型「包含」的低番型不再另计。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            ForEach(MCRFanInfo.groups, id: \.points) { group in
+                Section("\(group.points) 分") {
+                    ForEach(group.names, id: \.self) { name in
+                        Button {
+                            explainName = name
+                        } label: {
+                            HStack(spacing: 6) {
+                                Text(ContentView.localizedFanName(name))
+                                    .foregroundStyle(.primary)
+                                Image(systemName: "info.circle")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                                Spacer()
+                                Text("\(group.points) 分")
+                                    .monospacedDigit()
+                                    .foregroundStyle(.secondary)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+        .navigationTitle("番型一览")
+        .navigationBarTitleDisplayMode(.inline)
+        .alert(
+            explainName.map { ContentView.localizedFanName($0) } ?? "",
+            isPresented: Binding(get: { explainName != nil },
+                                 set: { if !$0 { explainName = nil } })
+        ) {
+            Button("完成", role: .cancel) {}
+        } message: {
+            if let name = explainName, let text = MCRFanInfo.explanation(name) {
+                Text(verbatim: text)
+            }
+        }
+    }
 }

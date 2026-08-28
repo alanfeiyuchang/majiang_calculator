@@ -30,20 +30,63 @@ private struct MahjongTileChip: View {
     private var cornerRadius: CGFloat { width * 0.16 }
 
     var body: some View {
-        Image(card.assetName)
-            .resizable()
-            .interpolation(.high)
-            .aspectRatio(3.0 / 4.0, contentMode: .fit)
-            .frame(width: width, height: height)
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(Color.black.opacity(0.28), lineWidth: 1.25)
+        Group {
+            if card.hasImageAsset {
+                Image(card.assetName)
+                    .resizable()
+                    .interpolation(.high)
+                    .aspectRatio(3.0 / 4.0, contentMode: .fit)
+            } else {
+                TileFaceText(card: card)
             }
-            .shadow(color: .black.opacity(0.2), radius: 2.5, x: 0, y: 1.5)
-            .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            .onTapGesture { onTap?() }
-            .accessibilityLabel(card.displayText)
+        }
+        .frame(width: width, height: height)
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .strokeBorder(Color.black.opacity(0.28), lineWidth: 1.25)
+        }
+        .shadow(color: .black.opacity(0.2), radius: 2.5, x: 0, y: 1.5)
+        .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .onTapGesture { onTap?() }
+        .accessibilityLabel(card.displayText)
+    }
+}
+
+/// 字牌 / 花牌没有牌面图（YOLO 模型也认不出），用象牙底 + 单字画一张
+private struct TileFaceText: View {
+    let card: MahjongCard
+
+    /// 中红、发绿、白蓝框；风牌墨黑；花牌用暖色
+    private var inkColor: Color {
+        switch card.suit {
+        case .jian:
+            switch card.rank {
+            case 1: return Color(red: 0.80, green: 0.16, blue: 0.16)   // 中
+            case 2: return Color(red: 0.10, green: 0.52, blue: 0.28)   // 发
+            default: return Color(red: 0.20, green: 0.40, blue: 0.78)  // 白
+            }
+        case .hua: return Color(red: 0.85, green: 0.45, blue: 0.10)
+        default: return Color(red: 0.16, green: 0.16, blue: 0.18)
+        }
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                LinearGradient(
+                    colors: [Color(red: 0.99, green: 0.98, blue: 0.94),
+                             Color(red: 0.94, green: 0.92, blue: 0.86)],
+                    startPoint: .top, endPoint: .bottom
+                )
+                Text(verbatim: card.rankHanDigit)
+                    .font(.system(size: geo.size.height * 0.5, weight: .bold))
+                    .foregroundStyle(inkColor)
+                    .minimumScaleFactor(0.4)
+                    .lineLimit(1)
+            }
+        }
+        .aspectRatio(3.0 / 4.0, contentMode: .fit)
     }
 }
 
@@ -109,8 +152,8 @@ private struct MeldChipGroup: View {
     var body: some View {
         VStack(spacing: 4) {
             HStack(spacing: 3) {
-                ForEach(0..<meld.tileCount, id: \.self) { _ in
-                    MahjongTileChip(card: meld.card, onTap: onRemove)
+                ForEach(Array(meld.tiles.enumerated()), id: \.offset) { _, tile in
+                    MahjongTileChip(card: tile, onTap: onRemove)
                 }
             }
             Text(LocalizedStringKey(meld.kind.rawValue))
@@ -133,6 +176,7 @@ private struct MeldChipGroup: View {
 
 private enum InputTarget: String, CaseIterable {
     case hand = "手牌"
+    case chow = "吃"
     case pong = "碰"
     case exposedKong = "明杠"
     case concealedKong = "暗杠"
@@ -140,10 +184,16 @@ private enum InputTarget: String, CaseIterable {
     var meldKind: Meld.Kind? {
         switch self {
         case .hand: return nil
+        case .chow: return .chow
         case .pong: return .pong
         case .exposedKong: return .exposedKong
         case .concealedKong: return .concealedKong
         }
+    }
+
+    /// 该玩法下可选的输入去向（吃只在国标出现）
+    static func cases(for mode: GameMode) -> [InputTarget] {
+        mode.isMCR ? allCases : allCases.filter { $0 != .chow }
     }
 }
 
@@ -166,6 +216,11 @@ struct ContentView: View {
     @State private var kongDischargeWin = false
     @State private var robbingKong = false
     @State private var earthly = false
+    // 国标场景番勾选（自摸侧：杠上开花 / 妙手回春；点炮侧：海底捞月 / 抢杠和；两侧通用：和绝张）
+    @State private var mcrLastTileDraw = false
+    @State private var mcrLastDiscard = false
+    @State private var mcrRobbingKong = false
+    @State private var mcrLastTileOfKind = false
     /// 点击听牌弹出番型明细
     @State private var breakdownCard: MahjongCard?
     /// DEBUG 截图用：直接以 sheet 呈现番型一览
@@ -180,10 +235,20 @@ struct ContentView: View {
 
     private let handColumns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
 
+    /// 当前玩法（四川 / 国标）
+    private var gameMode: GameMode { ruleStore.settings.gameMode }
+
+    /// 切玩法后把只属于上一个玩法的键盘状态收回来
+    private func syncGameMode(_ mode: GameMode) {
+        viewModel.gameMode = mode
+        if !mode.suits.contains(keyboardSuit) { keyboardSuit = .wan }
+        if !InputTarget.cases(for: mode).contains(inputTarget) { inputTarget = .hand }
+    }
+
     // 返回 LocalizedStringKey 而不是 String：Text(String) 不查本地化表，
     // 英文界面下会一直显示中文。
     private var countHint: (LocalizedStringKey, Color) {
-        let n = viewModel.selectedTiles.count
+        let n = viewModel.handTiles.count
         let green = Color(red: 0.2, green: 0.72, blue: 0.45)
         if n == 0 { return ("选入手牌", .secondary) }
         switch n % 3 {
@@ -216,12 +281,18 @@ struct ContentView: View {
                         // 手牌变了：上一局的场景番勾选作废
                         kongBloom = false; lastTileDraw = false; heavenly = false
                         kongDischargeWin = false; robbingKong = false; earthly = false
+                        mcrLastTileDraw = false; mcrLastDiscard = false
+                        mcrRobbingKong = false; mcrLastTileOfKind = false
                     }
+                }
+                .onChange(of: ruleStore.settings.gameMode) { _, mode in
+                    syncGameMode(mode)
                 }
                 .onChange(of: viewModel.hintMessage) { _, hint in
                     if hint != nil { scrollToResult(proxy) }
                 }
                 .onAppear {
+                    syncGameMode(ruleStore.settings.gameMode)
                     if viewModel.hasAnalyzed { scrollToResult(proxy) }
 #if DEBUG
                     // UI 调试（配合 MahjongViewModel 的 DEMO_HAND）：
@@ -248,7 +319,7 @@ struct ContentView: View {
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 bottomBar
             }
-            .navigationTitle("听牌计算器")
+            .navigationTitle(gameMode.isMCR ? "听牌计算器 · 国标" : "听牌计算器")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -301,12 +372,21 @@ struct ContentView: View {
             }
         }
         .sheet(item: $breakdownCard) { card in
-            FanBreakdownSheet(
-                card: card,
-                scoreDiscard: winScore(adding: card, selfDrawn: false),
-                scoreSelf: winScore(adding: card, selfDrawn: true)
-            )
-            .presentationDetents([.medium, .large])
+            if gameMode.isMCR {
+                MCRFanBreakdownSheet(
+                    card: card,
+                    scoreDiscard: mcrScore(adding: card, selfDrawn: false),
+                    scoreSelf: mcrScore(adding: card, selfDrawn: true)
+                )
+                .presentationDetents([.medium, .large])
+            } else {
+                FanBreakdownSheet(
+                    card: card,
+                    scoreDiscard: winScore(adding: card, selfDrawn: false),
+                    scoreSelf: winScore(adding: card, selfDrawn: true)
+                )
+                .presentationDetents([.medium, .large])
+            }
         }
         .photosPicker(isPresented: $showPhotoPicker, selection: $photoItem, matching: .images)
         .onChange(of: photoItem) { _, newItem in
@@ -388,7 +468,7 @@ struct ContentView: View {
         SectionCard(
             title: "手里的牌",
             systemImage: "square.grid.3x3.fill",
-            accessory: Text("\(viewModel.selectedTiles.count) / \(viewModel.maxConcealed)")
+            accessory: Text("\(viewModel.handTiles.count) / \(viewModel.maxConcealed)")
                 .monospacedDigit()
         ) {
             let (hint, hintColor) = countHint
@@ -489,12 +569,14 @@ struct ContentView: View {
 
     private var meldSection: some View {
         SectionCard(
-            title: "桌上的牌（碰 / 杠）",
+            title: gameMode.isMCR ? "桌上的牌（吃 / 碰 / 杠）" : "桌上的牌（碰 / 杠）",
             systemImage: "square.stack.3d.up.fill",
             accessory: Text("\(viewModel.melds.count) / 4 组").monospacedDigit()
         ) {
             if viewModel.melds.isEmpty {
-                Text("已碰、已杠的牌放这里：底部切到「碰 / 明杠 / 暗杠」后点牌加入。")
+                Text(gameMode.isMCR
+                     ? "已吃、已碰、已杠的牌放这里：底部切到「吃 / 碰 / 明杠 / 暗杠」后点牌加入。吃只能吃上家，但本工具不强制这一条——请自行确认这副吃是合法的。"
+                     : "已碰、已杠的牌放这里：底部切到「碰 / 明杠 / 暗杠」后点牌加入。")
                     .font(.footnote)
                     .foregroundStyle(.tertiary)
             } else {
@@ -535,8 +617,8 @@ struct ContentView: View {
 
     /// 手牌补上 card 后这副胡牌的番与钱
     private func winScore(adding card: MahjongCard, selfDrawn: Bool? = nil) -> WinScore {
-        var freq = handToFrequency27(viewModel.selectedTiles.map(\.card))
-        freq[card.tileIndex] += 1
+        var freq = handToFrequency27(viewModel.handTiles)
+        if card.tileIndex >= 0 { freq[card.tileIndex] += 1 }
         return scoreWinningHand(
             concealed: freq,
             melds: viewModel.melds,
@@ -548,10 +630,49 @@ struct ContentView: View {
     /// 3n+2 已和时整副牌的番与钱
     private func wonScore(selfDrawn: Bool) -> WinScore {
         scoreWinningHand(
-            concealed: handToFrequency27(viewModel.selectedTiles.map(\.card)),
+            concealed: handToFrequency27(viewModel.handTiles),
             melds: viewModel.melds,
             settings: ruleStore.settings,
             context: winContext(selfDrawn: selfDrawn)
+        )
+    }
+
+    // MARK: 算番（国标）
+
+    /// 当前勾选的场景番组成国标和牌上下文
+    private func mcrContext(selfDrawn: Bool, winningTile: Int) -> MCRContext {
+        MCRContext(
+            selfDrawn: selfDrawn,
+            winningTile: winningTile,
+            prevalentWind: ruleStore.settings.mcrPrevalentWind,
+            seatWind: ruleStore.settings.mcrSeatWind,
+            kongBloom: selfDrawn && kongBloom && hasKongMeld,
+            lastTileDraw: selfDrawn && mcrLastTileDraw,
+            lastDiscard: !selfDrawn && mcrLastDiscard,
+            robbingKong: !selfDrawn && mcrRobbingKong,
+            lastTileOfKind: mcrLastTileOfKind,
+            flowers: viewModel.flowerTiles.count
+        )
+    }
+
+    /// 手牌补上 card 后这副国标和牌的番分
+    private func mcrScore(adding card: MahjongCard, selfDrawn: Bool? = nil) -> MCRScore {
+        var freq = handToFrequency34(viewModel.handTiles)
+        let i = card.mcrIndex
+        if i >= 0 { freq[i] += 1 }
+        return scoreMCRHand(
+            concealed: freq,
+            melds: viewModel.melds,
+            context: mcrContext(selfDrawn: selfDrawn ?? showSelfDraw, winningTile: i)
+        )
+    }
+
+    /// 3n+2 已和时整副国标牌的番分。和牌张未知（用户直接输入了整手），按最优解读。
+    private func mcrWonScore(selfDrawn: Bool) -> MCRScore {
+        scoreMCRHand(
+            concealed: handToFrequency34(viewModel.handTiles),
+            melds: viewModel.melds,
+            context: mcrContext(selfDrawn: selfDrawn, winningTile: -1)
         )
     }
 
@@ -570,7 +691,9 @@ struct ContentView: View {
             analysisResult
         } else {
             SectionCard(title: "分析结果", systemImage: "questionmark.circle") {
-                Text("选牌后点「分析手牌」：手牌 3n+1 张算听牌/向听，3n+2 张给打牌建议；已碰、已杠的牌用底部「碰 / 明杠 / 暗杠」加到桌上。")
+                Text(gameMode.isMCR
+                     ? "选牌后点「分析手牌」：手牌 3n+1 张算听牌/向听，3n+2 张给打牌建议；已吃、已碰、已杠的牌用底部「吃 / 碰 / 明杠 / 暗杠」加到桌上。国标起和 8 分，花牌另计不进起和分。"
+                     : "选牌后点「分析手牌」：手牌 3n+1 张算听牌/向听，3n+2 张给打牌建议；已碰、已杠的牌用底部「碰 / 明杠 / 暗杠」加到桌上。")
                     .font(.footnote)
                     .foregroundStyle(.tertiary)
             }
@@ -618,8 +741,72 @@ struct ContentView: View {
         "\(localizedFanName(item.name)) \(fanItemText(item))"
     }
 
-    // 已和（3n+2 且成牌）：番型 + 结算金额
+    /// 一项国标番型的文字：「名 ×N 8 分」
+    static func mcrFanLine(_ item: FanItem) -> String {
+        let b = appLanguageBundle()
+        let name = localizedFanName(item.name)
+        let head = item.count > 1 ? "\(name) ×\(item.count)" : name
+        return "\(head) \(String(localized: "\(item.fan) 分", bundle: b))"
+    }
+
+    @ViewBuilder
     private var wonCard: some View {
+        if gameMode.isMCR { mcrWonCard } else { sichuanWonCard }
+    }
+
+    // 已和（国标）：番型明细 + 总分 + 起和判定
+    private var mcrWonCard: some View {
+        SectionCard(title: "已和！", systemImage: "checkmark.seal.fill") {
+            let scoreDiscard = mcrWonScore(selfDrawn: false)
+            let scoreSelf = mcrWonScore(selfDrawn: true)
+
+            mcrSpecialFanChips(selfDrawn: false)
+            mcrSpecialFanChips(selfDrawn: true)
+
+            HStack(spacing: 24) {
+                mcrPointsColumn("点炮和", scoreDiscard)
+                mcrPointsColumn("自摸和", scoreSelf)
+            }
+
+            Divider()
+            Text(verbatim: scoreDiscard.items.map { Self.mcrFanLine($0) }.joined(separator: " · "))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Self.moneyGreen)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("国标起和 8 分；花牌每张 1 分但不计入起和分。番型明细按「点炮和」列出。")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+        }
+    }
+
+    private func mcrPointsColumn(_ titleKey: LocalizedStringKey, _ score: MCRScore) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(titleKey)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Text(verbatim: Self.mcrTotalText(score))
+                .font(.subheadline.weight(.bold).monospacedDigit())
+                .foregroundStyle(score.meetsMinimum ? Self.moneyGreen : .orange)
+            if !score.meetsMinimum {
+                Text("不够起和")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.orange)
+            }
+        }
+    }
+
+    /// 「N 分」，含花牌时写成「N 分（含花 M）」
+    static func mcrTotalText(_ score: MCRScore) -> String {
+        let b = appLanguageBundle()
+        let flowers = score.totalPoints - score.scoringPoints
+        return flowers > 0
+            ? String(localized: "\(score.totalPoints) 分（含花 \(flowers)）", bundle: b)
+            : String(localized: "\(score.totalPoints) 分", bundle: b)
+    }
+
+    // 已和（四川）：番型 + 结算金额
+    private var sichuanWonCard: some View {
         SectionCard(title: "已和！", systemImage: "checkmark.seal.fill") {
             let scoreDiscard = wonScore(selfDrawn: false)
             let scoreSelf = wonScore(selfDrawn: true)
@@ -670,6 +857,25 @@ struct ContentView: View {
         }
     }
 
+    /// 一行国标场景番勾选胶囊
+    @ViewBuilder
+    private func mcrSpecialFanChips(selfDrawn: Bool) -> some View {
+        HStack(spacing: 8) {
+            Text(selfDrawn ? LocalizedStringKey("自摸时") : LocalizedStringKey("点炮时"))
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.tertiary)
+            if selfDrawn {
+                if hasKongMeld { fanChip("杠上开花", $kongBloom) }
+                fanChip("妙手回春", $mcrLastTileDraw)
+            } else {
+                fanChip("海底捞月", $mcrLastDiscard)
+                fanChip("抢杠和", $mcrRobbingKong)
+            }
+            fanChip("和绝张", $mcrLastTileOfKind)
+            Spacer(minLength: 0)
+        }
+    }
+
     private func fanChip(_ title: LocalizedStringKey, _ isOn: Binding<Bool>) -> some View {
         Button {
             withAnimation(.easeInOut(duration: 0.15)) {
@@ -711,35 +917,57 @@ struct ContentView: View {
                 accessory: Text("共 \(viewModel.waitingTiles.count) 门").monospacedDigit()
             ) {
                 Picker("结算方式", selection: $showSelfDraw) {
-                    Text("点炮").tag(false)
-                    Text("自摸").tag(true)
+                    Text(gameMode.isMCR ? "点炮和" : "点炮").tag(false)
+                    Text(gameMode.isMCR ? "自摸和" : "自摸").tag(true)
                 }
                 .pickerStyle(.segmented)
 
-                specialFanChips(selfDrawn: showSelfDraw)
+                if gameMode.isMCR {
+                    mcrSpecialFanChips(selfDrawn: showSelfDraw)
+                } else {
+                    specialFanChips(selfDrawn: showSelfDraw)
+                }
 
                 FlowWaitingLayout(spacing: 10) {
                     ForEach(Array(viewModel.waitingTiles.enumerated()), id: \.offset) { _, card in
-                        let score = winScore(adding: card)
                         VStack(spacing: 3) {
                             MahjongTileChip(card: card, onTap: {
                                 breakdownCard = card
                             }, large: true)
-                            Text("\(score.totalFan) 番")
-                                .font(.caption2.weight(.semibold).monospacedDigit())
-                                .foregroundStyle(.secondary)
-                            Text(moneyText(score.money))
-                                .font(.caption.weight(.bold).monospacedDigit())
-                                .foregroundStyle(Self.moneyGreen)
+                            if gameMode.isMCR {
+                                let score = mcrScore(adding: card)
+                                Text("\(score.totalPoints) 分")
+                                    .font(.caption.weight(.bold).monospacedDigit())
+                                    .foregroundStyle(score.meetsMinimum ? Self.moneyGreen : .orange)
+                                if !score.meetsMinimum {
+                                    Text("不够起和")
+                                        .font(.caption2.weight(.semibold))
+                                        .foregroundStyle(.orange)
+                                }
+                            } else {
+                                let score = winScore(adding: card)
+                                Text("\(score.totalFan) 番")
+                                    .font(.caption2.weight(.semibold).monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                                Text(moneyText(score.money))
+                                    .font(.caption.weight(.bold).monospacedDigit())
+                                    .foregroundStyle(Self.moneyGreen)
+                            }
                         }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text(showSelfDraw ? "金额为单家：自摸后三家各付这个数。点牌可看番型明细。"
-                                  : "金额为单家：点炮时放炮那家付这个数。点牌可看番型明细。")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                if gameMode.isMCR {
+                    Text("国标起和 8 分：橙色的听牌即使和了也不够起和。点牌可看番型明细。")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                } else {
+                    Text(showSelfDraw ? "金额为单家：自摸后三家各付这个数。点牌可看番型明细。"
+                                      : "金额为单家：点炮时放炮那家付这个数。点牌可看番型明细。")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
             }
         }
     }
@@ -752,7 +980,7 @@ struct ContentView: View {
             accessory: Text("进张 \(acceptanceTotal) 张").monospacedDigit()
         ) {
             if viewModel.acceptance.isEmpty {
-                Text("无有效进张（受缺一门所限）。")
+                Text(gameMode.isMCR ? "无有效进张。" : "无有效进张（受缺一门所限）。")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             } else {
@@ -782,22 +1010,97 @@ struct ContentView: View {
             systemImage: "hand.point.up.left.fill",
             accessory: Text("\(viewModel.discards.count) 种").monospacedDigit()
         ) {
-            let evaluated = evaluateDiscards(
-                viewModel.discards,
-                cards: viewModel.selectedTiles.map(\.card),
-                melds: viewModel.melds,
-                settings: ruleStore.settings
-            )
-            VStack(spacing: 12) {
-                ForEach(Array(evaluated.prefix(6).enumerated()), id: \.element.id) { index, e in
-                    if index > 0 { Divider() }
-                    discardRow(e)
+            if gameMode.isMCR {
+                let evaluated = mcrEvaluateDiscards(
+                    viewModel.discards,
+                    cards: viewModel.handTiles,
+                    melds: viewModel.melds,
+                    settings: ruleStore.settings,
+                    flowers: viewModel.flowerTiles.count
+                )
+                VStack(spacing: 12) {
+                    ForEach(Array(evaluated.prefix(6).enumerated()), id: \.element.id) { index, e in
+                        if index > 0 { Divider() }
+                        mcrDiscardRow(e)
+                    }
+                }
+                if evaluated.contains(where: { $0.maxPoints >= 0 }) {
+                    Text("分数按点炮和计；自摸、场景番另加。国标起和 8 分。")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            } else {
+                let evaluated = evaluateDiscards(
+                    viewModel.discards,
+                    cards: viewModel.handTiles,
+                    melds: viewModel.melds,
+                    settings: ruleStore.settings
+                )
+                VStack(spacing: 12) {
+                    ForEach(Array(evaluated.prefix(6).enumerated()), id: \.element.id) { index, e in
+                        if index > 0 { Divider() }
+                        discardRow(e)
+                    }
+                }
+                if evaluated.contains(where: { $0.maxFan >= 0 }) {
+                    Text("番数与金额按点炮胡、当前规则计；自摸另加。")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
                 }
             }
-            if evaluated.contains(where: { $0.maxFan >= 0 }) {
-                Text("番数与金额按点炮胡、当前规则计；自摸另加。")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+        }
+    }
+
+    /// 打牌建议单行（国标）：弃牌 + 概览，下面列弃后听牌与各自分数
+    @ViewBuilder
+    private func mcrDiscardRow(_ e: MCREvaluatedDiscard) -> some View {
+        let s = e.suggestion
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Text("打")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                MahjongTileChip(card: s.discard)
+                VStack(alignment: .leading, spacing: 2) {
+                    if s.resultingShanten == 0 && e.waitScores.isEmpty {
+                        Text("听牌（空听）")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.orange)
+                    } else {
+                        Text(s.resultingShanten == 0 ? "听牌" : "向听 \(s.resultingShanten)")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(s.resultingShanten == 0 ? Self.moneyGreen : .primary)
+                    }
+                    Text("进张 \(s.acceptanceCount) 张 · \(s.acceptance.count) 门")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                if e.maxPoints >= 0 {
+                    Text("最高 \(e.maxPoints) 分")
+                        .font(.caption.weight(.bold).monospacedDigit())
+                        .foregroundStyle(e.maxPoints >= mcrMinimumPoints ? Self.moneyGreen : .orange)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background {
+                            Capsule().fill((e.maxPoints >= mcrMinimumPoints
+                                            ? Self.moneyGreen : Color.orange).opacity(0.12))
+                        }
+                }
+            }
+            if !e.waitScores.isEmpty {
+                FlowWaitingLayout(spacing: 8) {
+                    ForEach(Array(e.waitScores.enumerated()), id: \.offset) { _, ws in
+                        VStack(spacing: 2) {
+                            MahjongTileChip(card: ws.card)
+                            Text("\(ws.score.totalPoints) 分")
+                                .font(.caption2.weight(.bold).monospacedDigit())
+                                .foregroundStyle(ws.score.meetsMinimum ? Self.moneyGreen : .orange)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 30)
             }
         }
     }
@@ -893,18 +1196,25 @@ struct ContentView: View {
                         .padding(.horizontal, 4)
                     Spacer(minLength: 0)
                     Picker("加入到", selection: $inputTarget) {
-                        ForEach(InputTarget.allCases, id: \.self) { target in
+                        ForEach(InputTarget.cases(for: gameMode), id: \.self) { target in
                             Text(LocalizedStringKey(target.rawValue)).tag(target)
                         }
                     }
                     .pickerStyle(.segmented)
-                    .frame(maxWidth: 270)
+                    .frame(maxWidth: gameMode.isMCR ? 320 : 270)
                 }
 
                 suitPicker
 
+                if inputTarget == .chow {
+                    Text("吃：点起始牌，自动配成连续三张（如点「3万」= 吃 345 万）。分析工具不限制只能吃上家。")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
                 HStack(spacing: 6) {
-                    ForEach(1...9, id: \.self) { r in
+                    ForEach(1...keyboardSuit.rankCount, id: \.self) { r in
                         let card = MahjongCard(suit: keyboardSuit, rank: r)
                         let enabled = keyboardCanAdd(card)
                         Button {
@@ -917,22 +1227,34 @@ struct ContentView: View {
                                 viewModel.addCard(card)
                             }
                         } label: {
-                            Image(card.assetName)
-                                .resizable()
-                                .interpolation(.high)
-                                .aspectRatio(3.0 / 4.0, contentMode: .fit)
-                                .frame(height: 52)
-                                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                        .strokeBorder(Color.black.opacity(0.28), lineWidth: 1)
+                            Group {
+                                if card.hasImageAsset {
+                                    Image(card.assetName)
+                                        .resizable()
+                                        .interpolation(.high)
+                                        .aspectRatio(3.0 / 4.0, contentMode: .fit)
+                                } else {
+                                    TileFaceText(card: card)
                                 }
-                                .shadow(color: .black.opacity(0.18), radius: 1.5, y: 1)
-                                .frame(maxWidth: .infinity)
-                                .opacity(enabled ? 1 : 0.35)
+                            }
+                            .frame(height: 52)
+                            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                    .strokeBorder(Color.black.opacity(0.28), lineWidth: 1)
+                            }
+                            .shadow(color: .black.opacity(0.18), radius: 1.5, y: 1)
+                            .frame(maxWidth: .infinity)
+                            .opacity(enabled ? 1 : 0.35)
                         }
                         .buttonStyle(.plain)
                         .disabled(!enabled)
+                    }
+                    // 风(4)/箭(3) 比数牌少，补空位撑住等宽布局
+                    if keyboardSuit.rankCount < 9 {
+                        ForEach(0..<(9 - keyboardSuit.rankCount), id: \.self) { _ in
+                            Color.clear.frame(height: 52).frame(maxWidth: .infinity)
+                        }
                     }
                 }
             }
@@ -945,7 +1267,7 @@ struct ContentView: View {
 
     private var suitPicker: some View {
         HStack(spacing: 8) {
-            ForEach(MahjongCard.Suit.displayOrder, id: \.self) { suit in
+            ForEach(gameMode.suits, id: \.self) { suit in
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         keyboardSuit = suit
@@ -986,6 +1308,9 @@ struct ContentView: View {
         case .wan: return Color(red: 0.88, green: 0.28, blue: 0.24)
         case .tong: return Color(red: 0.18, green: 0.48, blue: 0.88)
         case .tiao: return Color(red: 0.15, green: 0.62, blue: 0.36)
+        case .feng: return Color(red: 0.36, green: 0.36, blue: 0.42)
+        case .jian: return Color(red: 0.70, green: 0.30, blue: 0.62)
+        case .hua: return Color(red: 0.85, green: 0.55, blue: 0.10)
         }
     }
 }
@@ -1114,6 +1439,112 @@ private struct FanBreakdownSheet: View {
             Text(verbatim: "\(ContentView.fanTotalText(score)) \(moneyText(score.money))")
                 .font(.body.weight(.semibold).monospacedDigit())
                 .foregroundStyle(Self.moneyGreen)
+        }
+    }
+}
+
+// MARK: - 番型明细（国标）
+
+private struct MCRFanBreakdownSheet: View {
+    let card: MahjongCard
+    /// 点炮和
+    let scoreDiscard: MCRScore
+    /// 自摸和
+    let scoreSelf: MCRScore
+    @Environment(\.dismiss) private var dismiss
+    @State private var explainItem: FanItem?
+
+    private static let moneyGreen = Color(red: 0.16, green: 0.65, blue: 0.40)
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    HStack(spacing: 12) {
+                        MahjongTileChip(card: card, large: true)
+                        Text("和「\(card.displayText)」")
+                            .font(.headline)
+                    }
+                    .listRowBackground(Color.clear)
+                }
+
+                Section {
+                    pointsRow("点炮和", scoreDiscard)
+                    pointsRow("自摸和", scoreSelf)
+                } header: {
+                    Text("番分")
+                } footer: {
+                    Text("国标起和 8 分；花牌每张 1 分但不计入起和分。")
+                }
+
+                Section {
+                    ForEach(scoreDiscard.items) { item in
+                        let hasInfo = MCRFanInfo.explanation(item.name) != nil
+                        Button {
+                            if hasInfo { explainItem = item }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Text(ContentView.localizedFanName(item.name))
+                                    .foregroundStyle(.primary)
+                                if item.count > 1 {
+                                    Text(verbatim: "×\(item.count)")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(.secondary)
+                                }
+                                if hasInfo {
+                                    Image(systemName: "info.circle")
+                                        .font(.caption)
+                                        .foregroundStyle(.tertiary)
+                                }
+                                Spacer()
+                                Text("\(item.fan) 分")
+                                    .monospacedDigit()
+                                    .foregroundStyle(.secondary)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(!hasInfo)
+                    }
+                } header: {
+                    Text("番型（按点炮和）")
+                } footer: {
+                    Text("点番型看含义")
+                }
+            }
+            .navigationTitle("番型明细")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("完成") { dismiss() }
+                }
+            }
+            .alert(
+                explainItem.map { ContentView.localizedFanName($0.name) } ?? "",
+                isPresented: Binding(get: { explainItem != nil },
+                                     set: { if !$0 { explainItem = nil } })
+            ) {
+                Button("完成", role: .cancel) {}
+            } message: {
+                if let item = explainItem, let text = MCRFanInfo.explanation(item.name) {
+                    Text(verbatim: text)
+                }
+            }
+        }
+    }
+
+    private func pointsRow(_ titleKey: LocalizedStringKey, _ score: MCRScore) -> some View {
+        HStack {
+            Text(titleKey)
+            Spacer()
+            Text(verbatim: ContentView.mcrTotalText(score))
+                .font(.body.weight(.semibold).monospacedDigit())
+                .foregroundStyle(score.meetsMinimum ? Self.moneyGreen : .orange)
+            if !score.meetsMinimum {
+                Text("不够起和")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.orange)
+            }
         }
     }
 }

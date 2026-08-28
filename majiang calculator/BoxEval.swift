@@ -96,6 +96,9 @@ enum BoxEval {
         case .wan:  suit = "m"
         case .tong: suit = "p"
         case .tiao: suit = "s"
+        case .feng: suit = "z"   // 模型认不出字牌，这里只为穷尽 switch
+        case .jian: suit = "z"
+        case .hua:  suit = "f"
         }
         return "\(c.rank)\(suit)"
     }

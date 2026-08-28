@@ -22,6 +22,18 @@ final class MahjongViewModel: ObservableObject {
         let remaining: Int
     }
 
+    /// 当前玩法（由 ContentView 从 RuleSettingsStore 同步进来）
+    @Published var gameMode: GameMode = .sichuan {
+        didSet {
+            guard oldValue != gameMode else { return }
+            // 切玩法时清空：四川的牌在国标下含义没变，但副露种类/牌张集合变了，
+            // 留着上一局的牌容易算出对不上的结果。
+            selectedTiles = []
+            melds = []
+            clearResult()
+        }
+    }
+
     @Published private(set) var selectedTiles: [SelectedTile] = []
     /// 桌上的牌（碰 / 明杠 / 暗杠）
     @Published private(set) var melds: [Meld] = []
@@ -53,6 +65,7 @@ final class MahjongViewModel: ObservableObject {
     // SIMCTL_CHILD_DEMO_RECOGNIZE=<图片绝对路径> 直接跑拍照识别管线（验证分组/二次放大）。
     init() {
         let env = ProcessInfo.processInfo.environment
+        if env["DEMO_MODE"] == "mcr" { gameMode = .mcr }   // 截图/调试用：直接进国标
         if let path = env["DEMO_RECOGNIZE"],
            let data = FileManager.default.contents(atPath: path) {
             Task { await self.recognizeAndCalculate(imageData: data) }
@@ -65,8 +78,15 @@ final class MahjongViewModel: ObservableObject {
             for ch in s {
                 if let d = ch.wholeNumberValue { digits.append(d) }
                 else {
-                    let suit: MahjongCard.Suit = ch == "m" ? .wan : (ch == "p" ? .tong : .tiao)
-                    out += digits.map { MahjongCard(suit: suit, rank: $0) }
+                    if ch == "z" {
+                        out += digits.map { $0 <= 4 ? MahjongCard(suit: .feng, rank: $0)
+                                                    : MahjongCard(suit: .jian, rank: $0 - 4) }
+                    } else if ch == "f" {
+                        out += digits.map { MahjongCard(suit: .hua, rank: $0) }
+                    } else {
+                        let suit: MahjongCard.Suit = ch == "m" ? .wan : (ch == "p" ? .tong : .tiao)
+                        out += digits.map { MahjongCard(suit: suit, rank: $0) }
+                    }
                     digits = []
                 }
             }
@@ -74,7 +94,13 @@ final class MahjongViewModel: ObservableObject {
         }
         if let meldSpec = env["DEMO_MELDS"] {
             for part in meldSpec.split(separator: ",") {
-                let kind: Meld.Kind = part.hasPrefix("p") ? .pong : (part.hasPrefix("k") ? .exposedKong : .concealedKong)
+                let kind: Meld.Kind
+                switch part.first {
+                case "p": kind = .pong
+                case "k": kind = .exposedKong
+                case "c": kind = .chow
+                default: kind = .concealedKong
+                }
                 if let card = parse(String(part.dropFirst())).first {
                     melds.append(Meld(kind: kind, card: card))
                 }
@@ -85,25 +111,43 @@ final class MahjongViewModel: ObservableObject {
     }
 #endif
 
+    /// 参与和牌的手牌（国标里花牌不参与，单独计分）
+    var handTiles: [MahjongCard] { selectedTiles.map(\.card).filter { !$0.suit.isFlower } }
+    /// 花牌（仅国标）
+    var flowerTiles: [MahjongCard] { selectedTiles.map(\.card).filter { $0.suit.isFlower } }
+
     /// 每组副露占掉 3 张的名额，手牌（暗牌）上限随之减少
     var maxConcealed: Int { 14 - 3 * melds.count }
 
-    var canAddMore: Bool { selectedTiles.count < maxConcealed }
+    var canAddMore: Bool { handTiles.count < maxConcealed }
 
-    /// 是否可分析：暗牌非空且为 3n+1 或 3n+2 张
+    /// 是否可分析：暗牌非空且为 3n+1 或 3n+2 张（花牌不算）
     var canAnalyze: Bool {
-        let c = selectedTiles.count
+        let c = handTiles.count
         return c > 0 && c % 3 != 0
     }
 
-    /// 某张牌在手牌 + 副露里合计已用张数
+    /// 某张牌在手牌 + 副露里合计已用张数。花牌每种只有一张。
     func usedCount(of card: MahjongCard) -> Int {
         selectedTiles.count(where: { $0.card == card })
-            + melds.reduce(0) { $0 + ($1.card == card ? $1.tileCount : 0) }
+            + melds.reduce(0) { $0 + $1.tiles.count(where: { $0 == card }) }
     }
 
+    /// 这张牌最多能用几张（花牌 1 张，其余 4 张）
+    func copyLimit(of card: MahjongCard) -> Int { card.suit.isFlower ? 1 : 4 }
+
     func addCard(_ card: MahjongCard) {
-        guard selectedTiles.count < maxConcealed else { return }
+        if card.suit.isFlower {
+            guard gameMode.isMCR else { return }
+            guard usedCount(of: card) < 1 else {
+                hintMessage = String(localized: "「\(card.displayText)」只有一张。", bundle: appLanguageBundle())
+                return
+            }
+            selectedTiles.append(SelectedTile(card: card))
+            clearResult()
+            return
+        }
+        guard handTiles.count < maxConcealed else { return }
         guard usedCount(of: card) < 4 else {
             hintMessage = String(localized: "「\(card.displayText)」在手牌和副露里已用满 4 张。", bundle: appLanguageBundle())
             return
@@ -121,9 +165,14 @@ final class MahjongViewModel: ObservableObject {
 
     /// 能否加一组该牌的副露（用于键盘禁用态）
     func canAddMeld(_ kind: Meld.Kind, of card: MahjongCard) -> Bool {
-        melds.count < maxMelds
-            && selectedTiles.count <= 14 - 3 * (melds.count + 1)
-            && usedCount(of: card) + kind.tileCount <= 4
+        guard gameMode.meldKinds.contains(kind) else { return false }
+        guard melds.count < maxMelds, handTiles.count <= 14 - 3 * (melds.count + 1) else { return false }
+        if kind.isChow {
+            // 吃：只能是数牌 1–7 起头，且三张各自都还有剩
+            guard card.suit.isNumbered, card.rank <= 7 else { return false }
+            return Meld(kind: .chow, card: card).tiles.allSatisfy { usedCount(of: $0) < 4 }
+        }
+        return usedCount(of: card) + kind.tileCount <= 4
     }
 
     func addMeld(_ kind: Meld.Kind, of card: MahjongCard) {
@@ -132,13 +181,17 @@ final class MahjongViewModel: ObservableObject {
             hintMessage = String(localized: "最多 4 组副露。", bundle: b)
             return
         }
-        guard selectedTiles.count <= 14 - 3 * (melds.count + 1) else {
+        guard handTiles.count <= 14 - 3 * (melds.count + 1) else {
             hintMessage = String(localized: "手牌太多，放不下这组副露——先删几张手牌（碰/杠会占掉 3 张名额）。", bundle: b)
             return
         }
-        guard usedCount(of: card) + kind.tileCount <= 4 else {
+        guard canAddMeld(kind, of: card) else {
             let kindName = String(localized: String.LocalizationValue(kind.rawValue), bundle: b)
-            hintMessage = String(localized: "「\(card.displayText)」总数会超过 4 张，无法\(kindName)。", bundle: b)
+            if kind.isChow {
+                hintMessage = String(localized: "吃只能用数牌，且要从 1–7 起头凑连续三张。", bundle: b)
+            } else {
+                hintMessage = String(localized: "「\(card.displayText)」总数会超过 4 张，无法\(kindName)。", bundle: b)
+            }
             return
         }
         melds.append(Meld(kind: kind, card: card))
@@ -157,16 +210,10 @@ final class MahjongViewModel: ObservableObject {
         clearResult()
     }
 
-    /// 按 万 → 条 → 筒，同花色按点数 1–9 排序
+    /// 万 → 条 → 筒 →（国标）风 → 箭 → 花，同门按点数排序
     func sortSelected() {
         guard selectedTiles.count > 1 else { return }
-        selectedTiles.sort { a, b in
-            let ca = a.card, cb = b.card
-            if ca.suit.displaySortIndex != cb.suit.displaySortIndex {
-                return ca.suit.displaySortIndex < cb.suit.displaySortIndex
-            }
-            return ca.rank < cb.rank
-        }
+        selectedTiles.sort { mcrCardOrder($0.card, $1.card) }
         clearResult()
     }
 
@@ -182,7 +229,13 @@ final class MahjongViewModel: ObservableObject {
             hintMessage = String(localized: "请先选择手牌。", bundle: appLanguageBundle())
             return
         }
-        let cards = selectedTiles.map(\.card)
+        if gameMode.isMCR { calculateMCR() } else { calculateSichuan() }
+    }
+
+    // MARK: 四川（血战到底）
+
+    private func calculateSichuan() {
+        let cards = handTiles
 
         // 缺一门：手牌 + 副露已含三门花色（花猪），无论如何都不能胡
         var combined = handToFrequency27(cards)
@@ -215,21 +268,52 @@ final class MahjongViewModel: ObservableObject {
                 discards = discardSuggestions(cards: cards, melds: melds)
             }
         } else {
-            // 3n：张数不构成可分析手牌
-            let m = melds.count
-            let listenCounts = (0...4 - m).map { "\(3 * $0 + 1)" }.joined(separator: "/")
-            hintMessage = String(localized: "当前副露 \(m) 组，手牌需为 \(listenCounts) 张（听牌）或再多 1 张（打牌建议）。当前手牌 \(cards.count) 张。", bundle: appLanguageBundle())
+            hintMessage = countHintMessage(cards.count)
         }
     }
 
-    /// 万 → 条 → 筒，同花色按点数排序
-    private func sortedCards(_ cards: [MahjongCard]) -> [MahjongCard] {
-        cards.sorted { a, b in
-            if a.suit.displaySortIndex != b.suit.displaySortIndex {
-                return a.suit.displaySortIndex < b.suit.displaySortIndex
-            }
-            return a.rank < b.rank
+    // MARK: 国标（MCR）
+
+    private func calculateMCR() {
+        let cards = handTiles
+        guard !cards.isEmpty else {
+            hintMessage = String(localized: "只有花牌——请再选入参与和牌的牌。", bundle: appLanguageBundle())
+            return
         }
+        let r = cards.count % 3
+        if r == 1 {
+            let sh = mcrHandShanten(cards, melds: melds)
+            shantenValue = sh
+            hasAnalyzed = true
+            if sh == 0 {
+                waitingTiles = mcrCalculateWaiting(cards: cards, melds: melds)
+                isDeadWait = waitingTiles.isEmpty
+            } else {
+                acceptance = mcrAcceptanceTiles(cards: cards, melds: melds)
+                    .map { AcceptanceTile(card: $0.card, remaining: $0.remaining) }
+            }
+        } else if r == 2 {
+            let sh = mcrHandShanten(cards, melds: melds)
+            shantenValue = sh
+            hasAnalyzed = true
+            if sh != -1 {
+                discards = mcrDiscardSuggestions(cards: cards, melds: melds)
+            }
+        } else {
+            hintMessage = countHintMessage(cards.count)
+        }
+    }
+
+    /// 3n 张（张数不构成可分析手牌）时的提示
+    private func countHintMessage(_ count: Int) -> String {
+        let m = melds.count
+        let listenCounts = (0...4 - m).map { "\(3 * $0 + 1)" }.joined(separator: "/")
+        return String(localized: "当前副露 \(m) 组，手牌需为 \(listenCounts) 张（听牌）或再多 1 张（打牌建议）。当前手牌 \(count) 张。", bundle: appLanguageBundle())
+    }
+
+    /// 万 → 条 → 筒 →（国标）风 → 箭 → 花，同门按点数排序
+    private func sortedCards(_ cards: [MahjongCard]) -> [MahjongCard] {
+        cards.sorted(by: mcrCardOrder)
     }
 
     /// 直接用一组牌替换当前手牌（用于 AI 识别结果回填），超过上限时截断
@@ -242,17 +326,20 @@ final class MahjongViewModel: ObservableObject {
     /// （限剩余名额、且每张牌手牌+副露合计 ≤ 4）。返回是否发生截断。
     @discardableResult
     func applyRecognition(_ result: RecognitionResult) -> Bool {
+        // 国标模式下保留用户已经手动补进去的花牌（模型认不出花牌）
+        let keptFlowers = gameMode.isMCR ? flowerTiles : []
         melds = Array(result.melds.prefix(maxMelds))
         var freq = meldsToFrequency27(melds)
         let cap = maxConcealed
         var kept: [MahjongCard] = []
         for card in sortedCards(result.hand) {
+            let i = card.tileIndex
             guard kept.count < cap else { break }
-            guard freq[card.tileIndex] < 4 else { continue }
-            freq[card.tileIndex] += 1
+            guard i >= 0, freq[i] < 4 else { continue }
+            freq[i] += 1
             kept.append(card)
         }
-        selectedTiles = kept.map { SelectedTile(card: $0) }
+        selectedTiles = (kept + keptFlowers).map { SelectedTile(card: $0) }
         clearResult()
         return kept.count < result.hand.count || result.melds.count > maxMelds
     }
@@ -279,10 +366,19 @@ final class MahjongViewModel: ObservableObject {
             let truncated = applyRecognition(result)   // 内部会 clearResult()
             let b = appLanguageBundle()
 
+            // 国标模式：模型只认 万/筒/条 27 类，风/箭/花永远认不出来，只能手动补。
+            let mcrNotice = gameMode.isMCR
+                ? String(localized: "国标模式：拍照只能识别万/筒/条，风牌、箭牌、花牌认不出来，请在键盘上手动补入。", bundle: b)
+                : nil
+
             // 张数不变量：手牌 + 3×副露 必须是 13 或 14。对不上说明混进了桌上其他人的牌、
             // 或者有漏识别——这种情况下算出来的番数一定是错的，所以回填让用户改，但不自动分析。
             guard result.hasValidTileCount else {
-                hintMessage = String(localized: "识别到 \(result.effectiveTileCount) 张牌（应为 13 或 14），可能混入了桌上其他人的牌，或有漏识别。已回填识别结果，请核对后再分析。", bundle: b)
+                if let mcrNotice {
+                    hintMessage = String(localized: "识别到 \(result.effectiveTileCount) 张牌（应为 13 或 14）。", bundle: b) + mcrNotice
+                } else {
+                    hintMessage = String(localized: "识别到 \(result.effectiveTileCount) 张牌（应为 13 或 14），可能混入了桌上其他人的牌，或有漏识别。已回填识别结果，请核对后再分析。", bundle: b)
+                }
                 return
             }
 
@@ -290,6 +386,7 @@ final class MahjongViewModel: ObservableObject {
                 completeCalculation()   // 内部先 clearResult() 再算；花猪/空手牌等仍会设 hintMessage 阻断
                 if hintMessage == nil {
                     var notes: [String] = []
+                    if let mcrNotice { notes.append(mcrNotice) }
                     if result.guessedConcealedKong {
                         notes.append(String(localized: "已自动分组：\(melds.count) 副露（含暗杠——只露一张、靠猜，建议核对「桌上的牌」）。", bundle: b))
                     } else if !melds.isEmpty {
@@ -301,6 +398,7 @@ final class MahjongViewModel: ObservableObject {
                 }
             } else {
                 hintMessage = String(localized: "已识别 \(selectedTiles.count) 张，张数不构成可分析手牌，请核对后再分析。", bundle: b)
+                if let mcrNotice { hintMessage = (hintMessage ?? "") + mcrNotice }
             }
         } catch {
             selectedTiles = []

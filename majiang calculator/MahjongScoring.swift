@@ -166,6 +166,13 @@ final class RuleSettingsStore: ObservableObject {
         } else {
             settings = RuleSettings()
         }
+#if DEBUG
+        // 截图/调试用：DEMO_MODE=mcr 直接进国标玩法
+        if let demo = ProcessInfo.processInfo.environment["DEMO_MODE"],
+           let mode = GameMode(rawValue: demo) {
+            settings.gameMode = mode
+        }
+#endif
     }
 
     /// 恢复默认规则——保留当前「玩法」，只把规则项打回默认
