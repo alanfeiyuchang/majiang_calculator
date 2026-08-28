@@ -327,11 +327,23 @@ final class MahjongViewModel: ObservableObject {
         // 退回用户已经手动补的，免得一次识别把他刚点好的花清空。
         let keptFlowers = gameMode.isMCR ? (result.flowers.isEmpty ? flowerTiles : result.flowers) : []
         melds = Array(result.melds.prefix(maxMelds))
-        var freq = meldsToFrequency27(melds)
+
+        // 「同一张牌最多 4 张」的计数下标要按玩法选：tileIndex 只覆盖万/筒/条（0…26），
+        // 字牌在它那里是 -1——直接用会把识别到的风/箭**整批静默丢掉**。
+        // 国标要用 mcrIndex（0…33，含东南西北中发白）。花牌不参与，两边都是 -1。
+        let tileSlot: (MahjongCard) -> Int = gameMode.isMCR ? { $0.mcrIndex } : { $0.tileIndex }
+        var freq = [Int](repeating: 0, count: 34)
+        for m in melds {
+            for t in m.tiles {
+                let i = tileSlot(t)
+                if i >= 0 { freq[i] += 1 }
+            }
+        }
+
         let cap = maxConcealed
         var kept: [MahjongCard] = []
         for card in sortedCards(result.hand) {
-            let i = card.tileIndex
+            let i = tileSlot(card)
             guard kept.count < cap else { break }
             guard i >= 0, freq[i] < 4 else { continue }
             freq[i] += 1
