@@ -6882,13 +6882,13 @@
         }
       }
     },
-    "国标模式：吃（顺子）认不出来会当成手牌，平摊的风牌和花牌也容易认错，请核对后再算。" : {
+    "国标模式：吃靠「摆得分开」认，和手牌里的顺子容易判错边；平摊的风牌也容易认错，请核对后再算。" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MCR: chow (runs) aren't detected and will land in your hand; winds and flowers lying flat are easily misread. Please double-check before analyzing."
+            "value" : "MCR: chow melds are identified by being set apart, so runs held in hand can be misassigned; winds lying flat are also easily misread. Please double-check before analyzing."
           }
         }
       }

@@ -360,16 +360,14 @@ final class MahjongViewModel: ObservableObject {
         defer { isRecognizing = false }
 
         do {
-            let result = try await recognizer.recognize(imageData: imageData,
-                                                        includeHonors: gameMode.isMCR)
+            let result = try await recognizer.recognize(imageData: imageData, mode: gameMode)
             let truncated = applyRecognition(result)   // 内部会 clearResult()
             let b = appLanguageBundle()
 
-            // 国标模式的两个已知短板（都不是「认不出字牌」——模型认得出，见 data/honors/）：
-            //   1) 分组只会把「3/4 张同牌」判成副露，吃（顺子）认不出来，会当成手牌
-            //   2) 平摊在桌面上的散牌容易南/北互认、花牌分不清具体是哪张
+            // 国标模式的已知短板：吃和手牌里的顺子牌面完全一样，只能靠「摆得分开」区分，
+            // 摆得紧就会判错边；平摊在桌面上的散牌还容易南/北互认。
             let mcrNotice = gameMode.isMCR
-                ? String(localized: "国标模式：吃（顺子）认不出来会当成手牌，平摊的风牌和花牌也容易认错，请核对后再算。", bundle: b)
+                ? String(localized: "国标模式：吃靠「摆得分开」认，和手牌里的顺子容易判错边；平摊的风牌也容易认错，请核对后再算。", bundle: b)
                 : nil
 
             // 张数不变量：手牌 + 3×副露 必须是 13 或 14。对不上说明混进了桌上其他人的牌、

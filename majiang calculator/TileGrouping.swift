@@ -2,10 +2,12 @@
 //  TileGrouping.swift
 //  majiang calculator
 //
-//  拍照识别后的空间聚类：把识别到的牌盒分成「手牌」与「桌上副露（碰/明杠/暗杠）」。
+//  拍照识别后的空间聚类：把识别到的牌盒分成「手牌」与「桌上副露」。
 //  纯几何逻辑，不依赖 UIKit / ONNX，便于独立断言测试（见 Tests/GroupingTests.swift）。
 //
-//  川麻无吃，副露只有：碰（3 张同牌）/ 明杠（4 张同牌）/ 暗杠（1 明 3 暗，只识别到那张明牌）。
+//  川麻副露只有：碰（3 张同牌）/ 明杠（4 张同牌）/ 暗杠（1 明 3 暗，只识别到那张明牌）。
+//  国标还有吃（同花色连续三张）——吃和手牌里的顺子在牌面上完全一样，
+//  区分只能靠**位置**：副露是一副一副单独摆在桌上的，聚类那步已经把它们分开了。
 //
 //  整桌入镜时，桌子中央的弃牌堆、对家的牌也会被模型检出。这里**不**按大小把它们滤掉——
 //  平摊的碰/杠又扁又比手牌远一点，任何按大小的丢弃都会先吃掉自己的副露。
@@ -102,10 +104,11 @@ private func medianHeight(_ boxes: [TileBox]) -> CGFloat {
 ///
 /// 步骤：① 按纵向中心分行；
 /// ② 行内按横向间距切成「簇」（间距 > 阈值即断开）；
-/// ③ 按「张数 × 牌面大小」选出手牌簇，其余簇按「相邻同牌」切段判定
-///    （几组副露紧挨也能拆）：每段 3 张同牌 → 碰、4 张同牌 → 明杠、孤立单张 → 暗杠；
+/// ③ 按「张数 × 牌面大小」选出手牌簇，其余簇从左往右贪心拆成副露
+///    （几组副露紧挨也能拆）：4 张同牌 → 明杠、3 张同牌 → 碰、
+///    3 张连号 → 吃（仅国标）、孤立单张 → 暗杠；
 ///    认不准的簇并回手牌——不丢弃任何检测到的牌。
-func groupTiles(_ boxes: [TileBox]) -> RecognitionResult {
+func groupTiles(_ boxes: [TileBox], mode: GameMode = .sichuan) -> RecognitionResult {
     // 花牌先摘出去再聚类。花牌不参与和牌、也不占 13/14 的名额，
     // 留在里面会把「手牌簇」撑大、还会让张数不变量永远对不上。
     // 它们通常也不和手牌摆在一排（亮在自己面前），本来就不该和手牌聚成一簇。
@@ -114,25 +117,25 @@ func groupTiles(_ boxes: [TileBox]) -> RecognitionResult {
                        .map(\.card)
     let playable = boxes.filter { !$0.card.suit.isFlower }
 
-    var result = groupPlayable(playable)
+    var result = groupPlayable(playable, mode: mode)
     result.flowers = flowers
     return result
 }
 
-private func groupPlayable(_ boxes: [TileBox]) -> RecognitionResult {
+private func groupPlayable(_ boxes: [TileBox], mode: GameMode) -> RecognitionResult {
     // 先严格解析：只有 3/4 张同牌才算副露，孤立单张**不**猜暗杠。
     // 「单张 = 暗杠」这条猜测会让几乎任何簇都能「解析成副露」，
     // 实拍里因此凭空造出好几组暗杠、张数暴涨（见 data/README.md 的识别评测）。
-    let strict = group(boxes, guessConcealedKong: false)
+    let strict = group(boxes, guessConcealedKong: false, mode: mode)
     if strict.hasValidTileCount { return strict }
 
     // 张数对不上，再试把孤立单张当暗杠——只有这样能让张数说得通时才采纳。
     // 真的暗杠（只露一张）会让 13/14 成立，被切开的手牌不会。
-    let lenient = group(boxes, guessConcealedKong: true)
+    let lenient = group(boxes, guessConcealedKong: true, mode: mode)
     return lenient.hasValidTileCount ? lenient : strict
 }
 
-private func group(_ boxes: [TileBox], guessConcealedKong: Bool) -> RecognitionResult {
+private func group(_ boxes: [TileBox], guessConcealedKong: Bool, mode: GameMode) -> RecognitionResult {
     guard !boxes.isEmpty else {
         return RecognitionResult(hand: [], melds: [], guessedConcealedKong: false)
     }
@@ -184,7 +187,8 @@ private func group(_ boxes: [TileBox], guessConcealedKong: Bool) -> RecognitionR
     // （手牌里混着单张和顺子，解析必然失败；整齐的 3/4 张同牌则会解析成功。）
     let parsed: [[Meld]?] = clusters.map {
         parseMeldRuns($0.sorted { $0.minX < $1.minX }.map(\.card),
-                      guessConcealedKong: guessConcealedKong)
+                      guessConcealedKong: guessConcealedKong,
+                      allowChow: mode.isMCR)
     }
     let handCandidates = clusters.indices.filter { parsed[$0] == nil }
     let pool = handCandidates.isEmpty ? Array(clusters.indices) : handCandidates
@@ -215,32 +219,58 @@ private func group(_ boxes: [TileBox], guessConcealedKong: Bool) -> RecognitionR
 /// 把一个非手牌簇解析成一组或多组副露（桌上几组碰/杠可能紧挨着没有空隙）。
 /// 按「相邻同牌」切段：3 张 = 碰、4 张 = 明杠、单张 = 暗杠只露的那张明牌；
 /// 出现 2 张同牌等认不准的段、或整簇没有一个 3/4 张的段，返回 nil（交给调用方决定并回还是丢弃）。
-private func parseMeldRuns(_ cards: [MahjongCard], guessConcealedKong: Bool) -> [Meld]? {
-    var runs: [[MahjongCard]] = []
-    for c in cards {
-        if let last = runs.last?.last, last == c {
-            runs[runs.count - 1].append(c)
-        } else {
-            runs.append([c])
-        }
-    }
+/// 三张能不能凑成一副吃：同花色、数牌、点数连号。摆放次序不限（有人会摆成 5-4-6）。
+private func chowStart(_ three: ArraySlice<MahjongCard>) -> MahjongCard? {
+    guard three.count == 3 else { return nil }
+    let suit = three.first!.suit
+    // 字牌没有顺子；花牌更不参与（这里本来也摘掉了）
+    guard suit == .wan || suit == .tong || suit == .tiao else { return nil }
+    guard three.allSatisfy({ $0.suit == suit }) else { return nil }
+    let ranks = three.map(\.rank).sorted()
+    guard ranks[1] == ranks[0] + 1, ranks[2] == ranks[1] + 1 else { return nil }
+    return MahjongCard(suit: suit, rank: ranks[0])
+}
+
+/// 把一簇牌解析成若干副露。
+///
+/// 从左往右**贪心消费**，而不是「按相同牌分段」——因为吃是三张不同的牌，
+/// 分段法根本表达不了。桌上的副露本来就是一副挨一副摆的，位置次序就是分组依据。
+///
+/// 匹配优先级：4 张同牌（杠）→ 3 张同牌（碰）→ 3 张连号（吃）。
+/// 杠排在碰前面，否则 4 张同牌会被吃掉前 3 张当成碰、剩一张落单。
+///
+/// - Parameter allowChow: 只有国标开。川麻无吃，开了会把手牌里的顺子误判成副露。
+private func parseMeldRuns(_ cards: [MahjongCard],
+                           guessConcealedKong: Bool,
+                           allowChow: Bool) -> [Meld]? {
     // 只露一张的暗杠：整簇就一张牌。仅在允许猜的时候成立。
     if guessConcealedKong, cards.count == 1 {
         return [Meld(kind: .concealedKong, card: cards[0])]
     }
-    guard runs.contains(where: { $0.count == 3 || $0.count == 4 }) else { return nil }
 
     var melds: [Meld] = []
-    for run in runs {
-        switch run.count {
-        case 3: melds.append(Meld(kind: .pong, card: run[0]))
-        case 4: melds.append(Meld(kind: .exposedKong, card: run[0]))
-        case 1:
-            guard guessConcealedKong else { return nil }   // 不猜暗杠时，单张让整簇解析失败
-            melds.append(Meld(kind: .concealedKong, card: run[0]))
-        default: return nil
+    var sawRealMeld = false              // 是否见到「实打实 3/4 张」的一副，而不是靠猜的暗杠
+    var i = 0
+    while i < cards.count {
+        let rest = cards.count - i
+        if rest >= 4, cards[i] == cards[i + 1], cards[i] == cards[i + 2], cards[i] == cards[i + 3] {
+            melds.append(Meld(kind: .exposedKong, card: cards[i])); sawRealMeld = true; i += 4; continue
         }
+        if rest >= 3, cards[i] == cards[i + 1], cards[i] == cards[i + 2] {
+            melds.append(Meld(kind: .pong, card: cards[i])); sawRealMeld = true; i += 3; continue
+        }
+        if allowChow, rest >= 3, let start = chowStart(cards[i..<(i + 3)]) {
+            melds.append(Meld(kind: .chow, card: start)); sawRealMeld = true; i += 3; continue
+        }
+        // 并排两张同牌凑不成任何一副。别把它拆成两个「暗杠」——
+        // 那正是实拍里凭空造出成堆杠的老毛病。
+        if rest >= 2, cards[i] == cards[i + 1] { return nil }
+        guard guessConcealedKong else { return nil }   // 不猜暗杠时，落单让整簇解析失败
+        melds.append(Meld(kind: .concealedKong, card: cards[i])); i += 1
     }
+
+    // 至少要有一副真看见 3/4 张的。整簇全是「猜出来的暗杠」不作数。
+    guard sawRealMeld else { return nil }
     return melds
 }
 

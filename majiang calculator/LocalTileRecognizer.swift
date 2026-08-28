@@ -68,9 +68,9 @@ actor LocalTileRecognizer {
         }
     }
 
-    /// - Parameter includeHonors: 是否收下风/箭/花。四川麻将传 false（桌上混进一张「中」
-    ///   只会把张数搞乱），国标传 true。
-    func recognize(imageData: Data, includeHonors: Bool = false) throws -> RecognitionResult {
+    /// - Parameter mode: 玩法。决定收不收风/箭/花（川麻不收，桌上混进一张「中」只会把张数搞乱），
+    ///   以及分组时认不认吃（川麻无吃，认了会把手牌里的顺子当成副露）。
+    func recognize(imageData: Data, mode: GameMode = .sichuan) throws -> RecognitionResult {
         try loadSessionIfNeeded()
         guard let image = UIImage(data: imageData)?.normalizedUp() else {
             throw LocalRecognitionError.invalidImage
@@ -102,11 +102,11 @@ actor LocalTileRecognizer {
 
         // 转成牌盒后做空间聚类分组。川麻只收万/筒/条，国标连风/箭/花一起收。
         let boxes: [TileBox] = finalDets.compactMap { d in
-            guard let c = card(for: d.classId, includeHonors: includeHonors) else { return nil }
+            guard let c = card(for: d.classId, includeHonors: mode.isMCR) else { return nil }
             return TileBox(minX: d.x1, maxX: d.x2, cy: d.cy, height: d.h, card: c)
         }
         guard !boxes.isEmpty else { throw LocalRecognitionError.noTiles }
-        let result = groupTiles(boxes)
+        let result = groupTiles(boxes, mode: mode)
         guard !result.hand.isEmpty || !result.melds.isEmpty || !result.flowers.isEmpty else {
             throw LocalRecognitionError.noTiles
         }

@@ -309,4 +309,79 @@ do {
            "Z4 横条区域→仍放大")
 }
 
+
+// MARK: - 吃（国标）
+
+// C1 国标：桌上一副吃 + 手牌
+do {
+    let hand = lay(cards(["1m","2m","4m","5m","7m","8m","1p","2p","4p","5p"]), from: 0)
+    let chow = lay(cards(["4s","5s","6s"]), from: hand.next + 40)
+    let r = groupTiles(hand.boxes + chow.boxes, mode: .mcr)
+    gcheck(r.melds.map(meldDesc) == ["吃四条"], "C1 国标一副吃", "melds=\(r.melds.map(meldDesc))")
+    gcheck(r.hand.count == 10, "C1 手牌 10 张", "hand=\(r.hand.count)")
+    gcheck(r.effectiveTileCount == 13, "C1 张数 13", "n=\(r.effectiveTileCount)")
+}
+
+// C2 同一份布局在川麻下**不能**认成吃：无吃，该并回手牌
+do {
+    let hand = lay(cards(["1m","2m","4m","5m","7m","8m","1p","2p","4p","5p"]), from: 0)
+    let chow = lay(cards(["4s","5s","6s"]), from: hand.next + 40)
+    let r = groupTiles(hand.boxes + chow.boxes, mode: .sichuan)
+    gcheck(r.melds.isEmpty, "C2 川麻不认吃", "melds=\(r.melds.map(meldDesc))")
+    gcheck(r.hand.count == 13, "C2 全并回手牌", "hand=\(r.hand.count)")
+}
+
+// C3 摆放次序颠倒的吃（5-4-6）也要认出来，且起始牌是最小的那张
+do {
+    let hand = lay(cards(["1m","2m","4m","5m","7m","8m","1p","2p","4p","5p"]), from: 0)
+    let chow = lay(cards(["5s","4s","6s"]), from: hand.next + 40)
+    let r = groupTiles(hand.boxes + chow.boxes, mode: .mcr)
+    gcheck(r.melds.map(meldDesc) == ["吃四条"], "C3 乱序吃→起始牌取最小", "melds=\(r.melds.map(meldDesc))")
+}
+
+// C4 一簇里两副吃紧挨着，要拆成两副
+do {
+    let hand = lay(cards(["1m","2m","4m","5m","7m","9m","1p"]), from: 0)
+    let two = lay(cards(["1s","2s","3s","7p","8p","9p"]), from: hand.next + 40)
+    let r = groupTiles(hand.boxes + two.boxes, mode: .mcr)
+    gcheck(r.melds.map(meldDesc) == ["吃一条","吃七筒"], "C4 一簇拆两副吃", "melds=\(r.melds.map(meldDesc))")
+    gcheck(r.effectiveTileCount == 13, "C4 张数 13", "n=\(r.effectiveTileCount)")
+}
+
+// C5 吃和碰混在一簇：碰优先（3 张同牌不能当成顺子的一部分）
+do {
+    let hand = lay(cards(["1m","2m","4m","5m","7m","9m","1p"]), from: 0)
+    let mix = lay(cards(["5p","5p","5p","1s","2s","3s"]), from: hand.next + 40)
+    let r = groupTiles(hand.boxes + mix.boxes, mode: .mcr)
+    gcheck(r.melds.map(meldDesc) == ["碰五筒","吃一条"], "C5 碰+吃同簇", "melds=\(r.melds.map(meldDesc))")
+}
+
+// C6 杠排在碰前面：4 张同牌不能被拆成「碰 + 落单一张」
+do {
+    let hand = lay(cards(["1m","2m","4m","5m","7m","9m","1p","2p","4p","5p"]), from: 0)
+    let kong = lay(cards(["8s","8s","8s","8s"]), from: hand.next + 40)
+    let r = groupTiles(hand.boxes + kong.boxes, mode: .mcr)
+    gcheck(r.melds.map(meldDesc) == ["明杠八条"], "C6 四张同牌→明杠不拆", "melds=\(r.melds.map(meldDesc))")
+}
+
+// C7 不同花色的连号不是吃（4万5万6筒）
+do {
+    gcheck(parseMeldRuns(cards(["4m","5m","6p"]), guessConcealedKong: false, allowChow: true) == nil,
+           "C7 跨花色连号不是吃")
+}
+
+// C8 字牌没有顺子：东南西凑不成吃
+do {
+    let honors = [MahjongCard(suit: .feng, rank: 1),
+                  MahjongCard(suit: .feng, rank: 2),
+                  MahjongCard(suit: .feng, rank: 3)]
+    gcheck(parseMeldRuns(honors, guessConcealedKong: false, allowChow: true) == nil, "C8 东南西不是吃")
+}
+
+// C9 并排两张同牌凑不成任何一副 → 整簇解析失败（不能拆成两个「暗杠」）
+do {
+    gcheck(parseMeldRuns(cards(["3p","3p"]), guessConcealedKong: true, allowChow: true) == nil,
+           "C9 两张同牌不拆成两个暗杠")
+}
+
 print(gFails == 0 ? "\n分组全部通过 ✅" : "\n❌ 分组 \(gFails) 个失败")

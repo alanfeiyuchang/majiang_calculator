@@ -22,9 +22,9 @@ enum BoxEval {
         ProcessInfo.processInfo.environment["MJ_EVAL"] == "1"
     }
 
-    /// MJ_EVAL_MCR=1：按国标模式识别（收风/箭/花）。默认川麻，只收万/筒/条。
-    private static var includeHonors: Bool {
-        ProcessInfo.processInfo.environment["MJ_EVAL_MCR"] == "1"
+    /// MJ_EVAL_MCR=1：按国标模式识别（收风/箭/花、认吃）。默认川麻。
+    private static var mode: GameMode {
+        ProcessInfo.processInfo.environment["MJ_EVAL_MCR"] == "1" ? .mcr : .sichuan
     }
 
     static func run() async {
@@ -85,7 +85,7 @@ enum BoxEval {
             }
         }
         do {
-            let r = try await recognizer.recognize(imageData: payload, includeHonors: includeHonors)
+            let r = try await recognizer.recognize(imageData: payload, mode: mode)
             let hand = r.hand.map(code).joined(separator: " ")
             let melds = r.melds.map { "\($0.kind.rawValue):\(code($0.card))" }.joined(separator: " ")
             let flowers = r.flowers.map(code).joined(separator: " ")
