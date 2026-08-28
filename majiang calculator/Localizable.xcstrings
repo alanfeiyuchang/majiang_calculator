@@ -3427,6 +3427,3210 @@
           }
         }
       }
+    },
+    "玩法" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Game"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "玩法"
+          }
+        }
+      }
+    },
+    "四川麻将（血战到底）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sichuan (Bloody Battle)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四川麻将（血战到底）"
+          }
+        }
+      }
+    },
+    "国标麻将" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chinese Official (MCR)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "国标麻将"
+          }
+        }
+      }
+    },
+    "只用万/筒/条，必须缺一门，无吃；按番数翻倍算钱。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Characters/dots/bamboo only, one suit must be missing, no chow; money doubles per fan."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只用万/筒/条，必须缺一门，无吃；按番数翻倍算钱。"
+          }
+        }
+      }
+    },
+    "含风/箭/花，可吃，81 种番型，起和 8 分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winds, dragons and flowers; chow allowed; 81 fan types; 8-point minimum."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "含风/箭/花，可吃，81 种番型，起和 8 分。"
+          }
+        }
+      }
+    },
+    "圈风" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevalent wind"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圈风"
+          }
+        }
+      }
+    },
+    "门风" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seat wind"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "门风"
+          }
+        }
+      }
+    },
+    "圈风 / 门风" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevalent / seat wind"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圈风 / 门风"
+          }
+        }
+      }
+    },
+    "东" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "East"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "东"
+          }
+        }
+      }
+    },
+    "南" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "South"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "南"
+          }
+        }
+      }
+    },
+    "西" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "West"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "西"
+          }
+        }
+      }
+    },
+    "北" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "North"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "北"
+          }
+        }
+      }
+    },
+    "影响圈风刻、门风刻（各 2 分）。门风就是自己的座位风。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affects Prevalent Wind and Seat Wind (2 points each). Your seat wind is the wind of your seat."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "影响圈风刻、门风刻（各 2 分）。门风就是自己的座位风。"
+          }
+        }
+      }
+    },
+    "番型一览（81 种）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fan reference (81 types)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "番型一览（81 种）"
+          }
+        }
+      }
+    },
+    "国标不按底分翻倍算钱，只算番分，起和 8 分。花牌每张 1 分，不计入起和分。拍照识别只认万/筒/条，风牌、箭牌、花牌需手动补入。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MCR scores points rather than doubling a base stake; you need 8 points to win. Each flower is worth 1 point but does not count toward the 8. Photo recognition only reads characters/dots/bamboo — winds, dragons and flowers must be added by hand."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "国标不按底分翻倍算钱，只算番分，起和 8 分。花牌每张 1 分，不计入起和分。拍照识别只认万/筒/条，风牌、箭牌、花牌需手动补入。"
+          }
+        }
+      }
+    },
+    "国标起和 8 分：一副牌的番分（不含花牌）达到 8 分才能和。番型之间遵守不重复计算原则——已经被高番型「包含」的低番型不再另计。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MCR needs 8 points to win, flowers excluded. Fan types follow the non-repeat principle: a lower fan already implied by a higher one is not counted again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "国标起和 8 分：一副牌的番分（不含花牌）达到 8 分才能和。番型之间遵守不重复计算原则——已经被高番型「包含」的低番型不再另计。"
+          }
+        }
+      }
+    },
+    "%lld 分" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pt"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pts"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 分"
+          }
+        }
+      }
+    },
+    "听牌计算器 · 国标" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenpai Calculator · MCR"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "听牌计算器 · 国标"
+          }
+        }
+      }
+    },
+    "桌上的牌（吃 / 碰 / 杠）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the table (chow / pong / kong)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "桌上的牌（吃 / 碰 / 杠）"
+          }
+        }
+      }
+    },
+    "已吃、已碰、已杠的牌放这里：底部切到「吃 / 碰 / 明杠 / 暗杠」后点牌加入。吃只能吃上家，但本工具不强制这一条——请自行确认这副吃是合法的。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Put your chows, pongs and kongs here: switch the keypad to Chow / Pong / Exposed kong / Concealed kong and tap a tile. A chow may only be claimed from the player to your left — this tool does not enforce that, so make sure the chow is legal."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已吃、已碰、已杠的牌放这里：底部切到「吃 / 碰 / 明杠 / 暗杠」后点牌加入。吃只能吃上家，但本工具不强制这一条——请自行确认这副吃是合法的。"
+          }
+        }
+      }
+    },
+    "吃：点起始牌，自动配成连续三张（如点「3万」= 吃 345 万）。分析工具不限制只能吃上家。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chow: tap the lowest tile and the run is completed for you (tap 3 characters = chow 3-4-5 characters). This tool does not restrict who you claimed it from."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "吃：点起始牌，自动配成连续三张（如点「3万」= 吃 345 万）。分析工具不限制只能吃上家。"
+          }
+        }
+      }
+    },
+    "吃" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chow"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "吃"
+          }
+        }
+      }
+    },
+    "选牌后点「分析手牌」：手牌 3n+1 张算听牌/向听，3n+2 张给打牌建议；已吃、已碰、已杠的牌用底部「吃 / 碰 / 明杠 / 暗杠」加到桌上。国标起和 8 分，花牌另计不进起和分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick tiles, then tap Analyse: 3n+1 tiles gives waits / shanten, 3n+2 gives discard advice. Add chows, pongs and kongs with the keypad's Chow / Pong / Exposed kong / Concealed kong tabs. MCR needs 8 points to win; flowers score separately and do not count toward the 8."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选牌后点「分析手牌」：手牌 3n+1 张算听牌/向听，3n+2 张给打牌建议；已吃、已碰、已杠的牌用底部「吃 / 碰 / 明杠 / 暗杠」加到桌上。国标起和 8 分，花牌另计不进起和分。"
+          }
+        }
+      }
+    },
+    "无有效进张。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No useful draws."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无有效进张。"
+          }
+        }
+      }
+    },
+    "点炮和" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By discard"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点炮和"
+          }
+        }
+      }
+    },
+    "自摸和" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Self-drawn"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自摸和"
+          }
+        }
+      }
+    },
+    "不够起和" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "under 8 pts"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不够起和"
+          }
+        }
+      }
+    },
+    "%lld 分（含花 %lld）" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld pt (incl. %2$lld flower)"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld pts (incl. %2$lld flower)"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 分（含花 %lld）"
+          }
+        }
+      }
+    },
+    "国标起和 8 分；花牌每张 1 分但不计入起和分。番型明细按「点炮和」列出。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MCR needs 8 points to win. Each flower scores 1 point but does not count toward the 8. The breakdown below is for a win by discard."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "国标起和 8 分；花牌每张 1 分但不计入起和分。番型明细按「点炮和」列出。"
+          }
+        }
+      }
+    },
+    "国标起和 8 分：橙色的听牌即使和了也不够起和。点牌可看番型明细。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MCR needs 8 points to win — waits shown in orange would not reach it. Tap a tile for the fan breakdown."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "国标起和 8 分：橙色的听牌即使和了也不够起和。点牌可看番型明细。"
+          }
+        }
+      }
+    },
+    "分数按点炮和计；自摸、场景番另加。国标起和 8 分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points are for a win by discard; self-draw and situational fan add more. MCR needs 8 points to win."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分数按点炮和计；自摸、场景番另加。国标起和 8 分。"
+          }
+        }
+      }
+    },
+    "最高 %lld 分" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "best %lld pt"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "best %lld pts"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最高 %lld 分"
+          }
+        }
+      }
+    },
+    "和「%@」" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winning on 「%@」"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和「%@」"
+          }
+        }
+      }
+    },
+    "番分" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "番分"
+          }
+        }
+      }
+    },
+    "番型（按点炮和）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fan (win by discard)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "番型（按点炮和）"
+          }
+        }
+      }
+    },
+    "国标起和 8 分；花牌每张 1 分但不计入起和分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MCR needs 8 points to win. Each flower scores 1 point but does not count toward the 8."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "国标起和 8 分；花牌每张 1 分但不计入起和分。"
+          }
+        }
+      }
+    },
+    "「%@」只有一张。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There is only one 「%@」."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」只有一张。"
+          }
+        }
+      }
+    },
+    "吃只能用数牌，且要从 1–7 起头凑连续三张。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A chow must be a suited run starting from 1–7."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "吃只能用数牌，且要从 1–7 起头凑连续三张。"
+          }
+        }
+      }
+    },
+    "只有花牌——请再选入参与和牌的牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flowers only — add the tiles that actually form your hand."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只有花牌——请再选入参与和牌的牌。"
+          }
+        }
+      }
+    },
+    "国标模式：拍照只能识别万/筒/条，风牌、箭牌、花牌认不出来，请在键盘上手动补入。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MCR: photo recognition only reads characters/dots/bamboo. Winds, dragons and flowers are not recognised — add them with the keypad."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "国标模式：拍照只能识别万/筒/条，风牌、箭牌、花牌认不出来，请在键盘上手动补入。"
+          }
+        }
+      }
+    },
+    "识别到 %lld 张牌（应为 13 或 14）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recognised %lld tiles (should be 13 or 14). "
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "识别到 %lld 张牌（应为 13 或 14）。"
+          }
+        }
+      }
+    },
+    "大四喜" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Big Four Winds"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大四喜"
+          }
+        }
+      }
+    },
+    "大三元" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Big Three Dragons"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大三元"
+          }
+        }
+      }
+    },
+    "绿一色" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Green"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "绿一色"
+          }
+        }
+      }
+    },
+    "九莲宝灯" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nine Gates"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "九莲宝灯"
+          }
+        }
+      }
+    },
+    "四杠" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four Kongs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四杠"
+          }
+        }
+      }
+    },
+    "连七对" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seven Shifted Pairs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连七对"
+          }
+        }
+      }
+    },
+    "十三幺" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thirteen Orphans"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "十三幺"
+          }
+        }
+      }
+    },
+    "清幺九" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Terminals"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清幺九"
+          }
+        }
+      }
+    },
+    "小四喜" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Little Four Winds"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小四喜"
+          }
+        }
+      }
+    },
+    "小三元" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Little Three Dragons"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小三元"
+          }
+        }
+      }
+    },
+    "字一色" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Honours"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "字一色"
+          }
+        }
+      }
+    },
+    "四暗刻" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four Concealed Pungs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四暗刻"
+          }
+        }
+      }
+    },
+    "一色双龙会" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pure Terminal Chows"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一色双龙会"
+          }
+        }
+      }
+    },
+    "一色四同顺" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quadruple Chow"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一色四同顺"
+          }
+        }
+      }
+    },
+    "一色四节高" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four Pure Shifted Pungs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一色四节高"
+          }
+        }
+      }
+    },
+    "一色四步高" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four Pure Shifted Chows"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一色四步高"
+          }
+        }
+      }
+    },
+    "三杠" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three Kongs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三杠"
+          }
+        }
+      }
+    },
+    "混幺九" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Terminals and Honours"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "混幺九"
+          }
+        }
+      }
+    },
+    "七对" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seven Pairs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七对"
+          }
+        }
+      }
+    },
+    "七星不靠" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Greater Honours and Knitted Tiles"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七星不靠"
+          }
+        }
+      }
+    },
+    "全双刻" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Even Pungs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全双刻"
+          }
+        }
+      }
+    },
+    "一色三同顺" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pure Triple Chow"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一色三同顺"
+          }
+        }
+      }
+    },
+    "一色三节高" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pure Shifted Pungs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一色三节高"
+          }
+        }
+      }
+    },
+    "全大" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upper Tiles"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全大"
+          }
+        }
+      }
+    },
+    "全中" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Middle Tiles"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全中"
+          }
+        }
+      }
+    },
+    "全小" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lower Tiles"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全小"
+          }
+        }
+      }
+    },
+    "清龙" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pure Straight"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清龙"
+          }
+        }
+      }
+    },
+    "三色双龙会" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three-Suited Terminal Chows"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三色双龙会"
+          }
+        }
+      }
+    },
+    "一色三步高" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pure Shifted Chows"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一色三步高"
+          }
+        }
+      }
+    },
+    "全带五" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Fives"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全带五"
+          }
+        }
+      }
+    },
+    "三同刻" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Triple Pung"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三同刻"
+          }
+        }
+      }
+    },
+    "三暗刻" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three Concealed Pungs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三暗刻"
+          }
+        }
+      }
+    },
+    "全不靠" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lesser Honours and Knitted Tiles"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全不靠"
+          }
+        }
+      }
+    },
+    "组合龙" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knitted Straight"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "组合龙"
+          }
+        }
+      }
+    },
+    "大于五" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upper Four"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大于五"
+          }
+        }
+      }
+    },
+    "小于五" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lower Four"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小于五"
+          }
+        }
+      }
+    },
+    "三风刻" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Big Three Winds"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三风刻"
+          }
+        }
+      }
+    },
+    "花龙" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mixed Straight"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "花龙"
+          }
+        }
+      }
+    },
+    "推不倒" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reversible Tiles"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "推不倒"
+          }
+        }
+      }
+    },
+    "三色三同顺" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mixed Triple Chow"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三色三同顺"
+          }
+        }
+      }
+    },
+    "三色三节高" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mixed Shifted Pungs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三色三节高"
+          }
+        }
+      }
+    },
+    "无番和" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chicken Hand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无番和"
+          }
+        }
+      }
+    },
+    "妙手回春" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Tile Draw"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "妙手回春"
+          }
+        }
+      }
+    },
+    "抢杠和" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Robbing the Kong"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "抢杠和"
+          }
+        }
+      }
+    },
+    "碰碰和" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Pungs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "碰碰和"
+          }
+        }
+      }
+    },
+    "混一色" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Half Flush"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "混一色"
+          }
+        }
+      }
+    },
+    "三色三步高" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mixed Shifted Chows"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三色三步高"
+          }
+        }
+      }
+    },
+    "五门齐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Types"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "五门齐"
+          }
+        }
+      }
+    },
+    "全求人" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Melded Hand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全求人"
+          }
+        }
+      }
+    },
+    "双暗杠" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two Concealed Kongs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双暗杠"
+          }
+        }
+      }
+    },
+    "双箭刻" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two Dragon Pungs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双箭刻"
+          }
+        }
+      }
+    },
+    "全带幺" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outside Hand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全带幺"
+          }
+        }
+      }
+    },
+    "不求人" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fully Concealed Hand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不求人"
+          }
+        }
+      }
+    },
+    "双明杠" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two Melded Kongs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双明杠"
+          }
+        }
+      }
+    },
+    "和绝张" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Tile"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和绝张"
+          }
+        }
+      }
+    },
+    "箭刻" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dragon Pung"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "箭刻"
+          }
+        }
+      }
+    },
+    "圈风刻" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevalent Wind"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圈风刻"
+          }
+        }
+      }
+    },
+    "门风刻" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seat Wind"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "门风刻"
+          }
+        }
+      }
+    },
+    "门前清" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concealed Hand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "门前清"
+          }
+        }
+      }
+    },
+    "平和" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Chows"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平和"
+          }
+        }
+      }
+    },
+    "四归一" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tile Hog"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四归一"
+          }
+        }
+      }
+    },
+    "双同刻" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double Pung"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双同刻"
+          }
+        }
+      }
+    },
+    "双暗刻" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two Concealed Pungs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双暗刻"
+          }
+        }
+      }
+    },
+    "断幺" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Simples"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "断幺"
+          }
+        }
+      }
+    },
+    "一般高" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pure Double Chow"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一般高"
+          }
+        }
+      }
+    },
+    "喜相逢" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mixed Double Chow"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "喜相逢"
+          }
+        }
+      }
+    },
+    "连六" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Short Straight"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连六"
+          }
+        }
+      }
+    },
+    "老少副" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two Terminal Chows"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "老少副"
+          }
+        }
+      }
+    },
+    "幺九刻" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pung of Terminals or Honours"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "幺九刻"
+          }
+        }
+      }
+    },
+    "缺一门" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One Voided Suit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "缺一门"
+          }
+        }
+      }
+    },
+    "无字" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Honours"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无字"
+          }
+        }
+      }
+    },
+    "边张" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edge Wait"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "边张"
+          }
+        }
+      }
+    },
+    "坎张" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closed Wait"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "坎张"
+          }
+        }
+      }
+    },
+    "单钓将" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Single Wait"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "单钓将"
+          }
+        }
+      }
+    },
+    "花牌" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flower Tiles"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "花牌"
+          }
+        }
+      }
+    },
+    "东南西北四个风刻（或杠）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pungs (or kongs) of all four winds."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "东南西北四个风刻（或杠）。"
+          }
+        }
+      }
+    },
+    "中发白三个箭刻（或杠）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pungs (or kongs) of red, green and white dragons."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中发白三个箭刻（或杠）。"
+          }
+        }
+      }
+    },
+    "全部由 2/3/4/6/8 条和发组成。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only 2/3/4/6/8 bamboo and the green dragon."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部由 2/3/4/6/8 条和发组成。"
+          }
+        }
+      }
+    },
+    "门清一色 1112345678999 再加同花色任意一张。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concealed 1112345678999 in one suit plus any extra tile of that suit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "门清一色 1112345678999 再加同花色任意一张。"
+          }
+        }
+      }
+    },
+    "四个杠（明暗不限）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four kongs, exposed or concealed."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四个杠（明暗不限）。"
+          }
+        }
+      }
+    },
+    "同一花色七个连号的对子。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seven pairs of consecutive ranks in one suit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一花色七个连号的对子。"
+          }
+        }
+      }
+    },
+    "十三种幺九牌各一张，其中任一张成对。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One of each of the thirteen terminals and honours, with any one of them paired."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "十三种幺九牌各一张，其中任一张成对。"
+          }
+        }
+      }
+    },
+    "全部由一、九的刻子和将组成，不含字牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only pungs and a pair of 1s and 9s, no honours."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部由一、九的刻子和将组成，不含字牌。"
+          }
+        }
+      }
+    },
+    "三个风刻 + 第四种风作将。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three wind pungs plus a pair of the fourth wind."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三个风刻 + 第四种风作将。"
+          }
+        }
+      }
+    },
+    "两个箭刻 + 第三种箭牌作将。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two dragon pungs plus a pair of the third dragon."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两个箭刻 + 第三种箭牌作将。"
+          }
+        }
+      }
+    },
+    "整副牌全是风牌和箭牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The whole hand is winds and dragons."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌全是风牌和箭牌。"
+          }
+        }
+      }
+    },
+    "四个暗刻（暗杠算暗刻）。点炮成的刻子算明刻。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four concealed pungs (a concealed kong counts). A pung completed by a discard counts as melded."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四个暗刻（暗杠算暗刻）。点炮成的刻子算明刻。"
+          }
+        }
+      }
+    },
+    "同一花色 123 123 789 789 + 55 作将。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In one suit: 123 123 789 789 with a pair of 5s."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一花色 123 123 789 789 + 55 作将。"
+          }
+        }
+      }
+    },
+    "同一花色四副相同的顺子。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four identical chows in one suit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一花色四副相同的顺子。"
+          }
+        }
+      }
+    },
+    "同一花色四个依次加一的刻子。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four pungs in one suit with consecutive ranks."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一花色四个依次加一的刻子。"
+          }
+        }
+      }
+    },
+    "同一花色四副顺子，起点依次加一或加二。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four chows in one suit whose starts rise by 1 or by 2 each time."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一花色四副顺子，起点依次加一或加二。"
+          }
+        }
+      }
+    },
+    "三个杠。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three kongs."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三个杠。"
+          }
+        }
+      }
+    },
+    "全部由幺九牌和字牌的刻子与将组成。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every set and the pair is made of terminals or honours, all pungs."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部由幺九牌和字牌的刻子与将组成。"
+          }
+        }
+      }
+    },
+    "七个对子。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seven pairs."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七个对子。"
+          }
+        }
+      }
+    },
+    "七种字牌齐全的全不靠。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lesser Honours and Knitted Tiles with all seven honours present."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七种字牌齐全的全不靠。"
+          }
+        }
+      }
+    },
+    "全部由 2/4/6/8 的刻子和将组成。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only pungs and a pair of 2s, 4s, 6s and 8s."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部由 2/4/6/8 的刻子和将组成。"
+          }
+        }
+      }
+    },
+    "整副牌只用一种数牌花色，不含字牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One suit only, no honours."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌只用一种数牌花色，不含字牌。"
+          }
+        }
+      }
+    },
+    "同一花色三副相同的顺子。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three identical chows in one suit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一花色三副相同的顺子。"
+          }
+        }
+      }
+    },
+    "同一花色三个依次加一的刻子。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three pungs in one suit with consecutive ranks."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一花色三个依次加一的刻子。"
+          }
+        }
+      }
+    },
+    "整副牌只有 7、8、9。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only 7s, 8s and 9s."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌只有 7、8、9。"
+          }
+        }
+      }
+    },
+    "整副牌只有 4、5、6。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only 4s, 5s and 6s."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌只有 4、5、6。"
+          }
+        }
+      }
+    },
+    "整副牌只有 1、2、3。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only 1s, 2s and 3s."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌只有 1、2、3。"
+          }
+        }
+      }
+    },
+    "同一花色的 123 456 789。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "123, 456 and 789 all in one suit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一花色的 123 456 789。"
+          }
+        }
+      }
+    },
+    "两门各 123 + 789，第三门的 5 作将。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "123 and 789 in two suits, with a pair of 5s in the third."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两门各 123 + 789，第三门的 5 作将。"
+          }
+        }
+      }
+    },
+    "同一花色三副顺子，起点依次加一或加二。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three chows in one suit whose starts rise by 1 or by 2 each time."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一花色三副顺子，起点依次加一或加二。"
+          }
+        }
+      }
+    },
+    "每副面子和将都含有 5。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every set and the pair contains a 5."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每副面子和将都含有 5。"
+          }
+        }
+      }
+    },
+    "三种花色同一点数的刻子。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The same-numbered pung in all three suits."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三种花色同一点数的刻子。"
+          }
+        }
+      }
+    },
+    "三个暗刻。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three concealed pungs."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三个暗刻。"
+          }
+        }
+      }
+    },
+    "十四张互不成套：三门数牌分别取 147/258/369，其余为字牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fourteen unrelated tiles: each suit takes one of 147 / 258 / 369, the rest are honours."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "十四张互不成套：三门数牌分别取 147/258/369，其余为字牌。"
+          }
+        }
+      }
+    },
+    "三门数牌分别是 147、258、369，共九张。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "147, 258 and 369, one pattern per suit — nine tiles."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三门数牌分别是 147、258、369，共九张。"
+          }
+        }
+      }
+    },
+    "整副牌只有 6、7、8、9。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only 6s, 7s, 8s and 9s."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌只有 6、7、8、9。"
+          }
+        }
+      }
+    },
+    "整副牌只有 1、2、3、4。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only 1s, 2s, 3s and 4s."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌只有 1、2、3、4。"
+          }
+        }
+      }
+    },
+    "三个风刻。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three wind pungs."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三个风刻。"
+          }
+        }
+      }
+    },
+    "123、456、789 分属三种花色。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "123, 456 and 789, one in each suit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "123、456、789 分属三种花色。"
+          }
+        }
+      }
+    },
+    "整副牌都是上下对称的牌：1234589 筒、245689 条、白。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only tiles that look the same upside down: 1234589 dots, 245689 bamboo and the white dragon."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌都是上下对称的牌：1234589 筒、245689 条、白。"
+          }
+        }
+      }
+    },
+    "三种花色同一起点的顺子。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The same-numbered chow in all three suits."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三种花色同一起点的顺子。"
+          }
+        }
+      }
+    },
+    "三种花色依次加一的刻子。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three pungs with consecutive ranks, one in each suit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三种花色依次加一的刻子。"
+          }
+        }
+      }
+    },
+    "和牌时除自摸、花牌外没有任何番种，计 8 分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A winning hand with no fan at all apart from self-draw and flowers — worth 8 points."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和牌时除自摸、花牌外没有任何番种，计 8 分。"
+          }
+        }
+      }
+    },
+    "自摸牌墙上最后一张牌和牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Self-drawing the very last tile of the wall."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自摸牌墙上最后一张牌和牌。"
+          }
+        }
+      }
+    },
+    "和别家打出的最后一张牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winning on the last discard of the hand."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和别家打出的最后一张牌。"
+          }
+        }
+      }
+    },
+    "开杠后补摸的那张牌自摸和牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winning on the replacement tile drawn after a kong."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开杠后补摸的那张牌自摸和牌。"
+          }
+        }
+      }
+    },
+    "抢别家补杠的那张牌和牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winning on the tile another player adds to a melded pung."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "抢别家补杠的那张牌和牌。"
+          }
+        }
+      }
+    },
+    "四副面子都是刻子或杠。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All four sets are pungs or kongs."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四副面子都是刻子或杠。"
+          }
+        }
+      }
+    },
+    "一种数牌花色 + 字牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One suit plus honours."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一种数牌花色 + 字牌。"
+          }
+        }
+      }
+    },
+    "三种花色的顺子，起点依次加一。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three chows, one in each suit, whose starts rise by 1 each time."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三种花色的顺子，起点依次加一。"
+          }
+        }
+      }
+    },
+    "万、筒、条、风、箭五门都有。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Characters, dots, bamboo, winds and dragons all present."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "万、筒、条、风、箭五门都有。"
+          }
+        }
+      }
+    },
+    "四副面子全是吃碰明杠得来的，最后单钓别家打出的牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All four sets claimed from others, winning on a discard that pairs your last tile."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四副面子全是吃碰明杠得来的，最后单钓别家打出的牌。"
+          }
+        }
+      }
+    },
+    "两个暗杠。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two concealed kongs."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两个暗杠。"
+          }
+        }
+      }
+    },
+    "两个箭刻。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two dragon pungs."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两个箭刻。"
+          }
+        }
+      }
+    },
+    "每副面子和将都含有幺九牌或字牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every set and the pair contains a terminal or an honour."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每副面子和将都含有幺九牌或字牌。"
+          }
+        }
+      }
+    },
+    "门前清且自摸。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A fully concealed hand won by self-draw."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "门前清且自摸。"
+          }
+        }
+      }
+    },
+    "两个明杠。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two exposed kongs."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两个明杠。"
+          }
+        }
+      }
+    },
+    "和的这张牌是明面上已见三张后的最后一张。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The winning tile is the fourth and last one, the other three already visible."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和的这张牌是明面上已见三张后的最后一张。"
+          }
+        }
+      }
+    },
+    "中、发、白任一的刻子（或杠），每个 2 分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A pung (or kong) of red, green or white dragon — 2 points each."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中、发、白任一的刻子（或杠），每个 2 分。"
+          }
+        }
+      }
+    },
+    "与本圈风相同的风刻。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A pung of the prevalent wind."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "与本圈风相同的风刻。"
+          }
+        }
+      }
+    },
+    "与自己门风（座位风）相同的风刻。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A pung of your own seat wind."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "与自己门风（座位风）相同的风刻。"
+          }
+        }
+      }
+    },
+    "没有吃碰明杠，且和别家打出的牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No chow, pong or exposed kong, winning on someone else's discard."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有吃碰明杠，且和别家打出的牌。"
+          }
+        }
+      }
+    },
+    "四副顺子 + 数牌作将。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four chows with a suited pair."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四副顺子 + 数牌作将。"
+          }
+        }
+      }
+    },
+    "四张相同的牌，三张在一副面子里、另一张在别处，每组 2 分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All four copies of a tile, three in one set and the fourth elsewhere — 2 points each."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四张相同的牌，三张在一副面子里、另一张在别处，每组 2 分。"
+          }
+        }
+      }
+    },
+    "两种花色同一点数的刻子。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The same-numbered pung in two different suits."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两种花色同一点数的刻子。"
+          }
+        }
+      }
+    },
+    "两个暗刻。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two concealed pungs."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两个暗刻。"
+          }
+        }
+      }
+    },
+    "暗杠，每个 2 分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A concealed kong — 2 points each."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗杠，每个 2 分。"
+          }
+        }
+      }
+    },
+    "整副牌不含幺九牌和字牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No terminals and no honours anywhere."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌不含幺九牌和字牌。"
+          }
+        }
+      }
+    },
+    "同一花色两副相同的顺子。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two identical chows in one suit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一花色两副相同的顺子。"
+          }
+        }
+      }
+    },
+    "两种花色同一起点的顺子。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The same-numbered chow in two different suits."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两种花色同一起点的顺子。"
+          }
+        }
+      }
+    },
+    "同一花色两副相连的顺子，如 123 + 456。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two chows in one suit that run on, such as 123 + 456."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一花色两副相连的顺子，如 123 + 456。"
+          }
+        }
+      }
+    },
+    "同一花色的 123 + 789。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "123 and 789 in the same suit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一花色的 123 + 789。"
+          }
+        }
+      }
+    },
+    "一、九或风牌的刻子（箭刻另计），每个 1 分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A pung of terminals or winds (dragon pungs score separately) — 1 point each."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一、九或风牌的刻子（箭刻另计），每个 1 分。"
+          }
+        }
+      }
+    },
+    "明杠，每个 1 分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An exposed kong — 1 point each."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "明杠，每个 1 分。"
+          }
+        }
+      }
+    },
+    "万、筒、条里缺了一门。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One of the three suits is missing entirely."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "万、筒、条里缺了一门。"
+          }
+        }
+      }
+    },
+    "整副牌没有字牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No honour tiles at all."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌没有字牌。"
+          }
+        }
+      }
+    },
+    "和 123 里的 3 或 789 里的 7。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winning on the 3 of 123 or the 7 of 789."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和 123 里的 3 或 789 里的 7。"
+          }
+        }
+      }
+    },
+    "和顺子中间那张。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winning on the middle tile of a chow."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和顺子中间那张。"
+          }
+        }
+      }
+    },
+    "和的那张牌凑成将。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The winning tile completes the pair."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和的那张牌凑成将。"
+          }
+        }
+      }
+    },
+    "自己摸到和牌的那张牌。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You drew the winning tile yourself."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自己摸到和牌的那张牌。"
+          }
+        }
+      }
+    },
+    "每张花牌 1 分，不计入起和的 8 分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each flower scores 1 point and does not count toward the 8-point minimum."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每张花牌 1 分，不计入起和的 8 分。"
+          }
+        }
+      }
+    },
+    "海底捞月（和最后一张打出的牌）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Tile Claim"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "海底捞月（和最后一张打出的牌）"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

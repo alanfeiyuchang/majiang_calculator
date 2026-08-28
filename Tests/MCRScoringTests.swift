@@ -147,6 +147,35 @@ do {
 mcheck(mcrHandShanten(mt("1122334455667m8m")) == 0 || mcrHandShanten(mt("1122334455667m8m")) == -1,
        "S8 七对向听可达 0")
 
+// MARK: - 番种表完整性
+
+print("— 番种表 —")
+mcheck(mcrFanPoints.count == 81, "T1 番种表恰好 81 种", "got \(mcrFanPoints.count)")
+do {
+    // 排除表里提到的番型必须都是真实存在的番种，否则是打字错误
+    let unknown = mcrFanExcludes.flatMap { [$0.key] + $0.value }
+        .filter { mcrFanPoints[$0] == nil }
+    mcheck(unknown.isEmpty, "T2 排除表里没有拼错的番型名", "unknown: \(Set(unknown).sorted())")
+}
+do {
+    // 番型不能排除自己，也不能出现「A 排除 B 且 B 排除 A」这种互斥环
+    let selfRef = mcrFanExcludes.filter { $0.value.contains($0.key) }.map(\.key)
+    let cycles = mcrFanExcludes.filter { kv in
+        kv.value.contains { mcrFanExcludes[$0]?.contains(kv.key) == true }
+    }.map(\.key)
+    mcheck(selfRef.isEmpty && cycles.isEmpty, "T3 排除表无自指 / 互斥环",
+           "self: \(selfRef) cycles: \(cycles)")
+}
+do {
+    // 高番型只应排除分值不高于自己的番型
+    let bad = mcrFanExcludes.flatMap { kv in
+        kv.value.filter { (mcrFanPoints[$0] ?? 0) > (mcrFanPoints[kv.key] ?? 0) }
+                .map { "\(kv.key)→\($0)" }
+    }
+    mcheck(bad.isEmpty, "T4 只排除分值不更高的番型", "\(bad)")
+}
+mcheck(mcrMinimumPoints == 8, "T5 起和线 8 分")
+
 // MARK: - 88 分
 
 print("— 88 分番型 —")

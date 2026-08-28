@@ -368,7 +368,11 @@ struct ContentView: View {
         }
         .sheet(isPresented: $demoShowFanReference) {
             NavigationStack {
-                FanReferenceView(settings: ruleStore.settings)
+                if gameMode.isMCR {
+                    MCRFanReferenceView()
+                } else {
+                    FanReferenceView(settings: ruleStore.settings)
+                }
             }
         }
         .sheet(item: $breakdownCard) { card in
@@ -744,7 +748,7 @@ struct ContentView: View {
     /// 一项国标番型的文字：「名 ×N 8 分」
     static func mcrFanLine(_ item: FanItem) -> String {
         let b = appLanguageBundle()
-        let name = localizedFanName(item.name)
+        let name = localizedFanName(MCRFanInfo.displayKey(item.name))
         let head = item.count > 1 ? "\(name) ×\(item.count)" : name
         return "\(head) \(String(localized: "\(item.fan) 分", bundle: b))"
     }
@@ -868,7 +872,7 @@ struct ContentView: View {
                 if hasKongMeld { fanChip("杠上开花", $kongBloom) }
                 fanChip("妙手回春", $mcrLastTileDraw)
             } else {
-                fanChip("海底捞月", $mcrLastDiscard)
+                fanChip("海底捞月（和最后一张打出的牌）", $mcrLastDiscard)
                 fanChip("抢杠和", $mcrRobbingKong)
             }
             fanChip("和绝张", $mcrLastTileOfKind)
@@ -1484,7 +1488,7 @@ private struct MCRFanBreakdownSheet: View {
                             if hasInfo { explainItem = item }
                         } label: {
                             HStack(spacing: 6) {
-                                Text(ContentView.localizedFanName(item.name))
+                                Text(ContentView.localizedFanName(MCRFanInfo.displayKey(item.name)))
                                     .foregroundStyle(.primary)
                                 if item.count > 1 {
                                     Text(verbatim: "×\(item.count)")
@@ -1520,7 +1524,7 @@ private struct MCRFanBreakdownSheet: View {
                 }
             }
             .alert(
-                explainItem.map { ContentView.localizedFanName($0.name) } ?? "",
+                explainItem.map { ContentView.localizedFanName(MCRFanInfo.displayKey($0.name)) } ?? "",
                 isPresented: Binding(get: { explainItem != nil },
                                      set: { if !$0 { explainItem = nil } })
             ) {

@@ -106,6 +106,18 @@ enum MCRFanInfo {
         "花牌": "每张花牌 1 分，不计入起和的 8 分。",
     ]
 
+    /// 与四川同名但含义不同的番型：四川的「海底捞月」是自摸最后一张，
+    /// 国标的是和别家打出的最后一张。本地化 key 是中文原文，两边会撞在一起，
+    /// 所以国标侧用一个带解释的加长 key（中文译文仍是「海底捞月」）。
+    static let displayKeyOverrides: [String: String] = [
+        "海底捞月": "海底捞月（和最后一张打出的牌）",
+    ]
+
+    /// 界面上显示这个番型时该用的本地化 key
+    static func displayKey(_ name: String) -> String {
+        displayKeyOverrides[name] ?? name
+    }
+
     static func explanation(_ name: String) -> String? {
         guard let value = table[name] else { return nil }
         return String(localized: value, bundle: appLanguageBundle())

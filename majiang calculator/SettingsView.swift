@@ -297,7 +297,7 @@ struct MCRFanReferenceView: View {
                             explainName = name
                         } label: {
                             HStack(spacing: 6) {
-                                Text(ContentView.localizedFanName(name))
+                                Text(ContentView.localizedFanName(MCRFanInfo.displayKey(name)))
                                     .foregroundStyle(.primary)
                                 Image(systemName: "info.circle")
                                     .font(.caption)
@@ -317,7 +317,7 @@ struct MCRFanReferenceView: View {
         .navigationTitle("番型一览")
         .navigationBarTitleDisplayMode(.inline)
         .alert(
-            explainName.map { ContentView.localizedFanName($0) } ?? "",
+            explainName.map { ContentView.localizedFanName(MCRFanInfo.displayKey($0)) } ?? "",
             isPresented: Binding(get: { explainName != nil },
                                  set: { if !$0 { explainName = nil } })
         ) {
