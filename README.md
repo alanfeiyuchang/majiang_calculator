@@ -91,6 +91,15 @@ Selecting 国标麻将 switches the engine to the *Chinese Official Rules*:
   - A pung completed by someone else's discard counts as **melded**, so the same
     tiles score 四暗刻 on a self-draw but only 三暗刻 on a discard.
 - **圈风 / 门风** are set in the rules screen and feed 圈风刻 / 门风刻.
+- **House rules (规则细则).** Five points where regional rulebooks disagree are
+  user-selectable in the MCR rules screen; every one defaults to the reading the
+  engine has always used, so scores do not move unless you change them:
+  `mcrZiYiSeCountsHunYaoJiu` (字一色 also scores 混幺九, +32),
+  `mcrJiuLianCountsShuangAnKe` (九莲宝灯 also scores 双暗刻, +2),
+  `mcrSevenPairsAllowsQuadAsTwoPairs` (four identical tiles count as two pairs in
+  七对), `mcrPerKongFanWithThreeKongs` (three kongs also score 明杠 1 / 暗杠 2 each)
+  and `mcrWaitFanHighestReading` (边张 / 坎张 / 单钓将 take the best reading across
+  decompositions, versus only scoring when the wait can be read exactly one way).
 - **Photo recognition is limited here.** The bundled YOLO model only knows the 27
   numbered classes, so winds, dragons and flowers are **never** recognised. In MCR
   mode every recognition result carries a notice saying so; add the missing honours

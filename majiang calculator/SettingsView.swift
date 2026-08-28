@@ -17,6 +17,19 @@ struct SettingsView: View {
     private var isMCR: Bool { store.settings.gameMode.isMCR }
     private static let windNames = ["东", "南", "西", "北"]
 
+    /// 「规则细则」里的一条：开关 + 一句讲清开/关差别的人话
+    private func mcrRuleToggle(
+        _ title: LocalizedStringKey, isOn: Binding<Bool>, note: LocalizedStringKey
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Toggle(title, isOn: isOn)
+            Text(note)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -48,6 +61,43 @@ struct SettingsView: View {
                         Text("圈风 / 门风")
                     } footer: {
                         Text("影响圈风刻、门风刻（各 2 分）。门风就是自己的座位风。")
+                    }
+
+                    Section {
+                        mcrRuleToggle(
+                            "字一色同时计混幺九",
+                            isOn: $store.settings.mcrZiYiSeCountsHunYaoJiu,
+                            note: "整副牌全是风牌箭牌时：开 = 字一色之外再加 32 分的混幺九；关 = 只算字一色的 64 分。"
+                        )
+                        mcrRuleToggle(
+                            "九莲宝灯同时计双暗刻",
+                            isOn: $store.settings.mcrJiuLianCountsShuangAnKe,
+                            note: "和出九莲宝灯时：开 = 牌里那两个暗刻另加 2 分；关 = 只算九莲宝灯的 88 分。"
+                        )
+                        mcrRuleToggle(
+                            "七对里四张相同当两对",
+                            isOn: $store.settings.mcrSevenPairsAllowsQuadAsTwoPairs,
+                            note: "手里有四张一样的牌时：开 = 拆成两对，照样算七对；关 = 不算七对，能拆成顺子刻子就按普通牌型算，拆不出来就是没和。"
+                        )
+                        mcrRuleToggle(
+                            "三杠之外每个杠另算",
+                            isOn: $store.settings.mcrPerKongFanWithThreeKongs,
+                            note: "开了三个杠时：开 = 三杠 32 分之外，每个明杠再加 1 分、暗杠再加 2 分；关 = 只算三杠的 32 分。"
+                        )
+                        mcrRuleToggle(
+                            "边张 / 坎张 / 单钓将就高算",
+                            isOn: $store.settings.mcrWaitFanHighestReading,
+                            note: "和的那张牌能有好几种读法时：开 = 按对你有利的那种读，这 1 分照给；关 = 只有读法唯一、没有第二种拆法时才给这 1 分。"
+                        )
+                    } header: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("规则细则")
+                            Text("下面这几条是各地规则书写法有分歧的地方，按你们桌上的打法选。默认是最常见的算法。")
+                                .textCase(.none)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
 
                     Section {

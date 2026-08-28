@@ -6683,6 +6683,198 @@
           }
         }
       }
+    },
+    "规则细则" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "House Rules"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "规则细则"
+          }
+        }
+      }
+    },
+    "下面这几条是各地规则书写法有分歧的地方，按你们桌上的打法选。默认是最常见的算法。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rulebooks disagree on the points below, so pick whatever your table plays. The defaults follow the most common reading."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下面这几条是各地规则书写法有分歧的地方，按你们桌上的打法选。默认是最常见的算法。"
+          }
+        }
+      }
+    },
+    "字一色同时计混幺九" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Honors also scores All Terminals and Honors"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "字一色同时计混幺九"
+          }
+        }
+      }
+    },
+    "整副牌全是风牌箭牌时：开 = 字一色之外再加 32 分的混幺九；关 = 只算字一色的 64 分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When every tile is a wind or dragon — On: All Honors plus another 32 points for All Terminals and Honors. Off: All Honors alone, 64 points."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整副牌全是风牌箭牌时：开 = 字一色之外再加 32 分的混幺九；关 = 只算字一色的 64 分。"
+          }
+        }
+      }
+    },
+    "九莲宝灯同时计双暗刻" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nine Gates also scores Two Concealed Pungs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "九莲宝灯同时计双暗刻"
+          }
+        }
+      }
+    },
+    "和出九莲宝灯时：开 = 牌里那两个暗刻另加 2 分；关 = 只算九莲宝灯的 88 分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When you win with Nine Gates — On: the two concealed pungs inside it add 2 more points. Off: Nine Gates alone, 88 points."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和出九莲宝灯时：开 = 牌里那两个暗刻另加 2 分；关 = 只算九莲宝灯的 88 分。"
+          }
+        }
+      }
+    },
+    "七对里四张相同当两对" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four identical tiles count as two pairs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七对里四张相同当两对"
+          }
+        }
+      }
+    },
+    "手里有四张一样的牌时：开 = 拆成两对，照样算七对；关 = 不算七对，能拆成顺子刻子就按普通牌型算，拆不出来就是没和。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When you hold four of the same tile — On: split them into two pairs and still score Seven Pairs. Off: no Seven Pairs; the hand is read as a normal hand if it can be, and is not a win if it cannot."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手里有四张一样的牌时：开 = 拆成两对，照样算七对；关 = 不算七对，能拆成顺子刻子就按普通牌型算，拆不出来就是没和。"
+          }
+        }
+      }
+    },
+    "三杠之外每个杠另算" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Score each kong on top of Three Kongs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三杠之外每个杠另算"
+          }
+        }
+      }
+    },
+    "开了三个杠时：开 = 三杠 32 分之外，每个明杠再加 1 分、暗杠再加 2 分；关 = 只算三杠的 32 分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When you have three kongs — On: 32 points for Three Kongs plus 1 point per melded kong and 2 per concealed kong. Off: just the 32 points."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开了三个杠时：开 = 三杠 32 分之外，每个明杠再加 1 分、暗杠再加 2 分；关 = 只算三杠的 32 分。"
+          }
+        }
+      }
+    },
+    "边张 / 坎张 / 单钓将就高算" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take the best reading for edge, closed and pair waits"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "边张 / 坎张 / 单钓将就高算"
+          }
+        }
+      }
+    },
+    "和的那张牌能有好几种读法时：开 = 按对你有利的那种读，这 1 分照给；关 = 只有读法唯一、没有第二种拆法时才给这 1 分。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When the winning tile can be read more than one way — On: use the reading that favors you and score the 1 point. Off: score it only when there is exactly one way to read the wait."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和的那张牌能有好几种读法时：开 = 按对你有利的那种读，这 1 分照给；关 = 只有读法唯一、没有第二种拆法时才给这 1 分。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
