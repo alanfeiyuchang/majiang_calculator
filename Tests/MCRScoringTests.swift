@@ -50,6 +50,18 @@ func msc(_ hand: String, melds: [Meld] = [], win: String,
     return scoreMCRHand(concealed: mfreq(hand), melds: melds, context: ctx)
 }
 
+/// 带「规则细则」开关算一副国标和牌
+func msco(_ hand: String, melds: [Meld] = [], win: String, options: MCROptions,
+          selfDrawn: Bool = false) -> MCRScore {
+    let ctx = MCRContext(selfDrawn: selfDrawn, winningTile: mt(win).first!.mcrIndex)
+    return scoreMCRHand(concealed: mfreq(hand), melds: melds, context: ctx, options: options)
+}
+
+/// 规则细则开关：改一项，其余保持默认
+func mopt(_ change: (inout MCROptions) -> Void) -> MCROptions {
+    var o = MCROptions(); change(&o); return o
+}
+
 /// 断言：分数 + 必须含 / 必须不含 的番型
 func mexpect(_ label: String, _ s: MCRScore, points: Int? = nil,
              has: [String] = [], hasnt: [String] = []) {
@@ -465,6 +477,106 @@ do {
                          context: MCRContext(selfDrawn: false, winningTile: 27))
     mcheck(s.scoringPoints == 0 && !s.meetsMinimum && !mnames(s).contains("无番和"),
            "Q5 部分手牌不算无番和", "got \(s.scoringPoints) \(mnames(s))")
+}
+
+// MARK: - 规则细则（各地规则书有分歧，用户可选）
+
+print("— 规则细则（用户可选）—")
+
+// 默认值必须等于「一直以来的算法」，否则上面所有断言的分数都会变
+mcheck(RuleSettings().mcrOptions == MCROptions(), "O0 设置默认值 = 引擎默认")
+mcheck(RuleSettings().mcrZiYiSeCountsHunYaoJiu
+       && RuleSettings().mcrJiuLianCountsShuangAnKe
+       && RuleSettings().mcrSevenPairsAllowsQuadAsTwoPairs
+       && RuleSettings().mcrPerKongFanWithThreeKongs
+       && RuleSettings().mcrWaitFanHighestReading,
+       "O0b 5 项规则细则默认全开")
+do {
+    var s = RuleSettings()
+    s.mcrPerKongFanWithThreeKongs = false
+    s.mcrWaitFanHighestReading = false
+    let back = try! JSONDecoder().decode(RuleSettings.self, from: JSONEncoder().encode(s))
+    mcheck(back == s, "O0c 规则细则持久化往返")
+    // 老存档没有这些键：按默认值补齐，行为不变
+    let legacy = #"{"baseStake":1,"gameMode":"mcr"}"#.data(using: .utf8)!
+    let old = try! JSONDecoder().decode(RuleSettings.self, from: legacy)
+    mcheck(old.mcrOptions == MCROptions(), "O0d 老存档缺键按默认补齐")
+}
+
+// ① 字一色是否同时计混幺九（+32）
+// 南南南 西西西 北北北 中中中 + 发发：字一色 64 + 四暗刻 64 + 三风刻 12 + 箭刻 2 + 单钓将 1
+do {
+    let on = msco("222333444z55566z", win: "6z", options: MCROptions())
+    let off = msco("222333444z55566z", win: "6z",
+                   options: mopt { $0.mcrZiYiSeCountsHunYaoJiu = false })
+    mexpect("O1a 字一色计混幺九（开）= 175 分", on, points: 175, has: ["字一色", "混幺九"])
+    mexpect("O1b 字一色不计混幺九（关）= 143 分", off, points: 143,
+            has: ["字一色"], hasnt: ["混幺九"])
+}
+
+// ② 九莲宝灯是否同时计双暗刻（+2）
+do {
+    let on = msco("11123456789995m", win: "5m", options: MCROptions())
+    let off = msco("11123456789995m", win: "5m",
+                   options: mopt { $0.mcrJiuLianCountsShuangAnKe = false })
+    mexpect("O2a 九莲宝灯计双暗刻（开）= 91 分", on, points: 91, has: ["九莲宝灯", "双暗刻"])
+    mexpect("O2b 九莲宝灯不计双暗刻（关）= 89 分", off, points: 89,
+            has: ["九莲宝灯"], hasnt: ["双暗刻"])
+}
+
+// ③ 七对里「4 张相同」是否可当两对
+// 1111 22 33 44 55 66 万：当两对 → 七对 24 + 清一色 24 = 48；
+// 不当两对 → 退回标准型 123/123/456/456 + 11 将 = 32 分
+do {
+    let on = msco("11112233445566m", win: "6m", options: MCROptions())
+    let off = msco("11112233445566m", win: "6m",
+                   options: mopt { $0.mcrSevenPairsAllowsQuadAsTwoPairs = false })
+    mexpect("O3a 4 张可当两对（开）= 48 分", on, points: 48, has: ["七对", "清一色"])
+    mexpect("O3b 4 张不可当两对（关）= 32 分", off, points: 32,
+            has: ["清一色", "一般高", "平和", "四归一"], hasnt: ["七对"])
+}
+do {
+    // 退不回标准型的牌：关掉后这副牌在这套规则下根本不成和，0 分
+    let on = msco("1111335577m1133p", win: "3p", options: MCROptions())
+    let off = msco("1111335577m1133p", win: "3p",
+                   options: mopt { $0.mcrSevenPairsAllowsQuadAsTwoPairs = false })
+    mexpect("O3c 无标准型可退（开）= 26 分", on, points: 26, has: ["七对"])
+    mcheck(off.scoringPoints == 0 && off.items.isEmpty && !off.meetsMinimum,
+           "O3d 无标准型可退（关）= 0 分（不成和）", "got \(off.scoringPoints) \(mnames(off))")
+}
+
+// ④ 三杠时是否再单独计每个杠（明杠 1 / 暗杠 2）
+do {
+    let kongs = [MM(.exposedKong, "2s"), MM(.exposedKong, "3s"), MM(.concealedKong, "4s")]
+    let on = msco("123m11p", melds: kongs, win: "1p", options: MCROptions())
+    let off = msco("123m11p", melds: kongs, win: "1p",
+                   options: mopt { $0.mcrPerKongFanWithThreeKongs = false })
+    mexpect("O4a 三杠再计每个杠（开）= 73 分", on, points: 73,
+            has: ["三杠", "明杠", "暗杠"])
+    mexpect("O4b 三杠不再计每个杠（关）= 69 分", off, points: 69,
+            has: ["三杠"], hasnt: ["明杠", "暗杠"])
+}
+
+// ⑤ 边张 / 坎张 / 单钓将：跨解法就高 vs 听法唯一才计
+// 123456789万 + 345筒 + 55筒，和 5 筒：既能读成单钓将，也能读成 345 筒里的一张
+do {
+    let on = msco("123m456m789m34555p", win: "5p", options: MCROptions())
+    let off = msco("123m456m789m34555p", win: "5p",
+                   options: mopt { $0.mcrWaitFanHighestReading = false })
+    mexpect("O5a 听法有歧义，就高（开）= 23 分", on, points: 23, has: ["单钓将"])
+    mexpect("O5b 听法有歧义，不计（关）= 22 分", off, points: 22,
+            hasnt: ["单钓将", "边张", "坎张"])
+}
+do {
+    // 听法唯一的边张 / 坎张：两种设置下都照计，关掉不等于永远不给
+    let bianOn = msco("123456789m23455p", win: "3m", options: MCROptions())
+    let bianOff = msco("123456789m23455p", win: "3m",
+                       options: mopt { $0.mcrWaitFanHighestReading = false })
+    mexpect("O5c 唯一边张（开）= 23 分", bianOn, points: 23, has: ["边张"])
+    mexpect("O5d 唯一边张（关）= 23 分", bianOff, points: 23, has: ["边张"])
+    let kanOff = msco("123456789m23455p", win: "2m",
+                      options: mopt { $0.mcrWaitFanHighestReading = false })
+    mexpect("O5e 唯一坎张（关）= 23 分", kanOff, points: 23, has: ["坎张"])
 }
 
 // MARK: - 打牌建议（国标）
