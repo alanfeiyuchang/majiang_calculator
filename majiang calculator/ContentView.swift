@@ -749,7 +749,7 @@ struct ContentView: View {
     static func mcrFanLine(_ item: FanItem) -> String {
         let b = appLanguageBundle()
         let name = localizedFanName(MCRFanInfo.displayKey(item.name))
-        let head = item.count > 1 ? "\(name) ×\(item.count)" : name
+        let head = item.count > 1 ? "\(name)×\(item.count)" : name
         return "\(head) \(String(localized: "\(item.fan) 分", bundle: b))"
     }
 

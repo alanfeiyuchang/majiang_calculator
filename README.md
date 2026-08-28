@@ -1,9 +1,14 @@
-# 听牌计算器 · Sichuan Mahjong Tenpai Calculator
+# 听牌计算器 · Mahjong Tenpai Calculator
 
-An iOS app for **Sichuan mahjong (四川麻将 / 血战到底)** that tells you what you're
-waiting on (听牌), **how many fan each wait is worth and how much money changes
-hands**, and can read your hand — plus your melds — straight from a **photo**
-using an on-device AI model. No network, no API key.
+An iOS app that tells you what you're waiting on (听牌), what each wait is worth,
+and can read your hand — plus your melds — straight from a **photo** using an
+on-device AI model. No network, no API key.
+
+Two rule sets, switchable in settings:
+
+- **四川麻将 / 血战到底 (Sichuan)** — 缺一门, no chow, fan doubling and money.
+- **国标麻将 / MCR (Chinese Official Rules)** — full tile set, chow, the 81 fan
+  types and the 8-point minimum.
 
 <p align="center">
   <img src="majiang%20calculator/Assets.xcassets/AppIcon.appiconset/icon-light.png" width="120" alt="App icon">
@@ -11,6 +16,10 @@ using an on-device AI model. No network, no API key.
 
 ## Features
 
+- **玩法选择 (game mode).** The setting at the top of the rules screen switches the
+  whole app between Sichuan and MCR: tile keypad, meld types, win detection,
+  scoring and the fan reference all follow. The choice is persisted; Sichuan is
+  the default and is byte-for-byte the same experience as before.
 - **Correct Sichuan rules.** Win/wait detection enforces the rules that actually
   matter in Sichuan play:
   - **缺一门 (missing-one-suit):** a winning hand may contain at most two of the
@@ -53,6 +62,40 @@ using an on-device AI model. No network, no API key.
   UI between 中文 and English, independent of the system language.
 - **Clean tile keypad** for manual entry (hand or melds), with auto-sort and undo.
 
+## 国标麻将 (MCR)
+
+Selecting 国标麻将 switches the engine to the *Chinese Official Rules*:
+
+- **Tiles.** The three numbered suits plus **winds (东南西北)**, **dragons (中发白)**
+  and **flowers (春夏秋冬梅兰竹菊)**. Flowers never take part in the hand — they are
+  held separately and score 1 point each. Honours and flowers have no artwork in
+  the asset catalogue, so they are drawn as text tile faces.
+- **Melds.** 吃 (chow) joins 碰 / 明杠 / 暗杠. Tap the lowest tile and the run is
+  filled in for you. A chow may legally only be claimed from the player to your
+  left; as an analysis tool this app does **not** enforce that, and says so in the
+  meld section.
+- **Winning shapes.** Standard (4 sets + a pair, honours can only form pungs),
+  七对 / 连七对, 十三幺, 全不靠 / 七星不靠, and 组合龙 (the knitted straight, whose
+  fourth set may be melded). Sichuan's 缺一门 / 花猪 restriction is fully disabled.
+- **Scoring.** All **81 fan types**, 8-point minimum to win, flowers scored but
+  excluded from that minimum. The **non-repeat principles** are implemented rather
+  than approximated — see [`MCRScoring.swift`](majiang%20calculator/MCRScoring.swift):
+  - *不可拆分 / 套算一次 / 就高不就低* — set-structure fan (一般高, 喜相逢, 清龙,
+    一色三同顺, 双同刻 …) are found by taking the **highest-scoring set partition**
+    of the four melds, so a meld can never be reused in two different fan.
+  - *不可重复* — an explicit exclusion table (`mcrFanExcludes`) removes lower fan
+    already implied by a higher one (大三元 removes 箭刻/双箭刻, 清一色 removes
+    无字/缺一门, 四暗刻 removes 碰碰和/三暗刻/双暗刻, …).
+  - The whole hand is evaluated over every winning shape × every decomposition ×
+    every reading of the winning tile, and the best total wins.
+  - A pung completed by someone else's discard counts as **melded**, so the same
+    tiles score 四暗刻 on a self-draw but only 三暗刻 on a discard.
+- **圈风 / 门风** are set in the rules screen and feed 圈风刻 / 门风刻.
+- **Photo recognition is limited here.** The bundled YOLO model only knows the 27
+  numbered classes, so winds, dragons and flowers are **never** recognised. In MCR
+  mode every recognition result carries a notice saying so; add the missing honours
+  and flowers with the keypad.
+
 ## Tiles
 
 Sichuan mahjong uses only the three numbered suits, 1–9 each:
@@ -63,7 +106,8 @@ Sichuan mahjong uses only the three numbered suits, 1–9 each:
 | Dots       | 筒 (tong) | `D` |
 | Bamboo     | 条 (tiao) | `B` |
 
-No winds, dragons, flowers, or seasons.
+No winds, dragons, flowers, or seasons — those exist only in the MCR rule set, and
+only as manual input.
 
 ## How the recognition works
 
@@ -113,13 +157,16 @@ If Xcode reports *"Missing package product 'onnxruntime'"*, quit Xcode, then
 ./Tests/run.sh
 ```
 
-Assembles the pure-logic sources (`MahjongCard`/`Meld`/`MahjongCalculator`/`MahjongScoring`/
-`TileGrouping`, with the `@MainActor` UI-facing bits stripped) plus everything in `Tests/`
-into one file and runs it with `swift` directly — no Xcode project, no simulator. Covers
+Assembles the pure-logic sources (`MahjongCard`/`Meld`/`GameMode`/`MahjongCalculator`/
+`MCRCalculator`/`MahjongScoring`/`MCRScoring`/`TileGrouping`, with the `@MainActor` UI-facing
+bits stripped) plus everything in `Tests/` into one file and runs it with `swift` directly —
+no Xcode project, no simulator. **Exits non-zero if any assertion fails.** Covers Sichuan
 scoring (every fan type, rule-setting permutation, capped/uncapped payouts), photo-recognition
-grouping (hand/meld separation, adjacent-meld splitting, the two-pass zoom region), and discard
-evaluation. A companion Android test suite (`majiang-calculator-android`) mirrors these
-assertions case-for-case — the two apps should never disagree.
+grouping (hand/meld separation, adjacent-meld splitting, the two-pass zoom region), discard
+evaluation, and the MCR engine (winning shapes, shanten/waits with honours, every one of the
+81 fan types, the non-repeat principles, and the 8-point minimum). A companion Android test
+suite (`majiang-calculator-android`) mirrors the Sichuan assertions case-for-case — the two
+apps should never disagree. **MCR is iOS-only for now**; the Android port has not been updated.
 
 ## Tech
 
@@ -129,8 +176,9 @@ assertions case-for-case — the two apps should never disagree.
 
 ## Android
 
-A Kotlin + Jetpack Compose port with feature parity — same scoring engine, same
-rule settings, same recognition pipeline, same bilingual strings — lives at
+A Kotlin + Jetpack Compose port of the **Sichuan** side with feature parity — same
+scoring engine, same rule settings, same recognition pipeline, same bilingual strings
+— lives at
 [**majiang_calculator_android**](https://github.com/alanfeiyuchang/majiang_calculator_android).
 
 ## 🙏 Acknowledgements
