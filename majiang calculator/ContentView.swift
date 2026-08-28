@@ -238,6 +238,50 @@ struct ContentView: View {
     /// 当前玩法（四川 / 国标）
     private var gameMode: GameMode { ruleStore.settings.gameMode }
 
+    /// 标题：「听牌计算器 · 川麻 / 国标」。
+    /// 拼好整句再交给 Text，是为了让 xcstrings 里存的是完整句子——
+    /// 英文里 "Tenpai Calculator · Sichuan" 的语序和中文一致，但别的语言未必。
+    private var titleKey: LocalizedStringKey {
+        gameMode.isMCR ? "听牌计算器 · 国标" : "听牌计算器 · 川麻"
+    }
+
+    /// 标题行本身就是切玩法的按钮。
+    /// 两种玩法都带后缀——只有一边有后缀的话，「没后缀」本身成了一种状态，看不出能切。
+    /// 用自绘而不是 .toolbarTitleMenu：后者在大标题上不给任何可点提示。
+    private var titleMenu: some View {
+        Menu {
+            ForEach(GameMode.allCases, id: \.self) { mode in
+                Button {
+                    ruleStore.settings.gameMode = mode
+                } label: {
+                    if gameMode == mode {
+                        Label(LocalizedStringKey(mode.label), systemImage: "checkmark")
+                    } else {
+                        Text(LocalizedStringKey(mode.label))
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 8) {
+                Text(titleKey)
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(.primary)
+                    // 英文标题（Tenpai Calculator · Sichuan）比中文长得多，
+                    // 不锁一行会折成两行、箭头吊在第一行旁边。
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                Image(systemName: "chevron.down.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+            }
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("切换玩法"))
+        .accessibilityValue(Text(LocalizedStringKey(gameMode.label)))
+    }
+
     /// 切玩法后把只属于上一个玩法的键盘状态收回来
     private func syncGameMode(_ mode: GameMode) {
         viewModel.gameMode = mode
@@ -263,6 +307,7 @@ struct ContentView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(spacing: Theme.sectionSpacing) {
+                        titleMenu
                         handSection
                         meldSection
                         analyzeButton
@@ -319,8 +364,10 @@ struct ContentView: View {
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 bottomBar
             }
-            .navigationTitle(gameMode.isMCR ? "听牌计算器 · 国标" : "听牌计算器")
-            .navigationBarTitleDisplayMode(.large)
+            // 标题由 titleMenu 自绘（见下），这里把系统标题让开。
+            // 试过 .toolbarTitleMenu，大标题上不显示任何可点提示，用户看不出来能点。
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {

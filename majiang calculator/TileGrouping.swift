@@ -33,8 +33,11 @@ struct RecognitionResult {
     var hand: [MahjongCard]
     var melds: [Meld]
     var guessedConcealedKong: Bool
+    /// 花牌（国标）。花牌摆在一边、不参与和牌，因此**不进** hand，也不计入张数不变量。
+    var flowers: [MahjongCard] = []
 
-    /// 换算成「手牌张数」：一组副露占 3 张名额。合法值为 13（未摸牌）或 14（已摸牌）
+    /// 换算成「手牌张数」：一组副露占 3 张名额。合法值为 13（未摸牌）或 14（已摸牌）。
+    /// 花牌不算——国标里花牌是额外亮出来的，13/14 张之外。
     var effectiveTileCount: Int { hand.count + 3 * melds.count }
     var hasValidTileCount: Bool { effectiveTileCount == 13 || effectiveTileCount == 14 }
 }
@@ -103,6 +106,20 @@ private func medianHeight(_ boxes: [TileBox]) -> CGFloat {
 ///    （几组副露紧挨也能拆）：每段 3 张同牌 → 碰、4 张同牌 → 明杠、孤立单张 → 暗杠；
 ///    认不准的簇并回手牌——不丢弃任何检测到的牌。
 func groupTiles(_ boxes: [TileBox]) -> RecognitionResult {
+    // 花牌先摘出去再聚类。花牌不参与和牌、也不占 13/14 的名额，
+    // 留在里面会把「手牌簇」撑大、还会让张数不变量永远对不上。
+    // 它们通常也不和手牌摆在一排（亮在自己面前），本来就不该和手牌聚成一簇。
+    let flowers = boxes.filter { $0.card.suit.isFlower }
+                       .sorted { $0.minX < $1.minX }
+                       .map(\.card)
+    let playable = boxes.filter { !$0.card.suit.isFlower }
+
+    var result = groupPlayable(playable)
+    result.flowers = flowers
+    return result
+}
+
+private func groupPlayable(_ boxes: [TileBox]) -> RecognitionResult {
     // 先严格解析：只有 3/4 张同牌才算副露，孤立单张**不**猜暗杠。
     // 「单张 = 暗杠」这条猜测会让几乎任何簇都能「解析成副露」，
     // 实拍里因此凭空造出好几组暗杠、张数暴涨（见 data/README.md 的识别评测）。

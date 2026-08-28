@@ -7,7 +7,9 @@
 //
 //  模型来源参考：github.com/LYiHub/AR-Mahjong-Assistant-preview （YOLOv8 / ONNX）。
 //  类别命名：后缀 C=Characters(万)、D=Dots(筒)、B=Bamboo(条)，点数 1–9；
-//  其余（花/季/风/箭）四川麻将用不到，识别时忽略。
+//  另有 EW/SW/WW/NW（风）、RD/GD/WD（箭）、1F–4F/1S–4S（花/季），共 42 类。
+//  风/箭/花只在国标模式收（见 card(for:includeHonors:)）——四川麻将没有字牌，
+//  桌上混进来一张只会把张数搞乱。
 //
 
 import Foundation
@@ -66,7 +68,9 @@ actor LocalTileRecognizer {
         }
     }
 
-    func recognize(imageData: Data) throws -> RecognitionResult {
+    /// - Parameter includeHonors: 是否收下风/箭/花。四川麻将传 false（桌上混进一张「中」
+    ///   只会把张数搞乱），国标传 true。
+    func recognize(imageData: Data, includeHonors: Bool = false) throws -> RecognitionResult {
         try loadSessionIfNeeded()
         guard let image = UIImage(data: imageData)?.normalizedUp() else {
             throw LocalRecognitionError.invalidImage
@@ -96,14 +100,14 @@ actor LocalTileRecognizer {
             }
         }
 
-        // 只保留 万/筒/条（忽略风/箭等），转成牌盒后做空间聚类分组
+        // 转成牌盒后做空间聚类分组。川麻只收万/筒/条，国标连风/箭/花一起收。
         let boxes: [TileBox] = finalDets.compactMap { d in
-            guard let c = card(for: d.classId) else { return nil }
+            guard let c = card(for: d.classId, includeHonors: includeHonors) else { return nil }
             return TileBox(minX: d.x1, maxX: d.x2, cy: d.cy, height: d.h, card: c)
         }
         guard !boxes.isEmpty else { throw LocalRecognitionError.noTiles }
         let result = groupTiles(boxes)
-        guard !result.hand.isEmpty || !result.melds.isEmpty else {
+        guard !result.hand.isEmpty || !result.melds.isEmpty || !result.flowers.isEmpty else {
             throw LocalRecognitionError.noTiles
         }
         return result
@@ -309,20 +313,51 @@ actor LocalTileRecognizer {
         return union <= 0 ? 0 : Float(inter / union)
     }
 
-    // MARK: - 类别 → MahjongCard（仅 万/筒/条）
+    // MARK: - 类别 → MahjongCard
+    //
+    // 模型是 **42 类**：27 个数牌 + 7 个风/箭 + 8 个花/季。风箭在实拍里的置信度
+    // 是 0.89–0.94，和数牌一个水平（见 data/honors/README.md），完全认得出来。
+    //
+    // `includeHonors` 决定收不收风/箭/花：
+    //   - 四川麻将没有字牌，桌上混进来一张「中」只会把张数搞乱 → 丢弃
+    //   - 国标要用 → 收下
 
-    private func card(for classId: Int) -> MahjongCard? {
+    private func card(for classId: Int, includeHonors: Bool) -> MahjongCard? {
         guard classId >= 0, classId < classNames.count else { return nil }
-        let name = classNames[classId]          // 如 "5C"
-        guard name.count == 2,
-              let rank = Int(String(name.first!)), (1...9).contains(rank) else { return nil }
+        let name = classNames[classId]          // 数牌如 "5C"，风箭如 "EW"
+        guard name.count == 2 else { return nil }
+
+        // 风牌 EW/SW/WW/NW、箭牌 RD/GD/WD。rank 与 MahjongCard 的约定对齐：
+        // 风 1…4 = 东南西北，箭 1…3 = 中发白。
+        if let honor = Self.honorRanks[name] {
+            guard includeHonors else { return nil }
+            return MahjongCard(suit: honor.suit, rank: honor.rank)
+        }
+
+        guard let rank = Int(String(name.first!)), (1...9).contains(rank) else { return nil }
         switch name.last! {
         case "C": return MahjongCard(suit: .wan, rank: rank)   // Characters 万
         case "D": return MahjongCard(suit: .tong, rank: rank)  // Dots 筒
         case "B": return MahjongCard(suit: .tiao, rank: rank)  // Bamboo 条
-        default:  return nil                                    // F/S/风/箭：忽略
+        // 季牌 1S…4S = 春夏秋冬 → 花 1…4；花牌 1F…4F = 梅兰菊竹 → 花 5/6/8/7。
+        // 注意 F 的次序：牌面上印的编号是「梅1 兰2 菊3 竹4」，而 MahjongCard 的
+        // huaHan 是「春夏秋冬梅兰竹菊」，竹在 7、菊在 8——所以 3F→8、4F→7，不是顺着排的。
+        case "S": guard includeHonors else { return nil }
+                  return MahjongCard(suit: .hua, rank: rank)
+        case "F": guard includeHonors else { return nil }
+                  return MahjongCard(suit: .hua, rank: Self.flowerRanks[rank - 1])
+        default:  return nil
         }
     }
+
+    /// 风/箭类别名 → (花色, rank)
+    private static let honorRanks: [String: (suit: MahjongCard.Suit, rank: Int)] = [
+        "EW": (.feng, 1), "SW": (.feng, 2), "WW": (.feng, 3), "NW": (.feng, 4),
+        "RD": (.jian, 1), "GD": (.jian, 2), "WD": (.jian, 3),
+    ]
+
+    /// 1F…4F（梅兰菊竹）→ MahjongCard 的 hua rank
+    private static let flowerRanks = [5, 6, 8, 7]
 }
 
 // MARK: - 方向归一化

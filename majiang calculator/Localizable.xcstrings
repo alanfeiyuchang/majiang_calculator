@@ -4076,22 +4076,6 @@
         }
       }
     },
-    "国标模式：拍照只能识别万/筒/条，风牌、箭牌、花牌认不出来，请在键盘上手动补入。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MCR: photo recognition only reads characters/dots/bamboo. Winds, dragons and flowers are not recognised — add them with the keypad."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "国标模式：拍照只能识别万/筒/条，风牌、箭牌、花牌认不出来，请在键盘上手动补入。"
-          }
-        }
-      }
-    },
     "识别到 %lld 张牌（应为 13 或 14）。" : {
       "localizations" : {
         "en" : {
@@ -6872,6 +6856,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "和的那张牌能有好几种读法时：开 = 按对你有利的那种读，这 1 分照给；关 = 只有读法唯一、没有第二种拆法时才给这 1 分。"
+          }
+        }
+      }
+    },
+    "听牌计算器 · 川麻" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenpai Calculator · Sichuan"
+          }
+        }
+      }
+    },
+    "切换玩法" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch game type"
+          }
+        }
+      }
+    },
+    "国标模式：吃（顺子）认不出来会当成手牌，平摊的风牌和花牌也容易认错，请核对后再算。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MCR: chow (runs) aren't detected and will land in your hand; winds and flowers lying flat are easily misread. Please double-check before analyzing."
           }
         }
       }

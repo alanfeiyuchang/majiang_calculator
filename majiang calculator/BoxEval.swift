@@ -22,6 +22,11 @@ enum BoxEval {
         ProcessInfo.processInfo.environment["MJ_EVAL"] == "1"
     }
 
+    /// MJ_EVAL_MCR=1：按国标模式识别（收风/箭/花）。默认川麻，只收万/筒/条。
+    private static var includeHonors: Bool {
+        ProcessInfo.processInfo.environment["MJ_EVAL_MCR"] == "1"
+    }
+
     static func run() async {
         let fm = FileManager.default
         guard let docs = fm.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
@@ -80,10 +85,11 @@ enum BoxEval {
             }
         }
         do {
-            let r = try await recognizer.recognize(imageData: payload)
+            let r = try await recognizer.recognize(imageData: payload, includeHonors: includeHonors)
             let hand = r.hand.map(code).joined(separator: " ")
             let melds = r.melds.map { "\($0.kind.rawValue):\(code($0.card))" }.joined(separator: " ")
-            print("REC \(name) hand=[\(hand)] melds=[\(melds)]")
+            let flowers = r.flowers.map(code).joined(separator: " ")
+            print("REC \(name) hand=[\(hand)] melds=[\(melds)] flowers=[\(flowers)] n=\(r.effectiveTileCount)")
         } catch {
             print("REC \(name) error \(error.localizedDescription)")
         }
@@ -96,9 +102,8 @@ enum BoxEval {
         case .wan:  suit = "m"
         case .tong: suit = "p"
         case .tiao: suit = "s"
-        case .feng: suit = "z"   // 模型认不出字牌，这里只为穷尽 switch
-        case .jian: suit = "z"
-        case .hua:  suit = "f"
+        // 字牌/花牌直接打汉字，比 "1z" 好核对（风 1…4 = 东南西北，箭 1…3 = 中发白）
+        case .feng, .jian, .hua: return c.rankHanDigit
         }
         return "\(c.rank)\(suit)"
     }

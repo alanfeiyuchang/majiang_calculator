@@ -323,8 +323,9 @@ final class MahjongViewModel: ObservableObject {
     /// （限剩余名额、且每张牌手牌+副露合计 ≤ 4）。返回是否发生截断。
     @discardableResult
     func applyRecognition(_ result: RecognitionResult) -> Bool {
-        // 国标模式下保留用户已经手动补进去的花牌（模型认不出花牌）
-        let keptFlowers = gameMode.isMCR ? flowerTiles : []
+        // 国标模式：花牌用识别到的那些。识别不到花时（照片里本来就没有，或没框进去）
+        // 退回用户已经手动补的，免得一次识别把他刚点好的花清空。
+        let keptFlowers = gameMode.isMCR ? (result.flowers.isEmpty ? flowerTiles : result.flowers) : []
         melds = Array(result.melds.prefix(maxMelds))
         var freq = meldsToFrequency27(melds)
         let cap = maxConcealed
@@ -359,13 +360,16 @@ final class MahjongViewModel: ObservableObject {
         defer { isRecognizing = false }
 
         do {
-            let result = try await recognizer.recognize(imageData: imageData)
+            let result = try await recognizer.recognize(imageData: imageData,
+                                                        includeHonors: gameMode.isMCR)
             let truncated = applyRecognition(result)   // 内部会 clearResult()
             let b = appLanguageBundle()
 
-            // 国标模式：模型只认 万/筒/条 27 类，风/箭/花永远认不出来，只能手动补。
+            // 国标模式的两个已知短板（都不是「认不出字牌」——模型认得出，见 data/honors/）：
+            //   1) 分组只会把「3/4 张同牌」判成副露，吃（顺子）认不出来，会当成手牌
+            //   2) 平摊在桌面上的散牌容易南/北互认、花牌分不清具体是哪张
             let mcrNotice = gameMode.isMCR
-                ? String(localized: "国标模式：拍照只能识别万/筒/条，风牌、箭牌、花牌认不出来，请在键盘上手动补入。", bundle: b)
+                ? String(localized: "国标模式：吃（顺子）认不出来会当成手牌，平摊的风牌和花牌也容易认错，请核对后再算。", bundle: b)
                 : nil
 
             // 张数不变量：手牌 + 3×副露 必须是 13 或 14。对不上说明混进了桌上其他人的牌、

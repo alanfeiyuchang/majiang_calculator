@@ -10,3 +10,6 @@ xcuserdata/
 # 照片本身请自行放回 data/ 后用 data/README.md 的步骤重新生成 preview/。
 data/*.HEIC
 data/preview/
+
+# 字牌/花牌实拍（同样拍到了住处，不进仓库）
+data/honors/
