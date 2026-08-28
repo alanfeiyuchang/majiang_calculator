@@ -133,9 +133,6 @@ final class MahjongViewModel: ObservableObject {
             + melds.reduce(0) { $0 + $1.tiles.count(where: { $0 == card }) }
     }
 
-    /// 这张牌最多能用几张（花牌 1 张，其余 4 张）
-    func copyLimit(of card: MahjongCard) -> Int { card.suit.isFlower ? 1 : 4 }
-
     func addCard(_ card: MahjongCard) {
         if card.suit.isFlower {
             guard gameMode.isMCR else { return }

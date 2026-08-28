@@ -43,8 +43,6 @@ struct MCRSet: Equatable {
     var tile: Int
     /// 结构上是「暗」的（手内的牌，或暗杠）
     var concealed: Bool
-    /// 来自副露区
-    var fromMeld: Bool
 
     var isPungLike: Bool { kind == .pung || kind == .kong }
     var suit: Int { mcrSuitOf(tile) }
@@ -260,10 +258,10 @@ func mcrMeldSets(_ melds: [Meld]) -> [MCRSet] {
         let i = m.card.mcrIndex
         guard i >= 0 else { return nil }
         switch m.kind {
-        case .chow: return MCRSet(kind: .chow, tile: i, concealed: false, fromMeld: true)
-        case .pong: return MCRSet(kind: .pung, tile: i, concealed: false, fromMeld: true)
-        case .exposedKong: return MCRSet(kind: .kong, tile: i, concealed: false, fromMeld: true)
-        case .concealedKong: return MCRSet(kind: .kong, tile: i, concealed: true, fromMeld: true)
+        case .chow: return MCRSet(kind: .chow, tile: i, concealed: false)
+        case .pong: return MCRSet(kind: .pung, tile: i, concealed: false)
+        case .exposedKong: return MCRSet(kind: .kong, tile: i, concealed: false)
+        case .concealedKong: return MCRSet(kind: .kong, tile: i, concealed: true)
         }
     }
 }
@@ -284,13 +282,13 @@ private func enumerateHandSets(
     guard let i = c.firstIndex(where: { $0 > 0 }) else { return }
     if c[i] >= 3 {
         c[i] -= 3
-        acc.append(MCRSet(kind: .pung, tile: i, concealed: true, fromMeld: false))
+        acc.append(MCRSet(kind: .pung, tile: i, concealed: true))
         enumerateHandSets(&c, &acc, need, &out)
         acc.removeLast(); c[i] += 3
     }
     if mcrCanStartChow(i), c[i + 1] > 0, c[i + 2] > 0 {
         c[i] -= 1; c[i + 1] -= 1; c[i + 2] -= 1
-        acc.append(MCRSet(kind: .chow, tile: i, concealed: true, fromMeld: false))
+        acc.append(MCRSet(kind: .chow, tile: i, concealed: true))
         enumerateHandSets(&c, &acc, need, &out)
         acc.removeLast()
         c[i] += 1; c[i + 1] += 1; c[i + 2] += 1
@@ -314,7 +312,7 @@ func mcrDecompose(concealed freq: [Int], meldCount: Int) -> [MCRDecomposition] {
             guard !seen.contains(key) else { continue }
             seen.insert(key)
             out.append(MCRDecomposition(
-                pair: MCRSet(kind: .pair, tile: p, concealed: true, fromMeld: false),
+                pair: MCRSet(kind: .pair, tile: p, concealed: true),
                 handSets: s
             ))
         }

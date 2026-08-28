@@ -108,17 +108,14 @@ func mcrIsSevenPairs(_ freq: [Int]) -> Bool {
     freq.reduce(0, +) == 14 && freq.allSatisfy { $0 % 2 == 0 }
 }
 
-/// 连七对：同一花色 7 个连续点数各成对（如 1122334455667788 中的任意 7 连）
+/// 连七对：同一花色 7 个连续点数各成对（1–7 / 2–8 / 3–9）
 func mcrIsSevenShiftedPairs(_ freq: [Int]) -> Bool {
     guard mcrIsSevenPairs(freq) else { return false }
     for suit in 0..<3 {
         for start in 0...2 {
             let base = suit * 9 + start
-            if (0..<7).allSatisfy({ freq[base + $0] == 2 }),
-               freq.reduce(0, +) == 14,
-               (0..<mcrTileKinds).allSatisfy({ i in
-                   (i >= base && i < base + 7) ? freq[i] == 2 : freq[i] == 0
-               }) {
+            let run = base..<(base + 7)
+            if (0..<mcrTileKinds).allSatisfy({ freq[$0] == (run.contains($0) ? 2 : 0) }) {
                 return true
             }
         }

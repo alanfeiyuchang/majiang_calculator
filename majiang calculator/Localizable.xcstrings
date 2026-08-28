@@ -3875,21 +3875,9 @@
     "%lld 分（含花 %lld）" : {
       "localizations" : {
         "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%1$lld pt (incl. %2$lld flower)"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%1$lld pts (incl. %2$lld flower)"
-                }
-              }
-            }
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld pts (incl. %2$lld flower)"
           }
         },
         "zh-Hans" : {
