@@ -122,7 +122,8 @@ func isCompleteHand(_ freq: [Int], melds: [Meld] = []) -> Bool {
 
     // 缺一门：手牌 + 副露合并后三门齐全为「花猪」，不能胡
     var combined = freq
-    for m in melds { combined[m.card.tileIndex] += m.tileCount }
+    let meldFreq = meldsToFrequency27(melds)
+    for i in 0..<27 { combined[i] += meldFreq[i] }
     guard suitCount(combined) <= 2 else { return false }
 
     if melds.isEmpty, sum == 14, isSevenPairs(freq) { return true }
@@ -193,7 +194,7 @@ private func chiitoiShanten(_ counts: [Int]) -> Int {
 func shantenOf(_ freq: [Int], melds: [Meld] = []) -> Int {
     let size = freq.reduce(0, +)
     guard size >= 1 else { return 8 }
-    let meldSuits = Set(melds.map { $0.card.tileIndex / 9 })
+    let meldSuits = Set(melds.map { $0.card.tileIndex }.filter { $0 >= 0 }.map { $0 / 9 })
     guard meldSuits.count <= 2 else { return 8 }
     let n = size / 3
     let whole = melds.isEmpty && (size == 13 || size == 14)

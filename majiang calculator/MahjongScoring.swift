@@ -31,6 +31,15 @@ enum GenMode: String, Codable, CaseIterable {
 
 /// 可因地区而异的规则项，全部持久化
 struct RuleSettings: Codable, Equatable {
+    /// 玩法：四川麻将（血战到底）/ 国标麻将（MCR）。默认四川，保持老用户不变。
+    var gameMode: GameMode = .sichuan
+
+    // MARK: 国标专用
+    /// 圈风 0–3 = 东南西北
+    var mcrPrevalentWind: Int = 0
+    /// 门风（自己的座位风）0–3 = 东南西北
+    var mcrSeatWind: Int = 0
+
     /// 底分（0 番平胡的单家金额）
     var baseStake: Double = 1
     /// 封顶番数；0 = 不封顶（默认）
@@ -81,11 +90,15 @@ struct RuleSettings: Codable, Equatable {
         case pingHuEnabled, pengPengHuEnabled, qingYiSeEnabled
         case qiXiaoDuiEnabled, haoHuaEnabled, menQingEnabled, duanYaoJiuEnabled
         case goldenHookFan, jiangEnabled, genMode, onlyKongCountsAsGen, kongBloomEnabled
+        case gameMode, mcrPrevalentWind, mcrSeatWind
         case kongCountsAsGen  // 旧键，仅用于迁移
     }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
+        gameMode = try c.decodeIfPresent(GameMode.self, forKey: .gameMode) ?? .sichuan
+        mcrPrevalentWind = try c.decodeIfPresent(Int.self, forKey: .mcrPrevalentWind) ?? 0
+        mcrSeatWind = try c.decodeIfPresent(Int.self, forKey: .mcrSeatWind) ?? 0
         baseStake = try c.decodeIfPresent(Double.self, forKey: .baseStake) ?? 1
         fanCap = try c.decodeIfPresent(Int.self, forKey: .fanCap) ?? 0
         selfDrawAddsFan = try c.decodeIfPresent(Bool.self, forKey: .selfDrawAddsFan) ?? true
@@ -112,6 +125,9 @@ struct RuleSettings: Codable, Equatable {
     // 显式编码（CodingKeys 含仅解码用的旧键，故不能用自动合成）
     func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(gameMode, forKey: .gameMode)
+        try c.encode(mcrPrevalentWind, forKey: .mcrPrevalentWind)
+        try c.encode(mcrSeatWind, forKey: .mcrSeatWind)
         try c.encode(baseStake, forKey: .baseStake)
         try c.encode(fanCap, forKey: .fanCap)
         try c.encode(selfDrawAddsFan, forKey: .selfDrawAddsFan)
@@ -152,8 +168,11 @@ final class RuleSettingsStore: ObservableObject {
         }
     }
 
+    /// 恢复默认规则——保留当前「玩法」，只把规则项打回默认
     func resetToDefaults() {
-        settings = RuleSettings()
+        var fresh = RuleSettings()
+        fresh.gameMode = settings.gameMode
+        settings = fresh
     }
 }
 
@@ -188,6 +207,8 @@ struct FanItem: Identifiable {
     let fan: Int
     /// 额外加底单位数（加底类：根加底 / 自摸加底，进金额不进番）
     var baseAdd: Int = 0
+    /// 同一番型命中的次数（国标用：箭刻 ×2、幺九刻 ×3、花牌 ×n…）。四川一律 1。
+    var count: Int = 1
 
     /// 中文加成文字（日志/测试用；UI 显示走本地化格式，见 ContentView）
     var fanText: String {
@@ -245,7 +266,8 @@ func scoreWinningHand(
     context: WinContext
 ) -> WinScore {
     var combined = concealed
-    for m in melds { combined[m.card.tileIndex] += m.tileCount }
+    let meldFreq27 = meldsToFrequency27(melds)
+    for i in 0..<27 { combined[i] += meldFreq27[i] }
     let sum = concealed.reduce(0, +)
 
     var items: [FanItem] = []
