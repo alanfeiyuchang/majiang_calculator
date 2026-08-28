@@ -70,6 +70,19 @@ private let nearFieldRatio: CGFloat = 0.70
 /// 给大了薄薄的单排手牌 IoU 掉得很快。
 private let regionPadTiles: CGFloat = 0.20
 
+/// 行内切簇的间距阈值，单位是「平均牌宽」的倍数。
+///
+/// 在 data/ 的 12 张实拍上量过（只统计「自己的牌」那些行，n=133 个间距）：
+///   组内相邻牌      -0.35 … +0.05   （牌挨着摆，检测框还略有重叠）
+///   组与组之间      +0.72、+1.18    （照片 04，一行摆了几副副露）
+/// 中间 0.05–0.72 是一片空白，分界很干净。
+///
+/// 原值 0.9 **比观测到的最小真实组间间距（0.72）还大**，等于那条边界根本没被切开，
+/// 只能靠簇内的贪心解析去救；国标的吃摆得离手牌近一点就会被并进手牌。
+/// 0.35 取在空白区间里：高于组内上限 0.05（也高于合成测试里的 0.10）7 倍，
+/// 又比 0.72 低一半。改成 0.35 后 12 张实拍走完整链路的结果逐字节不变。
+private let colGapTiles: CGFloat = 0.35
+
 /// 闭包吸收阈值：已经有这么大比例压在框内的检测框会被并进来。
 /// 用来救「平摊成方阵、透视很陡」的情况——最远那排偏矮会被高度阈值切掉，
 /// 但它就紧贴在保留区上方，闭包能捞回来，又不会吸到远处的弃牌。
@@ -157,9 +170,7 @@ private func group(_ boxes: [TileBox], guessConcealedKong: Bool, mode: GameMode)
 
     // ② 行内按横向间距切簇（间距 > 约半张牌宽 → 断开）
     let avgW = near.map(\.width).reduce(0, +) / CGFloat(near.count)
-    // 0.9 而不是 0.55：立着摆的手牌彼此有缝，阈值太小会把一排切成好几段，
-    // 碎出来的单张再被当成暗杠。桌上副露与手牌的间隔通常大于一张牌宽。
-    let colGap = max(avgW * 0.9, 1)
+    let colGap = max(avgW * colGapTiles, 1)
     var clusters: [[TileBox]] = []
     for row in rows {
         let sorted = row.sorted { $0.minX < $1.minX }
