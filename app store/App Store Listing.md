@@ -70,33 +70,28 @@
 > 备选（更短，但国标玩家不知道能用）：`你的私人麻将助手。拍张照，这把牌怎么打、值多少钱，它都替你算好。`
 
 **App 描述（Description，≤4000 字符）**
+
+> 472 字（原 859）。砍一半没有代价：App Store 的搜索排名只看名称、副标题、关键词三个字段，
+> **描述里的词不参与索引**（与 Google Play 不同）。列表页折叠前只露 2–3 行，
+> 所以首句要能独立成立，后面留给愿意读的人。
 ```
-打牌纠结要多久，「听牌计算器」就能替你省多久。手机镜头一扫，或者手动点几下，向听、听牌、该打哪张、能胡多少钱——瞬间全部算清楚。四川麻将（缺一门 · 血战到底）与国标麻将都支持，新手复盘、老手图省事，都用得上。
+你的私人麻将助手。拍一张，或者点几下，这把牌听什么、该打哪张、能胡多少钱，立刻算清楚。四川血战到底与国标麻将都支持。
 
-• 听牌一眼看穿 —— 手牌输进去，是否听牌、能胡哪些牌，立刻列清楚；空听也会提醒你，别空欢喜一场。
+• 听牌与向听 —— 是否听牌、能胡哪些牌、离听牌还差几张、摸哪张最有用、每种还剩几张，一屏看完。空听也会提醒你。
 
-• 算番算钱，不用再心算 —— 每张听牌自动算好番数和输赢金额，点炮、自摸分开算。碰碰胡、清一色、七小对、豪华七对、金钩钓、十八罗汉、杠上开花、天胡地胡……几十种番型全覆盖，点一下还能看懂番型是什么意思。
+• 算番算钱 —— 每张听牌自动算好番数和金额，点炮、自摸分开算。四川几十种番型、国标 81 种番种全覆盖，点一下就知道每种是什么意思。
 
-• 向听 + 进张，心里有数 —— 还没听牌？离听牌差几张、摸哪张最有用、每种还剩几张，全部摆在眼前。
+• 打牌建议 —— 摸到第 14 张纠结打哪张？逐张比较向听、进张和番数，直接告诉你哪张最划算。
 
-• 打牌建议，替你选最优解 —— 摸到第 14 张纠结打哪张？逐张比较向听数、进张数和番数，直接告诉你打哪张最划算。
+• 拍照识别 —— 对着牌桌拍一张，自动框出你的牌，碰、杠、吃也帮你分好。全程在手机上跑，不联网、不上传，你的牌只有你自己看得到。
 
-• 拍照识别，懒人福音 —— 对着牌桌一拍，不用特意框选，万筒条自动认出来，碰、杠也帮你分好，识别完直接出结果。全程本地识别，不联网、不上传，你的牌只有你自己看得到。
+• 规则跟着牌桌走 —— 底分、封顶、自摸和根怎么算、各番型开不开，你们的规矩你说了算。
 
-• 规则跟着牌桌走 —— 底分、番数上限、自摸和根怎么算、每种番型开不开，你们的规矩你说了算，改一次全局生效，还有番型一览随时查。
+四川麻将会自动识别「缺一门」，三门齐全（花猪）直接提示；国标是完整实现，起和 8 分、吃碰杠与风箭花齐全。
 
-• 牌面做得跟真的一样 —— 万、筒、条都是写实牌面设计，一眼分清花色点数，点起来也顺手。
+完全离线，无需注册登录，不收集任何信息。没有广告，没有内购。
 
-• 中英双语，一键切换 —— 界面语言自己选，不跟系统语言走。
-
-四川麻将规则从骨子里适配：自动识别「缺一门」，三门花色齐全（花猪）直接提示；血战到底的算法逻辑全部内建。
-国标麻将同样是完整实现：81 种番种、起和 8 分、吃碰杠与风箭花齐全，几处各地写法有分歧的规则做成了开关，照你们的打法选。
-
-完全离线运行，不需要注册、不需要登录，不收集任何个人信息。界面简洁，没有广告，没有内购，就是一个纯粹好用的工具。
-
-无论是刚学四川麻将、想练手复盘，还是打惯了图个省事算钱，这款 App 都合适。
-
-注：本 App 是一款牌效计算与学习工具，不含任何真钱或模拟下注玩法。
+注：本 App 是牌效计算与学习工具，不含任何真钱或模拟下注玩法。
 ```
 
 **更新内容（What's New / Release Notes，≤4000 字符）**
@@ -256,32 +251,21 @@ Your personal mahjong assistant. Snap a photo and it works out how to play the h
 
 **Description (≤4000)**
 ```
-Tenpai Helper is a hand-efficiency and scoring tool for Sichuan-style mahjong. Whether you're learning or sharpening your game, it shows you exactly how to play your hand — and how much it's worth.
+Your personal mahjong assistant. Snap a photo, or tap your tiles in, and see what your hand is waiting on, which tile to discard, and what it's worth. Sichuan Bloody and Chinese Official rules both supported.
 
-Tap your tiles and melds in, or photograph them and let the app recognize them automatically, then get an instant, clear analysis:
+• Waits and shanten — Whether you're ready, every tile you can win on, how many steps away you are, which draws help most, and how many of each remain.
 
-• Waits (tenpai) — Instantly tell whether your hand is ready, and list every tile you can win on.
+• Scoring — Every wait comes with its fan count and payout, discard-win and self-draw scored separately. Dozens of Sichuan fan types and all 81 MCR fan, each with a one-line explanation.
 
-• Fan scoring & payouts — Every wait comes with its fan count and exact payout (discard-win vs. self-draw), covering all-pongs, flush, seven pairs / grand seven pairs, single-wait pairs, and more. Tap any fan for a one-line explanation.
+• Discard advice — Drew your 14th tile? Compare every discard by shanten, acceptance and fan, and see which one comes out ahead.
 
-• Hand + table melds — Enter pongs, exposed kongs, and concealed kongs separately from your concealed hand; they're correctly factored into waits and scoring.
+• Photo recognition — Point your camera at the table. It frames your tiles for you and sorts out pongs, kongs and chows. Runs entirely on your phone — no internet, nothing uploaded.
 
-• Rule settings — Base stake, fan cap, how self-draw/kongs are scored, which fan types are in play — all persisted and applied live, so it matches how your table actually plays.
+• Rules that match your table — Base stake, cap, how self-draw and kongs score, which fan types are in play.
 
-• Shanten + acceptance — Not there yet? See how many steps away you are, every tile that gets you closer, and how many of each remain.
+Sichuan rules handle the missing-one-suit requirement and flag hands holding all three suits. Chinese Official is fully implemented, with the 8-point minimum, chows, winds, dragons and flowers.
 
-• Discard advice — After drawing your 14th tile, compare every discard by shanten, acceptance, and resulting fan, and see which one's best.
-
-• Photo recognition — Point your camera at the table, no cropping needed. The app reads your tiles, separates your hand from table melds, and shows the result immediately. Runs entirely on your device — no internet, nothing uploaded.
-
-• Realistic tiles — Characters, dots, and bamboo are drawn to look like real mahjong tiles, easy to read and tap.
-
-• Bilingual — Switch between English and Chinese with one tap, independent of your system language.
-
-Built for Sichuan rules: it handles the "missing-one-suit" requirement and flags hands that hold all three suits. Chinese Official (MCR) is fully implemented too — all 81 fan, an 8-point minimum, chows, winds, dragons and flowers, with toggles for the handful of rules that vary between rulebooks.
-
-• Fully offline. No account, no login, no data collected.
-• Clean and simple. No ads, no in-app purchases.
+Fully offline. No account, no data collected, no ads, no in-app purchases.
 
 Note: this is a calculator and study tool. It contains no real-money or simulated betting.
 ```
