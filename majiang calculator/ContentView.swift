@@ -322,6 +322,7 @@ struct ContentView: View {
                 .onChange(of: viewModel.hasAnalyzed) { _, analyzed in
                     if analyzed {
                         scrollToResult(proxy)
+                        SpeechAnnouncer.shared.speak(SpokenSummary.segments(for: spokenState))
                     } else {
                         // 手牌变了：上一局的场景番勾选作废
                         kongBloom = false; lastTileDraw = false; heavenly = false
@@ -676,6 +677,38 @@ struct ContentView: View {
             settings: ruleStore.settings,
             context: winContext(selfDrawn: selfDrawn ?? showSelfDraw)
         )
+    }
+
+    // MARK: - 语音播报
+
+    /// 播报用的状态快照。番/钱走界面同一套算法与排序，
+    /// 免得「说出来的」和「屏幕上显示的」对不上。
+    private var spokenState: SpokenState {
+        var st = SpokenState(mode: gameMode, shanten: viewModel.shantenValue)
+        st.isDeadWait = viewModel.isDeadWait
+        if let hint = viewModel.hintMessage { st.blockingHint = hint }
+
+        if viewModel.shantenValue == 0 {
+            st.waits = viewModel.waitingTiles.map { card in
+                gameMode.isMCR
+                    ? SpokenWait(card: card, money: nil, fan: mcrScore(adding: card).totalPoints)
+                    : SpokenWait(card: card, money: winScore(adding: card).money, fan: nil)
+            }
+        } else if !viewModel.discards.isEmpty {
+            // 取界面上排第一的那条建议
+            let top: DiscardSuggestion? = gameMode.isMCR
+                ? mcrEvaluateDiscards(viewModel.discards, cards: viewModel.handTiles,
+                                      melds: viewModel.melds, settings: ruleStore.settings,
+                                      flowers: viewModel.flowerTiles.count).first?.suggestion
+                : evaluateDiscards(viewModel.discards, cards: viewModel.handTiles,
+                                   melds: viewModel.melds,
+                                   settings: ruleStore.settings).first?.suggestion
+            if let top {
+                st.bestDiscard = top.discard
+                st.discardLeadsToTenpai = top.resultingShanten == 0
+            }
+        }
+        return st
     }
 
     /// 3n+2 已和时整副牌的番与钱

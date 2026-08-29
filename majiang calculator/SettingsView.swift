@@ -15,6 +15,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
 
     private var isMCR: Bool { store.settings.gameMode.isMCR }
+    @ObservedObject private var announcer = SpeechAnnouncer.shared
     private static let windNames = ["东", "南", "西", "北"]
 
     /// 「规则细则」里的一条：开关 + 一句讲清开/关差别的人话
@@ -184,6 +185,14 @@ struct SettingsView: View {
                     Button("恢复默认规则", role: .destructive) {
                         store.resetToDefaults()
                     }
+                }
+
+                Section {
+                    Toggle(isOn: $announcer.isEnabled) {
+                        Label("语音播报结果", systemImage: "speaker.wave.2")
+                    }
+                } footer: {
+                    Text("分析完就用中文念出来：向听几张、建议打哪张，或者听什么牌、各值多少钱。接了蓝牙耳机或智能眼镜时从它们里出声，不用看屏幕。")
                 }
 
                 Section {

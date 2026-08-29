@@ -6892,6 +6892,28 @@
           }
         }
       }
+    },
+    "语音播报结果" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speak the result"
+          }
+        }
+      }
+    },
+    "分析完就用中文念出来：向听几张、建议打哪张，或者听什么牌、各值多少钱。接了蓝牙耳机或智能眼镜时从它们里出声，不用看屏幕。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reads the analysis aloud: how far from ready and what to discard, or what you're waiting on and what each is worth. Plays through Bluetooth earbuds or smart glasses when connected, so you don't need to look at the screen."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
