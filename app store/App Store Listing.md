@@ -11,7 +11,7 @@
 | 项目 | 值 |
 |---|---|
 | Bundle ID | `ACM.majiang-calculator` |
-| 版本号 (Marketing Version) | `1.2` |
+| 版本号 (Marketing Version) | `1.3` |
 | 构建号 (Build) | 由 Xcode Cloud 递增，提交前以实际上传的为准 |
 | 最低系统 | iOS 17.0 |
 | 设备 | 仅 iPhone（TARGETED_DEVICE_FAMILY = 1） |
@@ -35,8 +35,10 @@
 
 **副标题（Subtitle，≤30 字符）**
 ```
-拍照识别·算番算钱·向听建议
+四川血战·国标算番·拍照识别
 ```
+> 1.3 起支持国标麻将，旧副标题「拍照识别·算番算钱·向听建议」没体现玩法，已换。
+> App 名称保持不动：「四川麻将」是现有搜索权重所在，换名会丢排名，国标放副标题里带。
 
 **类别（Category）**
 - 主要类别：工具（Utilities）
@@ -61,12 +63,14 @@
 
 **推广文本（Promotional Text，≤170 字符，可随时改、无需审核）**
 ```
-手牌一输，答案就出：听不听牌、还差几张、打哪张最优、这把能赢多少钱——App 帮你一次算清。拍照或点选都行，规则还能照你们牌桌调整。四川麻将玩家的算牌神器。
+四川血战到底、国标麻将都能算。拍张照，手牌、碰杠吃、风箭花自动认出来——听牌、向听、打哪张、几番多少钱，一次算清。规则照你们牌桌调，标题点一下换玩法。
 ```
+> 75 字符。上一版（只提四川）：
+> `手牌一输，答案就出：听不听牌、还差几张、打哪张最优、这把能赢多少钱——App 帮你一次算清。拍照或点选都行，规则还能照你们牌桌调整。四川麻将玩家的算牌神器。`
 
 **App 描述（Description，≤4000 字符）**
 ```
-打牌纠结要多久，「听牌计算器」就能替你省多久。手机镜头一扫，或者手动点几下，向听、听牌、该打哪张、能胡多少钱——瞬间全部算清楚。专为四川麻将（缺一门 · 血战到底）打造，新手复盘、老手图省事，都用得上。
+打牌纠结要多久，「听牌计算器」就能替你省多久。手机镜头一扫，或者手动点几下，向听、听牌、该打哪张、能胡多少钱——瞬间全部算清楚。四川麻将（缺一门 · 血战到底）与国标麻将都支持，新手复盘、老手图省事，都用得上。
 
 • 听牌一眼看穿 —— 手牌输进去，是否听牌、能胡哪些牌，立刻列清楚；空听也会提醒你，别空欢喜一场。
 
@@ -85,6 +89,7 @@
 • 中英双语，一键切换 —— 界面语言自己选，不跟系统语言走。
 
 四川麻将规则从骨子里适配：自动识别「缺一门」，三门花色齐全（花猪）直接提示；血战到底的算法逻辑全部内建。
+国标麻将同样是完整实现：81 种番种、起和 8 分、吃碰杠与风箭花齐全，几处各地写法有分歧的规则做成了开关，照你们的打法选。
 
 完全离线运行，不需要注册、不需要登录，不收集任何个人信息。界面简洁，没有广告，没有内购，就是一个纯粹好用的工具。
 
@@ -95,7 +100,19 @@
 
 **更新内容（What's New / Release Notes，≤4000 字符）**
 
-> **1.2（当前版本）**
+> **1.3（当前版本）**
+```
+这一版加了国标麻将，拍照也认得更全了。
+
+• 新增国标麻将。81 种番种、起和 8 分、可以吃，风牌箭牌花牌都能用。四川血战到底照旧，两套规则各算各的。
+• 标题点一下就换玩法。「听牌计算器 · 川麻」和「· 国标」之间随时切，不用再进设置页翻。
+• 拍照现在认得出风、箭、花。以前这三类牌一律被丢掉——其实模型一直认得，是 App 没收。
+• 拍照也认得出吃了。桌上摆开的顺子会被单独分成一副，不再混进手牌。
+• 框选更准。把牌分组的间距阈值重新按实拍数据校准过，副露摆得离手牌近一些也能分开。
+• 修好一处国标下的错误：识别到的风牌箭牌在回填时会被整批丢掉。
+```
+
+> 1.2
 ```
 这一版重做了拍照识别。
 
@@ -228,12 +245,12 @@ Tenpai Helper: Mahjong Calc
 
 **Subtitle (≤30)**
 ```
-Scan · Score · Discard tips
+Sichuan + MCR · Scan · Score
 ```
 
 **Promotional Text (≤170)**
 ```
-Not sure what your hand is waiting on, or how much it's worth? Snap a photo or tap tiles for shanten, waits, and fan/payout — with rule settings to match your table.
+Sichuan and Chinese Official (MCR), both covered. Snap a photo — hand, melds, chows, winds and flowers read automatically. Tap the title to switch rulesets.
 ```
 
 **Description (≤4000)**
@@ -260,7 +277,7 @@ Tap your tiles and melds in, or photograph them and let the app recognize them a
 
 • Bilingual — Switch between English and Chinese with one tap, independent of your system language.
 
-Built for Sichuan rules: it handles the "missing-one-suit" requirement and flags hands that hold all three suits.
+Built for Sichuan rules: it handles the "missing-one-suit" requirement and flags hands that hold all three suits. Chinese Official (MCR) is fully implemented too — all 81 fan, an 8-point minimum, chows, winds, dragons and flowers, with toggles for the handful of rules that vary between rulebooks.
 
 • Fully offline. No account, no login, no data collected.
 • Clean and simple. No ads, no in-app purchases.
@@ -270,10 +287,22 @@ Note: this is a calculator and study tool. It contains no real-money or simulate
 
 **Keywords (English, ≤100, comma-separated)**
 ```
-mahjong,tenpai,shanten,sichuan mahjong,tile efficiency,waits,discard,calculator,fan,scoring,payout
+mahjong,tenpai,shanten,sichuan mahjong,mcr,chinese official,tile efficiency,waits,discard,fan,score
 ```
 
-**What's New (1.2, current)**
+**What's New (1.3, current)**
+```
+This update adds Chinese Official rules, and photo recognition now reads more of the table.
+
+• Chinese Official (MCR) added. All 81 fan, an 8-point minimum, chow melds, and winds, dragons and flowers. Sichuan Bloody rules are untouched — each ruleset scores on its own terms.
+• Tap the title to switch rulesets. Move between "Tenpai Calculator · Sichuan" and "· MCR" without digging into settings.
+• Photos now read winds, dragons and flowers. These were being discarded before — the model could always see them, the app just wasn't taking them.
+• Photos now read chow melds. A run laid out on the table is grouped as its own meld instead of ending up in your hand.
+• Better grouping. The gap threshold that separates melds from your hand was recalibrated against real photos, so melds placed close to your hand still get split off.
+• Fixed a bug where recognized winds and dragons were dropped when filling the hand in MCR mode.
+```
+
+**What's New (1.2)**
 ```
 This update rebuilds photo recognition.
 
@@ -300,6 +329,7 @@ First release:
 
 ## 关键词（中文主语言，Keywords，≤100 字符，逗号分隔无空格）
 ```
-麻将,四川麻将,听牌,向听,进张,打牌,牌效,血战到底,缺一门,算番,规则设置,麻将计算器,麻将助手
+麻将,四川麻将,国标麻将,国标,听牌,向听,进张,牌效,血战到底,缺一门,算番,番种,吃碰杠,麻将计算器,麻将助手
 ```
-> 上面这串约 50 个中文字符，未超 100。名称/副标题里已出现的词可不必再放进关键词，把额度留给其它词。
+> 57 字符，未超 100。1.3 加入「国标麻将 / 国标 / 番种 / 吃碰杠」，
+> 挤掉了「打牌 / 规则设置」这两个搜索量低的词。
