@@ -170,6 +170,20 @@ SCREENS = [
         subtitle="自动框出你的手牌与碰杠，桌上别人的牌不会算进来",
         crop_top=130,
     ),
+    dict(
+        raw="7_mcr.png",
+        caption="国标麻将 · 听牌计算器",
+        headline="国标麻将，一样算得清",
+        subtitle="81 种番种、起和 8 分，吃与风牌箭牌花牌齐全",
+        # 不裁顶：标题「听牌计算器 · 国标」本身就是这张要传达的信息
+    ),
+    dict(
+        raw="8_mcr_score.png",
+        caption="国标麻将 · 听牌计算器",
+        headline="番分明细，一点就懂",
+        subtitle="点炮 / 自摸分开算，花牌单独计入，每种番型都有解释",
+        crop_top=140,   # 与 5_scoring 同构（同为番型明细弹窗）
+    ),
 ]
 
 if __name__ == "__main__":
