@@ -63,10 +63,11 @@
 
 **推广文本（Promotional Text，≤170 字符，可随时改、无需审核）**
 ```
-四川血战到底、国标麻将都能算。拍张照，手牌、碰杠吃、风箭花自动认出来——听牌、向听、打哪张、几番多少钱，一次算清。规则照你们牌桌调，标题点一下换玩法。
+你的私人麻将助手。拍张照，这把牌怎么打、值多少钱，它都替你算好。四川血战到底与国标麻将都支持。
 ```
-> 75 字符。上一版（只提四川）：
-> `手牌一输，答案就出：听不听牌、还差几张、打哪张最优、这把能赢多少钱——App 帮你一次算清。拍照或点选都行，规则还能照你们牌桌调整。四川麻将玩家的算牌神器。`
+> 47 字符。推广文本在描述正文上方，任务是让人想往下看，不是把功能列一遍——那是描述该干的事。
+> 末句点名国标不是凑功能：App 名称写着「四川麻将助手」，玩国标的人看名字就走了，这句是纠正名称的误导。
+> 备选（更短，但国标玩家不知道能用）：`你的私人麻将助手。拍张照，这把牌怎么打、值多少钱，它都替你算好。`
 
 **App 描述（Description，≤4000 字符）**
 ```
@@ -250,7 +251,7 @@ Sichuan + MCR · Scan · Score
 
 **Promotional Text (≤170)**
 ```
-Sichuan and Chinese Official (MCR), both covered. Snap a photo — hand, melds, chows, winds and flowers read automatically. Tap the title to switch rulesets.
+Your personal mahjong assistant. Snap a photo and it works out how to play the hand and what it's worth. Sichuan and Chinese Official both supported.
 ```
 
 **Description (≤4000)**
