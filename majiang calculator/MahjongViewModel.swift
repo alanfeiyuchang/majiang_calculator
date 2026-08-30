@@ -354,6 +354,9 @@ final class MahjongViewModel: ObservableObject {
         return kept.count < result.hand.count || result.melds.count > maxMelds
     }
 
+    /// 外部（眼镜拍照等）设置提示语
+    func setHint(_ message: String?) { hintMessage = message }
+
     private let recognizer = LocalTileRecognizer()
 
     /// 拍照/选图后自动定位「自己的牌」所在区域（相对坐标 0…1，左上原点），

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		AAAA0000000000000000F001 /* onnxruntime in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA0000000000000000D001 /* onnxruntime */; };
+		AAAA0000000000000000F002 /* MWDATCore in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA0000000000000000D002 /* MWDATCore */; };
+		AAAA0000000000000000F003 /* MWDATCamera in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA0000000000000000D003 /* MWDATCamera */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +30,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAAA0000000000000000F001 /* onnxruntime in Frameworks */,
+				AAAA0000000000000000F002 /* MWDATCore in Frameworks */,
+				AAAA0000000000000000F003 /* MWDATCamera in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,6 +83,8 @@
 			name = "majiang calculator";
 			packageProductDependencies = (
 				AAAA0000000000000000D001 /* onnxruntime */,
+				AAAA0000000000000000D002 /* MWDATCore */,
+				AAAA0000000000000000D003 /* MWDATCamera */,
 			);
 			productName = "majiang calculator";
 			productReference = D51C5A942F6A2A1100A6D602 /* majiang calculator.app */;
@@ -111,6 +117,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				AAAA0000000000000000C001 /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */,
+				AAAA0000000000000000C002 /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D51C5A952F6A2A1100A6D602 /* Products */;
@@ -196,7 +203,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -254,7 +261,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -274,6 +281,7 @@
 				DEVELOPMENT_TEAM = 5V3HM8L9GT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "用于拍摄牌桌上的麻将牌照片，自动识别手牌。";
@@ -282,7 +290,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -314,6 +322,7 @@
 				DEVELOPMENT_TEAM = 5V3HM8L9GT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "用于拍摄牌桌上的麻将牌照片，自动识别手牌。";
@@ -322,7 +331,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -376,6 +385,14 @@
 				version = 1.24.2;
 			};
 		};
+		AAAA0000000000000000C002 /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/facebook/meta-wearables-dat-ios";
+			requirement = {
+				kind = exactVersion;
+				version = 0.9.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -383,6 +400,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AAAA0000000000000000C001 /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */;
 			productName = onnxruntime;
+		};
+		AAAA0000000000000000D002 /* MWDATCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAAA0000000000000000C002 /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
+			productName = MWDATCore;
+		};
+		AAAA0000000000000000D003 /* MWDATCamera */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAAA0000000000000000C002 /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
+			productName = MWDATCamera;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

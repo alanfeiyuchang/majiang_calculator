@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Meta 智能眼镜（Wearables Device Access Toolkit）。
+	     以下这些键含嵌套字典/数组，GENERATE_INFOPLIST_FILE 的 INFOPLIST_KEY_* 表达不了，
+	     所以本工程改用实体 Info.plist；其余键仍由构建设置生成并合并进来。 -->
+
+	<!-- Meta AI 授权完成后回调回本 App 用的 scheme -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>majiangcalculator</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- SDK 用 canOpenURL 探测并跳转 Meta AI，scheme 必须在允许列表里 -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fb-viewapp</string>
+	</array>
+
+	<key>UISupportedExternalAccessoryProtocols</key>
+	<array>
+		<string>com.meta.ar.wearable</string>
+	</array>
+
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-peripheral</string>
+		<string>external-accessory</string>
+	</array>
+
+	<key>MWDAT</key>
+	<dict>
+		<key>AppLinkURLScheme</key>
+		<string>majiangcalculator://</string>
+		<!-- 开发者模式下填 "0" 即可，不需要在 Meta 那边注册应用。
+		     将来要发布才需要换成真正的 App ID。 -->
+		<key>MetaAppID</key>
+		<string>0</string>
+		<!-- 不让 Meta 收集本 App 与眼镜的通信数据 -->
+		<key>Analytics</key>
+		<dict>
+			<key>OptOut</key>
+			<true/>
+		</dict>
+	</dict>
+</dict>
+</plist>

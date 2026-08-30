@@ -6914,6 +6914,72 @@
           }
         }
       }
+    },
+    "用眼镜拍照识别" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capture with glasses"
+          }
+        }
+      }
+    },
+    "眼镜没连上，或还没在 Meta AI 里授权。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glasses aren't connected, or haven't been authorized in the Meta AI app."
+          }
+        }
+      }
+    },
+    "眼镜相机还没准备好。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The glasses camera isn't ready yet."
+          }
+        }
+      }
+    },
+    "这副眼镜没有可用的相机。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These glasses don't have a usable camera."
+          }
+        }
+      }
+    },
+    "眼镜连接中断了（镜腿合上或走出蓝牙范围）。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lost the connection to your glasses (folded, or out of Bluetooth range)."
+          }
+        }
+      }
+    },
+    "眼镜拒绝了拍照请求，请重试。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The glasses refused the capture request. Please try again."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

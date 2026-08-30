@@ -230,6 +230,7 @@ struct ContentView: View {
     @State private var photoItem: PhotosPickerItem?
     @State private var showPhotoPicker = false
     @State private var showCamera = false
+    @ObservedObject private var glasses = GlassesCamera.shared
     /// 选中/拍摄后待裁剪的图片（裁剪到只剩自己的手牌再识别）
     @State private var pendingCrop: PendingImage?
 
@@ -677,6 +678,27 @@ struct ContentView: View {
             settings: ruleStore.settings,
             context: winContext(selfDrawn: selfDrawn ?? showSelfDraw)
         )
+    }
+
+    /// 用眼镜拍一张，直接进裁剪页（和手机拍照走同一条后续链路）。
+    /// 任何一步失败都退回手机相机——眼镜是加分项，不该成为拦路虎。
+    private func captureWithGlasses() {
+        Task {
+            do {
+                let data = try await glasses.capture()
+                glasses.teardown()      // 拍完就放，别让隐私灯一直亮着、也省电
+                guard let image = UIImage(data: data) else {
+                    throw GlassesCamera.GlassesError.notReady
+                }
+                pendingCrop = PendingImage(image: image, source: .camera)
+            } catch {
+                glasses.teardown()
+                viewModel.setHint(error.localizedDescription)
+                if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                    showCamera = true
+                }
+            }
+        }
     }
 
     // MARK: - 语音播报
@@ -1289,16 +1311,19 @@ struct ContentView: View {
             Divider()
             VStack(alignment: .leading, spacing: 12) {
                 Button {
-                    // 直接开相机；没有相机硬件时（模拟器）退回相册，避免黑屏死路
-                    if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                    // 连着眼镜就用眼镜拍：视角天然对着牌，不用举手机。
+                    // 眼镜没连上/授权/拍失败，一律退回手机相机，不让用户卡住。
+                    if glasses.isAvailable {
+                        captureWithGlasses()
+                    } else if UIImagePickerController.isSourceTypeAvailable(.camera) {
                         showCamera = true
                     } else {
-                        showPhotoPicker = true
+                        showPhotoPicker = true   // 模拟器没相机，退回相册避免黑屏死路
                     }
                 } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: "camera.viewfinder")
-                        Text("拍照识别手牌")
+                        Image(systemName: glasses.isAvailable ? "eyeglasses" : "camera.viewfinder")
+                        Text(glasses.isAvailable ? "用眼镜拍照识别" : "拍照识别手牌")
                         Spacer(minLength: 0)
                     }
                     .font(.subheadline.weight(.semibold))
