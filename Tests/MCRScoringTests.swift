@@ -199,8 +199,10 @@ mexpect("F88-1 大四喜", msc("111222333444z55m", win: "5m"),
 mexpect("F88-2 大三元", msc("555666777z123m11p", win: "1p"),
         has: ["大三元"], hasnt: ["箭刻", "双箭刻"])
 mexpect("F88-3 绿一色", msc("222333444666s88s", win: "8s"), has: ["绿一色"], hasnt: ["缺一门"])
-mexpect("F88-4 九莲宝灯", msc("11123456789995m", win: "5m"),
-        has: ["九莲宝灯"], hasnt: ["清一色", "门前清", "无字", "幺九刻"])
+// 九莲宝灯把幺九刻**减 1**（不是整个吸收）：手里 111/999 两个幺九刻时官方留 1 个。
+// 官方 91 = 九莲宝灯 88 + 双暗刻 2 + 幺九刻 1。
+mexpect("F88-4 九莲宝灯", msc("11123456789995m", win: "5m"), points: 91,
+        has: ["九莲宝灯", "幺九刻"], hasnt: ["清一色", "门前清", "无字"])
 mexpect("F88-5 四杠", msc("11m", melds: [
             MM(.exposedKong, "2m"), MM(.exposedKong, "3m"),
             MM(.concealedKong, "4m"), MM(.concealedKong, "5m")], win: "1m"),
@@ -534,8 +536,8 @@ do {
                   options: mopt { $0.mcrJiuLianCountsShuangAnKe = true })
     let off = msco("11123455678999m", win: "5m",
                    options: mopt { $0.mcrJiuLianCountsShuangAnKe = false })
-    mexpect("O2a 九莲宝灯计双暗刻（开）= 90 分", on, points: 90, has: ["九莲宝灯", "双暗刻"])
-    mexpect("O2b 九莲宝灯不计双暗刻（关）= 88 分", off, points: 88,
+    mexpect("O2a 九莲宝灯计双暗刻（开）= 91 分", on, points: 91, has: ["九莲宝灯", "双暗刻"])
+    mexpect("O2b 九莲宝灯不计双暗刻（关）= 89 分", off, points: 89,
             has: ["九莲宝灯"], hasnt: ["双暗刻"])
 }
 

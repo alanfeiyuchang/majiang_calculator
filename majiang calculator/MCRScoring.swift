@@ -187,7 +187,7 @@ let mcrFanExcludes: [String: [String]] = [
     "大四喜": ["三风刻", "圈风刻", "门风刻", "碰碰和", "幺九刻"],
     "大三元": ["箭刻", "双箭刻"],
     "绿一色": ["缺一门", "混一色"],
-    "九莲宝灯": ["清一色", "门前清", "无字", "不求人", "幺九刻"],
+    "九莲宝灯": ["清一色", "门前清", "无字", "不求人"],
     "四杠": ["三杠", "双明杠", "双暗杠", "明杠", "暗杠", "碰碰和", "单钓将"],
     "连七对": ["七对", "清一色", "门前清", "无字", "单钓将", "不求人"],
     "十三幺": ["五门齐", "门前清", "单钓将", "不求人", "混幺九", "清幺九"],
@@ -274,6 +274,12 @@ private func mcrFinalize(_ hits: [FanHit], flowers: Int, options: MCROptions) ->
     // 不可重复原则。要迭代到不动点：被删掉的番**不能再去删别人**。
     // 例如 十三幺 删掉 不求人，而 不求人 的 victim 里有 自摸——
     // 单趟做的话自摸会跟着陪葬，十三幺自摸就少了 1 分。
+    // 九莲宝灯把幺九刻**减 1**，不是整个吸收——和三风刻减 3 是同一个套路。
+    // 九种和牌张实测：手里有 111 和 999 两个幺九刻时官方给 1 个，只有一个时给 0 个。
+    if merged["九莲宝灯"] != nil, let n = merged["幺九刻"] {
+        if n > 1 { merged["幺九刻"] = n - 1 } else { merged["幺九刻"] = nil; order.removeAll { $0 == "幺九刻" } }
+    }
+
     // 从**高番到低番**依次处理：番种的包含关系总是「大番吃掉必然并存的小番」，
     // 所以高分的先行使排除权。关键是**已经被删掉的番不再有排除权**——
     // 十三幺删掉不求人之后，不求人就不该再把自摸一起带走（十三幺自摸要计那 1 分）。
@@ -421,9 +427,8 @@ private func mcrFreqOnlyFan(_ stats: TileStats) -> [FanHit] {
     let tiles = stats.present
     if tiles.allSatisfy({ mcrIsTerminal($0) }) { hits.append(FanHit(name: "清幺九")) }
     else if tiles.allSatisfy({ mcrIsTerminalOrHonor($0) }) { hits.append(FanHit(name: "混幺九")) }
-    if tiles.allSatisfy({ !mcrIsHonor($0) && mcrRankOf($0) % 2 == 0 }) {
-        hits.append(FanHit(name: "全双刻"))
-    }
+    // 注意不能在这里判「全双刻」——它要求全部由 2/4/6/8 的**刻子**组成，
+    // 七对没有刻子。放进来会把「全是偶数的七对」误判成全双刻（官方给断幺）。
     var quads = 0
     for i in 0..<mcrTileKinds where stats.freq[i] == 4 { quads += 1 }
     if quads > 0 { hits.append(FanHit(name: "四归一", count: quads)) }
@@ -456,7 +461,13 @@ private func mcrKnittedExtraSets(_ concealed: [Int], melds: [Meld])
     guard let rest = stripped else { return nil }
 
     let meldSets = mcrMeldSets(melds)
-    for d in mcrDecompose(concealed: rest, meldCount: melds.count)
+    // 摘掉组合龙那 9 张后只剩「1 副面子 + 1 将」= 5 张。mcrDecompose 按
+    // 「14 − 3×副露数」校验张数，所以要按 3 组副露去调它，否则直接返回空。
+    // 组合龙型 = 9 张组合龙 + 1 副面子 + 1 将。摘掉那 9 张后：
+    //   无副露 → 剩 5 张（1 面子 + 将），要找 1 副  → 按 3 组副露调
+    //   1 组副露 → 剩 2 张（只有将），要找 0 副     → 按 4 组副露调
+    let pretendMelds = 3 + melds.count
+    for d in mcrDecompose(concealed: rest, meldCount: pretendMelds)
     where d.handSets.count + meldSets.count == 1 {
         return (d.handSets + meldSets, d.pair)
     }

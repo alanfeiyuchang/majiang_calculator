@@ -61,9 +61,8 @@ do {
                             + "实得[\(s.items.map(\.name).sorted().joined(separator: ","))]")
         }
     }
-    // 已知未收敛：2 条（组合龙的独听、九莲宝灯的幺九刻）。详见 Tests/data/mcr_review.md
-    mcheck(scoreFails.count <= 2, "ORC1 总分与官方算番器一致（\(cases.count) 条，容忍 2 条已知未收敛）",
+    mcheck(scoreFails.isEmpty, "ORC1 总分与官方算番器一致（\(cases.count) 条）",
            scoreFails.prefix(3).joined(separator: " ｜ ") + (scoreFails.count > 3 ? " …共\(scoreFails.count)条" : ""))
-    mcheck(fanFails.count <= 2, "ORC2 番种集合与官方算番器一致（容忍 2 条已知未收敛）",
+    mcheck(fanFails.isEmpty, "ORC2 番种集合与官方算番器一致",
            fanFails.prefix(3).joined(separator: " ｜ ") + (fanFails.count > 3 ? " …共\(fanFails.count)条" : ""))
 }
