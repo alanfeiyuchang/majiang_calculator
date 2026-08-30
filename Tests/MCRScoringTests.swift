@@ -273,7 +273,7 @@ mexpect("F16-1 清龙", msc("123456789m11p234p", win: "4p"),
 mexpect("F16-2 三色双龙会", msc("123789m123789p55s", win: "5s"),
         has: ["三色双龙会"], hasnt: ["喜相逢", "老少副", "无字", "平和"])
 mexpect("F16-3 一色三步高", msc("123234345m789m55m", win: "5m"),
-        has: ["一色三步高"], hasnt: ["连六", "老少副"])
+        points: 45, has: ["一色三步高", "清一色", "老少副"])
 mexpect("F16-4 全带五", msc("345m456p567s555m55s", win: "5s"),
         has: ["全带五"], hasnt: ["断幺", "无字"])
 mexpect("F16-5 三同刻", msc("111m111p111s234m55m", win: "5m"),
@@ -498,7 +498,7 @@ print("— 规则细则（用户可选）—")
 mcheck(RuleSettings().mcrOptions == MCROptions(), "O0 设置默认值 = 引擎默认")
 // 默认值对齐官方算番器：前三项官方不这么算，所以默认关。
 mcheck(!RuleSettings().mcrZiYiSeCountsHunYaoJiu
-       && !RuleSettings().mcrJiuLianCountsShuangAnKe
+       && RuleSettings().mcrJiuLianCountsShuangAnKe
        && !RuleSettings().mcrPerKongFanWithThreeKongs
        && RuleSettings().mcrSevenPairsAllowsQuadAsTwoPairs
        && RuleSettings().mcrWaitFanHighestReading
@@ -546,7 +546,9 @@ do {
     let on = msco("11112233445566m", win: "6m", options: MCROptions())
     let off = msco("11112233445566m", win: "6m",
                    options: mopt { $0.mcrSevenPairsAllowsQuadAsTwoPairs = false })
-    mexpect("O3a 4 张可当两对（开）= 48 分", on, points: 48, has: ["七对", "清一色"])
+    // 官方 50：七对 24 + 清一色 24 + **四归一 2**。七对可计四归一（参照报告 §2.4）。
+    mexpect("O3a 4 张可当两对（开）= 50 分", on, points: 50,
+            has: ["七对", "清一色", "四归一"])
     // 关掉后退回标准型：清一色24 + 一般高1 + 连六×2 + 平和2 + 四归一2 + 门前清2 = 33
     mexpect("O3b 4 张不可当两对（关）= 33 分", off, points: 33,
             has: ["清一色", "一般高", "平和", "四归一"], hasnt: ["七对"])
@@ -556,7 +558,8 @@ do {
     let on = msco("1111335577m1133p", win: "3p", options: MCROptions())
     let off = msco("1111335577m1133p", win: "3p",
                    options: mopt { $0.mcrSevenPairsAllowsQuadAsTwoPairs = false })
-    mexpect("O3c 无标准型可退（开）= 26 分", on, points: 26, has: ["七对"])
+    // 官方 28：七对 24 + 缺一门 1 + 无字 1 + **四归一 2**
+    mexpect("O3c 无标准型可退（开）= 28 分", on, points: 28, has: ["七对", "四归一"])
     mcheck(off.scoringPoints == 0 && off.items.isEmpty && !off.meetsMinimum,
            "O3d 无标准型可退（关）= 0 分（不成和）", "got \(off.scoringPoints) \(mnames(off))")
 }

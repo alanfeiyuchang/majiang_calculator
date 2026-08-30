@@ -46,7 +46,7 @@ struct MCROptions: Equatable {
     /// 字一色是否同时计混幺九（+32）
     var mcrZiYiSeCountsHunYaoJiu: Bool = false
     /// 九莲宝灯是否同时计双暗刻（+2）
-    var mcrJiuLianCountsShuangAnKe: Bool = false
+    var mcrJiuLianCountsShuangAnKe: Bool = true
     /// 七对里「4 张相同」是否可以当两对
     var mcrSevenPairsAllowsQuadAsTwoPairs: Bool = true
     /// 三杠时是否在 32 分之外再单独计每个杠（明杠 1 / 暗杠 2）
@@ -59,7 +59,7 @@ struct MCROptions: Equatable {
 
     init(
         mcrZiYiSeCountsHunYaoJiu: Bool = false,
-        mcrJiuLianCountsShuangAnKe: Bool = false,
+        mcrJiuLianCountsShuangAnKe: Bool = true,
         mcrSevenPairsAllowsQuadAsTwoPairs: Bool = true,
         mcrPerKongFanWithThreeKongs: Bool = false,
         mcrWaitFanHighestReading: Bool = true,
@@ -186,38 +186,38 @@ let mcrFanExcludes: [String: [String]] = [
     "平和": ["无字"],
     "大四喜": ["三风刻", "圈风刻", "门风刻", "碰碰和", "幺九刻"],
     "大三元": ["箭刻", "双箭刻"],
-    "绿一色": ["缺一门"],
-    "九莲宝灯": ["清一色", "门前清", "无字", "幺九刻"],
+    "绿一色": ["缺一门", "混一色"],
+    "九莲宝灯": ["清一色", "门前清", "无字", "不求人", "幺九刻"],
     "四杠": ["三杠", "双明杠", "双暗杠", "明杠", "暗杠", "碰碰和", "单钓将"],
     "连七对": ["七对", "清一色", "门前清", "无字", "单钓将", "不求人"],
-    "十三幺": ["五门齐", "门前清", "单钓将", "不求人"],
+    "十三幺": ["五门齐", "门前清", "单钓将", "不求人", "混幺九", "清幺九"],
 
-    "清幺九": ["碰碰和", "全带幺", "幺九刻", "无字"],
+    "清幺九": ["碰碰和", "全带幺", "幺九刻", "无字", "双同刻"],
     "小四喜": ["三风刻", "幺九刻"],
     "小三元": ["双箭刻", "箭刻"],
     "字一色": ["碰碰和", "全带幺", "幺九刻", "缺一门", "无字"],
-    "四暗刻": ["碰碰和", "门前清", "三暗刻", "双暗刻"],
-    "一色双龙会": ["清一色", "平和", "一般高", "老少副", "喜相逢", "无字", "缺一门"],
+    "四暗刻": ["碰碰和", "门前清", "三暗刻", "双暗刻", "不求人"],
+    "一色双龙会": ["清一色", "平和", "无字", "缺一门"],
 
-    "一色四同顺": ["一色三同顺", "一般高", "四归一"],
+    "一色四同顺": ["一色三同顺", "四归一"],
     "一色四节高": ["一色三节高", "碰碰和"],
 
-    "一色四步高": ["一色三步高", "连六", "老少副"],
+    "一色四步高": ["一色三步高"],
     "三杠": ["双明杠", "双暗杠"],
     "混幺九": ["碰碰和", "全带幺", "幺九刻"],
 
-    "七对": ["门前清", "单钓将"],
+    "七对": ["门前清", "单钓将", "不求人"],
     "七星不靠": ["全不靠", "五门齐", "门前清", "不求人", "单钓将"],
     "全双刻": ["碰碰和", "断幺", "无字"],
     "清一色": ["无字", "缺一门"],
-    "一色三同顺": ["一般高"],
+    "一色三同顺": [],
     "全大": ["无字", "大于五"],
     "全中": ["无字", "断幺"],
     "全小": ["无字", "小于五"],
 
-    "清龙": ["连六", "老少副"],
-    "三色双龙会": ["喜相逢", "老少副", "无字", "平和"],
-    "一色三步高": ["连六", "老少副"],
+    "清龙": [],
+    "三色双龙会": ["无字", "平和"],
+    "一色三步高": [],
     "全带五": ["断幺", "无字"],
     "三同刻": ["双同刻"],
     "三暗刻": ["双暗刻"],
@@ -227,7 +227,7 @@ let mcrFanExcludes: [String: [String]] = [
     "小于五": ["无字"],
 
     "推不倒": ["缺一门"],
-    "三色三同顺": ["喜相逢"],
+    "三色三同顺": [],
     "三色三节高": [],
     "妙手回春": ["自摸"],
     "杠上开花": ["自摸"],
@@ -271,23 +271,25 @@ private func mcrFinalize(_ hits: [FanHit], flowers: Int, options: MCROptions) ->
         merged[h.name, default: 0] += h.count
     }
 
-    // 不可重复原则：按原始命中集合一次性删除被包含的低番型
-    let present = Set(merged.keys)
+    // 不可重复原则。要迭代到不动点：被删掉的番**不能再去删别人**。
+    // 例如 十三幺 删掉 不求人，而 不求人 的 victim 里有 自摸——
+    // 单趟做的话自摸会跟着陪葬，十三幺自摸就少了 1 分。
+    // 从**高番到低番**依次处理：番种的包含关系总是「大番吃掉必然并存的小番」，
+    // 所以高分的先行使排除权。关键是**已经被删掉的番不再有排除权**——
+    // 十三幺删掉不求人之后，不求人就不该再把自摸一起带走（十三幺自摸要计那 1 分）。
     let optional = mcrOptionalExcludes(options)
-    var removed = Set<String>()
-    for name in present {
+    var alive = Set(merged.keys)
+    for name in merged.keys.sorted(by: { points($0) > points($1) }) {
+        guard alive.contains(name) else { continue }
         let victims = (mcrFanExcludes[name] ?? []) + (optional[name] ?? [])
-        for victim in victims where victim != name {
-            removed.insert(victim)
-        }
+        for victim in victims where victim != name { alive.remove(victim) }
     }
-    for name in removed { merged[name] = nil }
+    for name in merged.keys where !alive.contains(name) { merged[name] = nil }
     order.removeAll { merged[$0] == nil }
 
-    // 无番和：除花牌、自摸外没有任何番型
-    let coreTotal = order.reduce(0) { sum, name in
-        name == "自摸" ? sum : sum + points(name) * (merged[name] ?? 0)
-    }
+    // 无番和：一个番种都没有。自摸本身就是 1 分番，不能把它排除在外——
+    // 否则「只有自摸」的牌会被判成 无番和8 + 自摸1 = 9 分，凭空够到起和线。
+    let coreTotal = order.reduce(0) { $0 + points($1) * (merged[$1] ?? 0) }
     if coreTotal == 0 {
         order.insert("无番和", at: 0)
         merged["无番和"] = 1
@@ -411,6 +413,60 @@ private let mcrReversibleTiles: Set<Int> = [
 ]
 
 /// 整手牌层面的番（与拆解方式无关的部分）
+/// 特殊牌型（七对 / 十三幺 / 全不靠 / 组合龙 / 九莲宝灯）用的补充番。
+/// 这些牌型拆不出 4 副面子，走不到 mcrCompositionFan，但下面这几个番
+/// 本来就是整手牌属性，从频率数组就能判——漏掉它们正是「计番不全」的来源。
+private func mcrFreqOnlyFan(_ stats: TileStats) -> [FanHit] {
+    var hits: [FanHit] = []
+    let tiles = stats.present
+    if tiles.allSatisfy({ mcrIsTerminal($0) }) { hits.append(FanHit(name: "清幺九")) }
+    else if tiles.allSatisfy({ mcrIsTerminalOrHonor($0) }) { hits.append(FanHit(name: "混幺九")) }
+    if tiles.allSatisfy({ !mcrIsHonor($0) && mcrRankOf($0) % 2 == 0 }) {
+        hits.append(FanHit(name: "全双刻"))
+    }
+    var quads = 0
+    for i in 0..<mcrTileKinds where stats.freq[i] == 4 { quads += 1 }
+    if quads > 0 { hits.append(FanHit(name: "四归一", count: quads)) }
+    return hits
+}
+
+
+/// 组合龙型里除了那 9 张组合龙之外的部分：1 副面子 + 1 对将。
+/// 拿它去算刻子番——组合龙分支本身给不出面子，漏的正是「计番不全」。
+private func mcrKnittedExtraSets(_ concealed: [Int], melds: [Meld])
+    -> (sets: [MCRSet], pair: MCRSet)? {
+    // 三门花色分别取 147 / 258 / 369 之一，6 种分配方式挨个试
+    let patterns: [[Int]] = [[0, 3, 6], [1, 4, 7], [2, 5, 8]]
+    var stripped: [Int]?
+    for i in 0..<3 {
+        for j in 0..<3 where j != i {
+            let k = 3 - i - j
+            var t = concealed
+            var okAll = true
+            for (suit, pat) in [(0, patterns[i]), (1, patterns[j]), (2, patterns[k])] {
+                for r in pat {
+                    let idx = suit * 9 + r
+                    if t[idx] > 0 { t[idx] -= 1 } else { okAll = false }
+                }
+            }
+            if okAll { stripped = t; break }
+        }
+        if stripped != nil { break }
+    }
+    guard let rest = stripped else { return nil }
+
+    let meldSets = mcrMeldSets(melds)
+    for d in mcrDecompose(concealed: rest, meldCount: melds.count)
+    where d.handSets.count + meldSets.count == 1 {
+        return (d.handSets + meldSets, d.pair)
+    }
+    // 面子全在副露里，手上只剩一对将
+    if rest.reduce(0, +) == 2, let i = (0..<mcrTileKinds).first(where: { rest[$0] == 2 }) {
+        return (meldSets, MCRSet(kind: .pair, tile: i, concealed: true))
+    }
+    return nil
+}
+
 private func mcrWholeHandFan(_ stats: TileStats) -> [FanHit] {
     var hits: [FanHit] = []
     let allHonor = stats.present.allSatisfy { mcrIsHonor($0) }
@@ -437,19 +493,21 @@ private func mcrWholeHandFan(_ stats: TileStats) -> [FanHit] {
 }
 
 /// 九莲宝灯：门清、一门数牌、1112345678999 + 任意一张
-private func mcrIsNineGates(_ freq: [Int], melds: [Meld]) -> Bool {
+/// 九莲宝灯：**和牌前那 13 张**必须正好是 1112345678999，和牌张是「见任一张即和」的那张。
+/// 只看和牌后的 14 张会把 11112345678999 这种也判成九莲——摘掉和的 2 万后剩
+/// 1111345678999，根本不是九莲的十三张，官方按普通清一色算。
+private func mcrIsNineGates(_ freq: [Int], melds: [Meld], winningTile: Int) -> Bool {
     guard melds.isEmpty, freq.reduce(0, +) == 14 else { return false }
+    guard winningTile >= 0, winningTile < 27, freq[winningTile] > 0 else { return false }
     let suits = Set((0..<27).filter { freq[$0] > 0 }.map { $0 / 9 })
     guard suits.count == 1, (27..<34).allSatisfy({ freq[$0] == 0 }) else { return false }
     let base = suits.first! * 9
+    guard winningTile / 9 == base / 9 else { return false }
+    var before = freq
+    before[winningTile] -= 1
     let pattern = [3, 1, 1, 1, 1, 1, 1, 1, 3]
-    var extra = 0
-    for r in 0..<9 {
-        let d = freq[base + r] - pattern[r]
-        if d < 0 { return false }
-        extra += d
-    }
-    return extra == 1
+    for r in 0..<9 where before[base + r] != pattern[r] { return false }
+    return true
 }
 
 // MARK: - 面子结构番：集合划分
@@ -925,6 +983,7 @@ func scoreMCRHand(
         if mcrIsThirteenOrphans(full) {
             var hits: [FanHit] = [FanHit(name: "十三幺")]
             hits += mcrWholeHandFan(stats)
+            hits += mcrFreqOnlyFan(stats)
             hits += mcrSituationalFan(ctx: context, fullyConcealed: true,
                                       allMelded: false, singleWait: true,
                                       lastTileOfKindByCount: lastTileOfKindByCount)
@@ -935,6 +994,7 @@ func scoreMCRHand(
                            allowQuadAsTwoPairs: options.mcrSevenPairsAllowsQuadAsTwoPairs) {
             var hits: [FanHit] = [FanHit(name: mcrIsSevenShiftedPairs(full) ? "连七对" : "七对")]
             hits += mcrWholeHandFan(stats)
+            hits += mcrFreqOnlyFan(stats)
             hits += mcrSituationalFan(ctx: context, fullyConcealed: true,
                                       allMelded: false, singleWait: true,
                                       lastTileOfKindByCount: lastTileOfKindByCount)
@@ -947,13 +1007,14 @@ func scoreMCRHand(
             ]
             if mcrHasKnittedStraight(full) { hits.append(FanHit(name: "组合龙")) }
             hits += mcrWholeHandFan(stats)
+            hits += mcrFreqOnlyFan(stats)
             hits += mcrSituationalFan(ctx: context, fullyConcealed: true,
                                       allMelded: false, singleWait: false,
                                       lastTileOfKindByCount: lastTileOfKindByCount)
             consider(hits)
         }
         // 九莲宝灯
-        if mcrIsNineGates(full, melds: melds) {
+        if mcrIsNineGates(full, melds: melds, winningTile: context.winningTile) {
             var hits: [FanHit] = [FanHit(name: "九莲宝灯")]
             hits += mcrWholeHandFan(stats)
             hits += mcrSituationalFan(ctx: context, fullyConcealed: true,
@@ -967,6 +1028,17 @@ func scoreMCRHand(
     if melds.count <= 1, mcrIsKnittedStraightForm(concealed, meldCount: melds.count) {
         var hits: [FanHit] = [FanHit(name: "组合龙")]
         hits += mcrWholeHandFan(stats)
+        hits += mcrFreqOnlyFan(stats)
+        // 组合龙型里那 1 副面子照样要算刻子番（幺九刻 / 箭刻 / 圈风刻 / 门风刻），
+        // 将牌也可能凑成番。原来整条分支只给了本命番，这正是「计番不全」。
+        if let extra = mcrKnittedExtraSets(concealed, melds: melds) {
+            hits += mcrHonorFan(extra.sets, pair: extra.pair, ctx: context)
+            hits += mcrConcealmentFan(extra.sets, options: options)
+            // 听牌番：和的那张落在那副面子或将上时照常计（独听与否由 consider 统一过滤）
+            for set in extra.sets + [extra.pair] where set.tiles.contains(context.winningTile) {
+                hits += mcrWaitFan(winSet: set, winningTile: context.winningTile)
+            }
+        }
         hits += mcrSituationalFan(ctx: context, fullyConcealed: fullyConcealed,
                                   allMelded: false, singleWait: false,
                                   lastTileOfKindByCount: lastTileOfKindByCount)
@@ -1002,7 +1074,7 @@ func scoreMCRHand(
 
             var hits: [FanHit] = []
             hits += mcrWholeHandFan(stats)
-            if mcrIsNineGates(full, melds: melds) { hits.append(FanHit(name: "九莲宝灯")) }
+            if mcrIsNineGates(full, melds: melds, winningTile: context.winningTile) { hits.append(FanHit(name: "九莲宝灯")) }
             hits += mcrStructureFan(sets, pair: pair)
             hits += mcrHonorFan(sets, pair: pair, ctx: context)
             hits += mcrConcealmentFan(sets, options: options)

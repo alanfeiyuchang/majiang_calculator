@@ -44,7 +44,7 @@ struct RuleSettings: Codable, Equatable {
     /// 字一色是否同时计混幺九（+32）
     var mcrZiYiSeCountsHunYaoJiu: Bool = false
     /// 九莲宝灯是否同时计双暗刻（+2）
-    var mcrJiuLianCountsShuangAnKe: Bool = false
+    var mcrJiuLianCountsShuangAnKe: Bool = true
     /// 七对里「四张相同」是否可以当两对
     var mcrSevenPairsAllowsQuadAsTwoPairs: Bool = true
     /// 三杠时是否再单独计每个杠（明杠 1 / 暗杠 2）
@@ -132,7 +132,7 @@ struct RuleSettings: Codable, Equatable {
         mcrZiYiSeCountsHunYaoJiu =
             try c.decodeIfPresent(Bool.self, forKey: .mcrZiYiSeCountsHunYaoJiu) ?? false
         mcrJiuLianCountsShuangAnKe =
-            try c.decodeIfPresent(Bool.self, forKey: .mcrJiuLianCountsShuangAnKe) ?? false
+            try c.decodeIfPresent(Bool.self, forKey: .mcrJiuLianCountsShuangAnKe) ?? true
         mcrSevenPairsAllowsQuadAsTwoPairs =
             try c.decodeIfPresent(Bool.self, forKey: .mcrSevenPairsAllowsQuadAsTwoPairs) ?? true
         mcrPerKongFanWithThreeKongs =
