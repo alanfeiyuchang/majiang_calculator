@@ -121,22 +121,34 @@ struct RuleSettings: Codable, Equatable {
         case mcrSevenPairsAllowsQuadAsTwoPairs, mcrPerKongFanWithThreeKongs
         case mcrOneOpenOneConcealedKong
         case mcrWaitFanHighestReading
-        case kongCountsAsGen  // 旧键，仅用于迁移
+        case kongCountsAsGen        // 旧键，仅用于迁移
+        case settingsSchemaVersion  // 存档格式版本，用于一次性迁移
     }
+
+    /// 当前存档格式版本。
+    /// 1 → 2：国标三项规则细则的默认值原来是「全开」，那不是一种可选打法，
+    ///        而是**算错**（与官方竞赛算番器不符，见 Tests/data/mcr_review.md）。
+    ///        升级时把存档里的旧值强制改成官方值，之后用户仍可自行打开。
+    static let currentSchemaVersion = 2
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
+        let storedVersion = try c.decodeIfPresent(Int.self, forKey: .settingsSchemaVersion) ?? 1
+        let needsMCRDefaultsMigration = storedVersion < 2
         gameMode = try c.decodeIfPresent(GameMode.self, forKey: .gameMode) ?? .sichuan
         mcrPrevalentWind = try c.decodeIfPresent(Int.self, forKey: .mcrPrevalentWind) ?? 0
         mcrSeatWind = try c.decodeIfPresent(Int.self, forKey: .mcrSeatWind) ?? 0
-        mcrZiYiSeCountsHunYaoJiu =
-            try c.decodeIfPresent(Bool.self, forKey: .mcrZiYiSeCountsHunYaoJiu) ?? false
-        mcrJiuLianCountsShuangAnKe =
-            try c.decodeIfPresent(Bool.self, forKey: .mcrJiuLianCountsShuangAnKe) ?? true
+        mcrZiYiSeCountsHunYaoJiu = needsMCRDefaultsMigration
+            ? false
+            : (try c.decodeIfPresent(Bool.self, forKey: .mcrZiYiSeCountsHunYaoJiu) ?? false)
+        mcrJiuLianCountsShuangAnKe = needsMCRDefaultsMigration
+            ? true
+            : (try c.decodeIfPresent(Bool.self, forKey: .mcrJiuLianCountsShuangAnKe) ?? true)
         mcrSevenPairsAllowsQuadAsTwoPairs =
             try c.decodeIfPresent(Bool.self, forKey: .mcrSevenPairsAllowsQuadAsTwoPairs) ?? true
-        mcrPerKongFanWithThreeKongs =
-            try c.decodeIfPresent(Bool.self, forKey: .mcrPerKongFanWithThreeKongs) ?? false
+        mcrPerKongFanWithThreeKongs = needsMCRDefaultsMigration
+            ? false
+            : (try c.decodeIfPresent(Bool.self, forKey: .mcrPerKongFanWithThreeKongs) ?? false)
         mcrWaitFanHighestReading =
             try c.decodeIfPresent(Bool.self, forKey: .mcrWaitFanHighestReading) ?? true
         mcrOneOpenOneConcealedKong =
@@ -176,6 +188,7 @@ struct RuleSettings: Codable, Equatable {
         try c.encode(mcrPerKongFanWithThreeKongs, forKey: .mcrPerKongFanWithThreeKongs)
         try c.encode(mcrWaitFanHighestReading, forKey: .mcrWaitFanHighestReading)
         try c.encode(mcrOneOpenOneConcealedKong, forKey: .mcrOneOpenOneConcealedKong)
+        try c.encode(Self.currentSchemaVersion, forKey: .settingsSchemaVersion)
         try c.encode(baseStake, forKey: .baseStake)
         try c.encode(fanCap, forKey: .fanCap)
         try c.encode(selfDrawAddsFan, forKey: .selfDrawAddsFan)

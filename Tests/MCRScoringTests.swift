@@ -631,6 +631,37 @@ mcheck(GameMode.sichuan.suits.count == 3 && GameMode.mcr.suits.count == 6, "R3 �
 mcheck(GameMode.sichuan.meldKinds.count == 3 && GameMode.mcr.meldKinds.contains(.chow),
        "R4 只有国标有吃")
 
+
+// MARK: - 存档迁移
+
+print("— 存档迁移 —")
+do {
+    // 旧存档（无版本号 + 三项旧默认「全开」）→ 升级时强制改成官方值。
+    // 那三项旧值不是一种可选打法，是与官方竞赛算番器不符的**算错**。
+    let legacy = """
+    {"baseStake":1,"gameMode":"mcr",
+     "mcrZiYiSeCountsHunYaoJiu":true,
+     "mcrJiuLianCountsShuangAnKe":true,
+     "mcrPerKongFanWithThreeKongs":true}
+    """.data(using: .utf8)!
+    let migrated = try! JSONDecoder().decode(RuleSettings.self, from: legacy)
+    mcheck(!migrated.mcrZiYiSeCountsHunYaoJiu
+           && migrated.mcrJiuLianCountsShuangAnKe
+           && !migrated.mcrPerKongFanWithThreeKongs,
+           "MIG1 旧存档的国标三项被纠正成官方值",
+           "got \(migrated.mcrZiYiSeCountsHunYaoJiu)/\(migrated.mcrJiuLianCountsShuangAnKe)/\(migrated.mcrPerKongFanWithThreeKongs)")
+    // 迁移只做一次：重新编码后带上版本号，再解码时用户自己的选择要保住
+    var custom = migrated
+    custom.mcrZiYiSeCountsHunYaoJiu = true          // 用户主动打开
+    let round = try! JSONDecoder().decode(
+        RuleSettings.self, from: try! JSONEncoder().encode(custom))
+    mcheck(round.mcrZiYiSeCountsHunYaoJiu,
+           "MIG2 迁移后用户自己的选择不再被覆盖")
+    // 迁移不碰其它设置
+    mcheck(migrated.gameMode == .mcr && migrated.baseStake == 1,
+           "MIG3 迁移不影响其它设置")
+}
+
 print(mFails == 0 ? "\n国标全部通过 ✅" : "\n❌ 国标 \(mFails) 个失败")
 
 // MARK: - 总结（run.sh 的退出码）
