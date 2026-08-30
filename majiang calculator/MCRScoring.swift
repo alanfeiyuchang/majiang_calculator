@@ -979,11 +979,23 @@ func scoreMCRHand(
     }()
     let waitFanNames: Set<String> = ["边张", "坎张", "单钓将"]
 
+    // 分数打平时的取法：边张 > 坎张 > 单钓将。
+    // 例如 67788 + 和 7：既能读成「89 等 7」（边张），也能读成「68 夹 7」（坎张），
+    // 两种都是 1 分，就高不就低分不出高下。官方算番器取前者，这里跟它一致。
+    func waitRank(_ s: MCRScore) -> Int {
+        let order = ["边张": 0, "坎张": 1, "单钓将": 2]
+        return s.items.compactMap { order[$0.name] }.min() ?? 3
+    }
+
     var best: MCRScore?
     func consider(_ hits: [FanHit]) {
         let filtered = isUniqueWait ? hits : hits.filter { !waitFanNames.contains($0.name) }
         let s = mcrFinalize(filtered, flowers: flowers, options: options)
-        if best == nil || s.scoringPoints > best!.scoringPoints { best = s }
+        guard let b = best else { best = s; return }
+        if s.scoringPoints > b.scoringPoints
+            || (s.scoringPoints == b.scoringPoints && waitRank(s) < waitRank(b)) {
+            best = s
+        }
     }
 
     let concealedSum = concealed.reduce(0, +)
