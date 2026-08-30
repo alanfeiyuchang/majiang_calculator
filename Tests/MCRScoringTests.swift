@@ -162,7 +162,10 @@ mcheck(mcrHandShanten(mt("1122334455667m8m")) == 0 || mcrHandShanten(mt("1122334
 // MARK: - 番种表完整性
 
 print("— 番种表 —")
-mcheck(mcrFanPoints.count == 81, "T1 番种表恰好 81 种", "got \(mcrFanPoints.count)")
+// 官方 81 番 + 明暗杠。明暗杠不在 98 规则的 81 番里，但现行通行（含官方竞赛
+// 算番器）把「一明杠 + 一暗杠」当独立番种计 5 分，由 mcrOneOpenOneConcealedKong 控制。
+mcheck(mcrFanPoints.count == 82 && mcrFanPoints["明暗杠"] == 5,
+       "T1 番种表 = 官方 81 种 + 明暗杠", "got \(mcrFanPoints.count)")
 do {
     // 排除表里提到的番型必须都是真实存在的番种，否则是打字错误
     let unknown = mcrFanExcludes.flatMap { [$0.key] + $0.value }
@@ -347,7 +350,7 @@ print("— 2 分番型 —")
 mexpect("F2-1 箭刻", msc("555z123m456m789m11p", win: "1p"), has: ["箭刻"])
 mexpect("F2-2 圈风刻/门风刻", msc("111z123m456m789m11p", win: "1p") {
             $0.prevalentWind = 0; $0.seatWind = 0 },
-        has: ["圈风刻", "门风刻", "幺九刻"])
+        points: 24, has: ["圈风刻", "门风刻"], hasnt: ["幺九刻"])
 mexpect("F2-2b 只有圈风", msc("222z123m456m789m11p", win: "1p") {
             $0.prevalentWind = 1; $0.seatWind = 0 },
         has: ["圈风刻"], hasnt: ["门风刻"])
@@ -372,10 +375,12 @@ mexpect("F1-5 幺九刻", msc("111m234m567p345s99s", win: "9s"), has: ["幺九�
 mexpect("F1-6 明杠", msc("123m456m789m11p", melds: [MM(.exposedKong, "1z")], win: "1p"),
         has: ["明杠"])
 mexpect("F1-7 缺一门", msc("123m456m789m123p55p", win: "5p"), has: ["缺一门"])
-mexpect("F1-8 无字", msc("123m456p789s234m55s", win: "5s"), has: ["无字"])
+// 平和会吸收无字，所以举例得挑个非平和的牌型（官方：四暗刻+幺九刻+缺一门+无字+单钓将 = 69）
+mexpect("F1-8 无字", msc("111m444m777m999m22p", win: "2p"), has: ["无字"])
 mexpect("F1-9 边张", msc("123456789m23455p", win: "3m"), has: ["边张"])
 mexpect("F1-10 坎张", msc("123456789m23455p", win: "2m"), has: ["坎张"])
-mexpect("F1-11 单钓将", msc("123456789m23455p", win: "5p"), has: ["单钓将"])
+// 单钓将要求独听。123456789m2345p 听 2m/5m/5筒 不止一张，官方也不给——换成真独听的
+mexpect("F1-11 单钓将", msc("111m444m777m999m22p", win: "2p"), has: ["单钓将"])
 mexpect("F1-12 自摸", msc("123m11p", melds: [MM(.chow, "4m"), MM(.chow, "7m"), MM(.pong, "1z")],
         win: "1p", selfDrawn: true), has: ["自摸"])
 do {
@@ -390,18 +395,22 @@ do {
 print("— 不重复计算原则 —")
 // 不可拆分 + 就高不就低：123m 重复 + 456m + 789m 应算清龙 16，不再拆出一般高
 do {
+    // 官方算番器：清龙 16 + 门前清 2 + 平和 2 + 一般高 1 + 缺一门 1 + 单钓将 1 = 23。
+    // 一般高**照计**——原则 5 允许尚未组合过的那副牌同已组合过的套算一次。
     let s = msc("123123456789m55p", win: "5p")
-    mcheck(mnames(s).contains("清龙") && !mnames(s).contains("一般高"),
-           "P1 清龙优先，不再拆出一般高", "got \(mnames(s))")
+    mexpect("P1 清龙与一般高并存", s, points: 23, has: ["清龙", "一般高"])
 }
 // 套算一次：123m×2 + 123p×2 只能配两次（2 分），不能既算 2 个一般高又算 2 个喜相逢
 do {
     // 123万 ×2 + 123筒：朴素堆番会算「一般高 1 + 喜相逢 2」= 3 分；
     // 套算一次原则下一副面子只能配一次，合计只有 1 分。
     let s = msc("123123m123p456s55m", win: "5m")
+    // 官方算番器：门前清 2 + 平和 2 + 一般高 1 + 喜相逢 1 + 单钓将 1 = 7。
+    // 4 副顺子最多 3 个配对番，这里 3 副参与、拿到 2 个。
     let pairFan = s.items.filter { ["一般高", "喜相逢"].contains($0.name) }
                          .reduce(0) { $0 + $1.fan }
-    mcheck(pairFan == 1, "P2 套算一次：配对番合计 1 分", "got \(pairFan) \(mnames(s))")
+    mcheck(pairFan == 2 && s.scoringPoints == 7,
+           "P2 套算一次：一般高 + 喜相逢 = 2 分", "got \(pairFan) \(s.scoringPoints) \(mnames(s))")
 }
 // 不可重复：一色三同顺吃掉一般高
 do {
@@ -449,15 +458,17 @@ do {
 
 print("— 起和 8 分 —")
 do {
-    // 吃234万 + 678万 + 345筒 + 567条 + 55筒：无字1 + 平和2 + 断幺2 = 5 分，不够起和
+    // 吃234万 + 678万 + 345筒 + 567条 + 55筒：平和2 + 断幺2 = 4 分，不够起和。
+    // （无字被平和吸收——官方算番器同样是 4 分）
     let s = msc("678m345p567s55p", melds: [MM(.chow, "2m")], win: "7s")
-    mcheck(s.scoringPoints == 5 && !s.meetsMinimum,
-           "Q1 5 分不到起和线", "got \(s.scoringPoints) \(mnames(s))")
+    mcheck(s.scoringPoints == 4 && !s.meetsMinimum,
+           "Q1 4 分不到起和线", "got \(s.scoringPoints) \(mnames(s))")
 }
 do {
     // 同一手牌加 3 张花牌：花牌不计入起和分，仍然不够
     let s = msc("678m345p567s55p", melds: [MM(.chow, "2m")], win: "7s", flowers: 3)
-    mcheck(s.totalPoints == 8 && s.scoringPoints == 5 && !s.meetsMinimum,
+    // 起和分 4（不含花），总分 4 + 花 3 = 7。花牌不计入起和判断，所以仍然不够。
+    mcheck(s.totalPoints == 7 && s.scoringPoints == 4 && !s.meetsMinimum,
            "Q2 花牌不算起和分", "got \(s.scoringPoints)/\(s.totalPoints)")
 }
 do {
@@ -485,12 +496,14 @@ print("— 规则细则（用户可选）—")
 
 // 默认值必须等于「一直以来的算法」，否则上面所有断言的分数都会变
 mcheck(RuleSettings().mcrOptions == MCROptions(), "O0 设置默认值 = 引擎默认")
-mcheck(RuleSettings().mcrZiYiSeCountsHunYaoJiu
-       && RuleSettings().mcrJiuLianCountsShuangAnKe
+// 默认值对齐官方算番器：前三项官方不这么算，所以默认关。
+mcheck(!RuleSettings().mcrZiYiSeCountsHunYaoJiu
+       && !RuleSettings().mcrJiuLianCountsShuangAnKe
+       && !RuleSettings().mcrPerKongFanWithThreeKongs
        && RuleSettings().mcrSevenPairsAllowsQuadAsTwoPairs
-       && RuleSettings().mcrPerKongFanWithThreeKongs
-       && RuleSettings().mcrWaitFanHighestReading,
-       "O0b 5 项规则细则默认全开")
+       && RuleSettings().mcrWaitFanHighestReading
+       && RuleSettings().mcrOneOpenOneConcealedKong,
+       "O0b 规则细则默认值 = 官方算番器")
 do {
     var s = RuleSettings()
     s.mcrPerKongFanWithThreeKongs = false
@@ -506,7 +519,8 @@ do {
 // ① 字一色是否同时计混幺九（+32）
 // 南南南 西西西 北北北 中中中 + 发发：字一色 64 + 四暗刻 64 + 三风刻 12 + 箭刻 2 + 单钓将 1
 do {
-    let on = msco("222333444z55566z", win: "6z", options: MCROptions())
+    let on = msco("222333444z55566z", win: "6z",
+                  options: mopt { $0.mcrZiYiSeCountsHunYaoJiu = true })
     let off = msco("222333444z55566z", win: "6z",
                    options: mopt { $0.mcrZiYiSeCountsHunYaoJiu = false })
     mexpect("O1a 字一色计混幺九（开）= 175 分", on, points: 175, has: ["字一色", "混幺九"])
@@ -516,11 +530,12 @@ do {
 
 // ② 九莲宝灯是否同时计双暗刻（+2）
 do {
-    let on = msco("11123456789995m", win: "5m", options: MCROptions())
-    let off = msco("11123456789995m", win: "5m",
+    let on = msco("11123455678999m", win: "5m",
+                  options: mopt { $0.mcrJiuLianCountsShuangAnKe = true })
+    let off = msco("11123455678999m", win: "5m",
                    options: mopt { $0.mcrJiuLianCountsShuangAnKe = false })
-    mexpect("O2a 九莲宝灯计双暗刻（开）= 91 分", on, points: 91, has: ["九莲宝灯", "双暗刻"])
-    mexpect("O2b 九莲宝灯不计双暗刻（关）= 89 分", off, points: 89,
+    mexpect("O2a 九莲宝灯计双暗刻（开）= 90 分", on, points: 90, has: ["九莲宝灯", "双暗刻"])
+    mexpect("O2b 九莲宝灯不计双暗刻（关）= 88 分", off, points: 88,
             has: ["九莲宝灯"], hasnt: ["双暗刻"])
 }
 
@@ -532,7 +547,8 @@ do {
     let off = msco("11112233445566m", win: "6m",
                    options: mopt { $0.mcrSevenPairsAllowsQuadAsTwoPairs = false })
     mexpect("O3a 4 张可当两对（开）= 48 分", on, points: 48, has: ["七对", "清一色"])
-    mexpect("O3b 4 张不可当两对（关）= 32 分", off, points: 32,
+    // 关掉后退回标准型：清一色24 + 一般高1 + 连六×2 + 平和2 + 四归一2 + 门前清2 = 33
+    mexpect("O3b 4 张不可当两对（关）= 33 分", off, points: 33,
             has: ["清一色", "一般高", "平和", "四归一"], hasnt: ["七对"])
 }
 do {
@@ -548,7 +564,8 @@ do {
 // ④ 三杠时是否再单独计每个杠（明杠 1 / 暗杠 2）
 do {
     let kongs = [MM(.exposedKong, "2s"), MM(.exposedKong, "3s"), MM(.concealedKong, "4s")]
-    let on = msco("123m11p", melds: kongs, win: "1p", options: MCROptions())
+    let on = msco("123m11p", melds: kongs, win: "1p",
+                  options: mopt { $0.mcrPerKongFanWithThreeKongs = true })
     let off = msco("123m11p", melds: kongs, win: "1p",
                    options: mopt { $0.mcrPerKongFanWithThreeKongs = false })
     mexpect("O4a 三杠再计每个杠（开）= 73 分", on, points: 73,
@@ -563,8 +580,11 @@ do {
     let on = msco("123m456m789m34555p", win: "5p", options: MCROptions())
     let off = msco("123m456m789m34555p", win: "5p",
                    options: mopt { $0.mcrWaitFanHighestReading = false })
-    mexpect("O5a 听法有歧义，就高（开）= 23 分", on, points: 23, has: ["单钓将"])
-    mexpect("O5b 听法有歧义，不计（关）= 22 分", off, points: 22,
+    // 官方：这手听法有歧义 → 不是独听 → 边张/坎张/单钓将一个都不给（21 分）。
+    // 「就高」开关只在**独听**成立、但拆解读法不唯一时才起作用。
+    mexpect("O5a 听法有歧义时不给听牌番（开）= 21 分", on, points: 21,
+            hasnt: ["单钓将", "边张", "坎张"])
+    mexpect("O5b 听法有歧义，不计（关）= 21 分", off, points: 21,
             hasnt: ["单钓将", "边张", "坎张"])
 }
 do {
@@ -572,11 +592,11 @@ do {
     let bianOn = msco("123456789m23455p", win: "3m", options: MCROptions())
     let bianOff = msco("123456789m23455p", win: "3m",
                        options: mopt { $0.mcrWaitFanHighestReading = false })
-    mexpect("O5c 唯一边张（开）= 23 分", bianOn, points: 23, has: ["边张"])
-    mexpect("O5d 唯一边张（关）= 23 分", bianOff, points: 23, has: ["边张"])
+    mexpect("O5c 唯一边张（开）= 22 分", bianOn, points: 22, has: ["边张"])
+    mexpect("O5d 唯一边张（关）= 22 分", bianOff, points: 22, has: ["边张"])
     let kanOff = msco("123456789m23455p", win: "2m",
                       options: mopt { $0.mcrWaitFanHighestReading = false })
-    mexpect("O5e 唯一坎张（关）= 23 分", kanOff, points: 23, has: ["坎张"])
+    mexpect("O5e 唯一坎张（关）= 22 分", kanOff, points: 22, has: ["坎张"])
 }
 
 // MARK: - 打牌建议（国标）

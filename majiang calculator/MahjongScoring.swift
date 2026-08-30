@@ -42,15 +42,17 @@ struct RuleSettings: Codable, Equatable {
 
     // MARK: 国标规则细则（各地规则书有分歧的 5 处，默认值 = 一直以来的算法）
     /// 字一色是否同时计混幺九（+32）
-    var mcrZiYiSeCountsHunYaoJiu: Bool = true
+    var mcrZiYiSeCountsHunYaoJiu: Bool = false
     /// 九莲宝灯是否同时计双暗刻（+2）
-    var mcrJiuLianCountsShuangAnKe: Bool = true
+    var mcrJiuLianCountsShuangAnKe: Bool = false
     /// 七对里「四张相同」是否可以当两对
     var mcrSevenPairsAllowsQuadAsTwoPairs: Bool = true
     /// 三杠时是否再单独计每个杠（明杠 1 / 暗杠 2）
-    var mcrPerKongFanWithThreeKongs: Bool = true
+    var mcrPerKongFanWithThreeKongs: Bool = false
     /// 边张 / 坎张 / 单钓将：true = 跨解法就高不就低；false = 只有听法唯一时才计
     var mcrWaitFanHighestReading: Bool = true
+    /// 一明杠 + 一暗杠算「明暗杠」5 分（现行通行）；关掉则按严格 98 拆成明杠 1 + 暗杠 2
+    var mcrOneOpenOneConcealedKong: Bool = true
 
     /// 打包成算番引擎用的选项
     var mcrOptions: MCROptions {
@@ -59,7 +61,8 @@ struct RuleSettings: Codable, Equatable {
             mcrJiuLianCountsShuangAnKe: mcrJiuLianCountsShuangAnKe,
             mcrSevenPairsAllowsQuadAsTwoPairs: mcrSevenPairsAllowsQuadAsTwoPairs,
             mcrPerKongFanWithThreeKongs: mcrPerKongFanWithThreeKongs,
-            mcrWaitFanHighestReading: mcrWaitFanHighestReading
+            mcrWaitFanHighestReading: mcrWaitFanHighestReading,
+            mcrOneOpenOneConcealedKong: mcrOneOpenOneConcealedKong
         )
     }
 
@@ -116,6 +119,7 @@ struct RuleSettings: Codable, Equatable {
         case gameMode, mcrPrevalentWind, mcrSeatWind
         case mcrZiYiSeCountsHunYaoJiu, mcrJiuLianCountsShuangAnKe
         case mcrSevenPairsAllowsQuadAsTwoPairs, mcrPerKongFanWithThreeKongs
+        case mcrOneOpenOneConcealedKong
         case mcrWaitFanHighestReading
         case kongCountsAsGen  // 旧键，仅用于迁移
     }
@@ -126,15 +130,17 @@ struct RuleSettings: Codable, Equatable {
         mcrPrevalentWind = try c.decodeIfPresent(Int.self, forKey: .mcrPrevalentWind) ?? 0
         mcrSeatWind = try c.decodeIfPresent(Int.self, forKey: .mcrSeatWind) ?? 0
         mcrZiYiSeCountsHunYaoJiu =
-            try c.decodeIfPresent(Bool.self, forKey: .mcrZiYiSeCountsHunYaoJiu) ?? true
+            try c.decodeIfPresent(Bool.self, forKey: .mcrZiYiSeCountsHunYaoJiu) ?? false
         mcrJiuLianCountsShuangAnKe =
-            try c.decodeIfPresent(Bool.self, forKey: .mcrJiuLianCountsShuangAnKe) ?? true
+            try c.decodeIfPresent(Bool.self, forKey: .mcrJiuLianCountsShuangAnKe) ?? false
         mcrSevenPairsAllowsQuadAsTwoPairs =
             try c.decodeIfPresent(Bool.self, forKey: .mcrSevenPairsAllowsQuadAsTwoPairs) ?? true
         mcrPerKongFanWithThreeKongs =
-            try c.decodeIfPresent(Bool.self, forKey: .mcrPerKongFanWithThreeKongs) ?? true
+            try c.decodeIfPresent(Bool.self, forKey: .mcrPerKongFanWithThreeKongs) ?? false
         mcrWaitFanHighestReading =
             try c.decodeIfPresent(Bool.self, forKey: .mcrWaitFanHighestReading) ?? true
+        mcrOneOpenOneConcealedKong =
+            try c.decodeIfPresent(Bool.self, forKey: .mcrOneOpenOneConcealedKong) ?? true
         baseStake = try c.decodeIfPresent(Double.self, forKey: .baseStake) ?? 1
         fanCap = try c.decodeIfPresent(Int.self, forKey: .fanCap) ?? 0
         selfDrawAddsFan = try c.decodeIfPresent(Bool.self, forKey: .selfDrawAddsFan) ?? true
@@ -169,6 +175,7 @@ struct RuleSettings: Codable, Equatable {
         try c.encode(mcrSevenPairsAllowsQuadAsTwoPairs, forKey: .mcrSevenPairsAllowsQuadAsTwoPairs)
         try c.encode(mcrPerKongFanWithThreeKongs, forKey: .mcrPerKongFanWithThreeKongs)
         try c.encode(mcrWaitFanHighestReading, forKey: .mcrWaitFanHighestReading)
+        try c.encode(mcrOneOpenOneConcealedKong, forKey: .mcrOneOpenOneConcealedKong)
         try c.encode(baseStake, forKey: .baseStake)
         try c.encode(fanCap, forKey: .fanCap)
         try c.encode(selfDrawAddsFan, forKey: .selfDrawAddsFan)
