@@ -311,9 +311,10 @@ mexpect("F8-6 妙手回春", msc("123m456m789m123p11p", win: "1p", selfDrawn: tr
             $0.lastTileDraw = true }, has: ["妙手回春"], hasnt: ["自摸"])
 mexpect("F8-7 海底捞月", msc("123m456m789m123p11p", win: "1p") { $0.lastDiscard = true },
         has: ["海底捞月"])
-mexpect("F8-8 抢杠和", msc("123m456m789m123p11p", win: "1p") {
+// 和牌张在立牌里只能有一张，否则牌面就否掉了抢杠和 / 和绝张（见下面 REV 组）
+mexpect("F8-8 抢杠和", msc("123m456m789m234p11p", win: "2p") {
             $0.robbingKong = true; $0.lastTileOfKind = true },
-        has: ["抢杠和"], hasnt: ["和绝张"])
+        points: 29, has: ["抢杠和"], hasnt: ["和绝张"])
 
 // MARK: - 6 分
 
@@ -343,8 +344,8 @@ mexpect("F4-2 不求人", msc("123m456m789m123p11p", win: "1p", selfDrawn: true)
 mexpect("F4-3 双明杠", msc("123m456p11s", melds: [
             MM(.exposedKong, "1z"), MM(.exposedKong, "5z")], win: "1s"),
         has: ["双明杠"], hasnt: ["明杠"])
-mexpect("F4-4 和绝张", msc("123m456m789m123p11p", win: "1p") { $0.lastTileOfKind = true },
-        has: ["和绝张"])
+mexpect("F4-4 和绝张", msc("123m456m789m234p11p", win: "2p") { $0.lastTileOfKind = true },
+        points: 25, has: ["和绝张"])
 
 // MARK: - 2 分
 
@@ -393,6 +394,31 @@ do {
 }
 
 // MARK: - 不重复计算原则
+
+// MARK: - 场景番：牌面与勾选矛盾时以牌面为准
+
+print("— 场景番的牌面校正 —")
+do {
+    // 抢杠和抢的是别人补杠的第 4 张，自己手上不可能还留着同一张。
+    // 123p + 11p 里 1 筒有 3 张，和 1 筒就不可能是抢杠和（官方 22 分）。
+    let s = msc("123m456m789m123p11p", win: "1p") { $0.robbingKong = true }
+    mexpect("REV1 立牌里还有和牌张 → 撤销抢杠和", s, points: 22, hasnt: ["抢杠和"])
+}
+do {
+    // 同理，绝张的含义是另外 3 张都在明面上，自己攥着就不是绝张
+    let s = msc("123m456m789m123p11p", win: "1p") { $0.lastTileOfKind = true }
+    mexpect("REV2 立牌里还有和牌张 → 撤销和绝张", s, points: 22, hasnt: ["和绝张"])
+}
+do {
+    // 杠上开花要真有杠
+    let s = msc("123m456m789m123p11p", win: "1p", selfDrawn: true) { $0.kongBloom = true }
+    mexpect("REV3 手里没有杠 → 撤销杠上开花", s, hasnt: ["杠上开花"])
+}
+do {
+    // 反过来：另外 3 张明着在副露里，不必等用户勾也是绝张
+    let s = msc("123m456m789m11p", melds: [MM(.pong, "9s")], win: "9s")
+    mcheck(mnames(s).contains("和绝张"), "REV4 副露里已有 3 张 → 自动判绝张", "got \(mnames(s))")
+}
 
 print("— 不重复计算原则 —")
 // 不可拆分 + 就高不就低：123m 重复 + 456m + 789m 应算清龙 16，不再拆出一般高
@@ -641,12 +667,14 @@ do {
     let legacy = """
     {"baseStake":1,"gameMode":"mcr",
      "mcrZiYiSeCountsHunYaoJiu":true,
-     "mcrJiuLianCountsShuangAnKe":true,
+     "mcrJiuLianCountsShuangAnKe":false,
      "mcrPerKongFanWithThreeKongs":true}
     """.data(using: .utf8)!
     let migrated = try! JSONDecoder().decode(RuleSettings.self, from: legacy)
+    // 只纠正老默认值与官方不符的那两项。九莲计双暗刻的老默认值本来就是官方值，
+    // 存档里的 false 只可能是用户自己改的，迁移不许动它。
     mcheck(!migrated.mcrZiYiSeCountsHunYaoJiu
-           && migrated.mcrJiuLianCountsShuangAnKe
+           && !migrated.mcrJiuLianCountsShuangAnKe
            && !migrated.mcrPerKongFanWithThreeKongs,
            "MIG1 旧存档的国标三项被纠正成官方值",
            "got \(migrated.mcrZiYiSeCountsHunYaoJiu)/\(migrated.mcrJiuLianCountsShuangAnKe)/\(migrated.mcrPerKongFanWithThreeKongs)")

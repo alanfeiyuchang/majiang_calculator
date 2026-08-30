@@ -141,9 +141,9 @@ struct RuleSettings: Codable, Equatable {
         mcrZiYiSeCountsHunYaoJiu = needsMCRDefaultsMigration
             ? false
             : (try c.decodeIfPresent(Bool.self, forKey: .mcrZiYiSeCountsHunYaoJiu) ?? false)
-        mcrJiuLianCountsShuangAnKe = needsMCRDefaultsMigration
-            ? true
-            : (try c.decodeIfPresent(Bool.self, forKey: .mcrJiuLianCountsShuangAnKe) ?? true)
+        // 这一项的老默认值本来就是官方值（true），用户存的 false 是主动改的，不能覆盖
+        mcrJiuLianCountsShuangAnKe =
+            try c.decodeIfPresent(Bool.self, forKey: .mcrJiuLianCountsShuangAnKe) ?? true
         mcrSevenPairsAllowsQuadAsTwoPairs =
             try c.decodeIfPresent(Bool.self, forKey: .mcrSevenPairsAllowsQuadAsTwoPairs) ?? true
         mcrPerKongFanWithThreeKongs = needsMCRDefaultsMigration

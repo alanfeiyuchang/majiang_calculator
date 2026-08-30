@@ -436,29 +436,66 @@ private func mcrFreqOnlyFan(_ stats: TileStats) -> [FanHit] {
 }
 
 
+/// 组合龙型的听牌番。官方（`adjust_by_waiting_form`）只看**第 4 副面子和将**这两处，
+/// 副露过的那副不算，而且边张 / 坎张 / 单钓将三者最多取一个，优先级 边张 > 坎张 > 单钓将。
+/// 门清时还要求是独听；有副露时听在龙身外必是单钓将，听在龙身上只有攥了 3 张才算。
+private func mcrKnittedWaitFan(extra: (sets: [MCRSet], pair: MCRSet),
+                               concealed: [Int], melds: [Meld],
+                               winningTile w: Int) -> [FanHit] {
+    guard w >= 0 else { return [] }
+    if melds.isEmpty {
+        // 门清：第 4 副面子 + 将里找和牌张的位置，三选一
+        var edge = false, closed = false, single = false
+        for set in extra.sets + [extra.pair] {
+            switch set.kind {
+            case .chow:
+                if w == set.tile + 1 { closed = true }
+                else if w == set.tile || w == set.tile + 2 { edge = true }
+            case .pair:
+                if w == set.tile { single = true }
+            default: break
+            }
+        }
+        if edge { return [FanHit(name: "边张")] }
+        if closed { return [FanHit(name: "坎张")] }
+        if single { return [FanHit(name: "单钓将")] }
+        return []
+    }
+    // 有副露：和牌张落在龙身外必是单钓将；落在龙身上要手里恰有 3 张才算
+    let inBody = mcrKnittedBodyTiles(concealed, melds: melds)?.contains(w) ?? false
+    if !inBody || concealed[w] == 3 { return [FanHit(name: "单钓将")] }
+    return []
+}
+
 /// 组合龙型里除了那 9 张组合龙之外的部分：1 副面子 + 1 对将。
 /// 拿它去算刻子番——组合龙分支本身给不出面子，漏的正是「计番不全」。
-private func mcrKnittedExtraSets(_ concealed: [Int], melds: [Meld])
-    -> (sets: [MCRSet], pair: MCRSet)? {
-    // 三门花色分别取 147 / 258 / 369 之一，6 种分配方式挨个试
+/// 手里那 9 张组合龙「龙身」是哪些牌。找不到组合龙就返回 nil。
+/// 三门花色分别取 147 / 258 / 369 之一，6 种分配方式挨个试。
+private func mcrKnittedBodyTiles(_ concealed: [Int], melds: [Meld]) -> Set<Int>? {
     let patterns: [[Int]] = [[0, 3, 6], [1, 4, 7], [2, 5, 8]]
-    var stripped: [Int]?
     for i in 0..<3 {
         for j in 0..<3 where j != i {
             let k = 3 - i - j
             var t = concealed
+            var body = Set<Int>()
             var okAll = true
             for (suit, pat) in [(0, patterns[i]), (1, patterns[j]), (2, patterns[k])] {
                 for r in pat {
                     let idx = suit * 9 + r
-                    if t[idx] > 0 { t[idx] -= 1 } else { okAll = false }
+                    if t[idx] > 0 { t[idx] -= 1; body.insert(idx) } else { okAll = false }
                 }
             }
-            if okAll { stripped = t; break }
+            if okAll { return body }
         }
-        if stripped != nil { break }
     }
-    guard let rest = stripped else { return nil }
+    return nil
+}
+
+private func mcrKnittedExtraSets(_ concealed: [Int], melds: [Meld])
+    -> (sets: [MCRSet], pair: MCRSet)? {
+    guard let body = mcrKnittedBodyTiles(concealed, melds: melds) else { return nil }
+    var rest = concealed
+    for idx in body { rest[idx] -= 1 }
 
     let meldSets = mcrMeldSets(melds)
     // 摘掉组合龙那 9 张后只剩「1 副面子 + 1 将」= 5 张。mcrDecompose 按
@@ -944,13 +981,26 @@ func scoreMCRHand(
     for i in 0..<mcrTileKinds { full[i] += meldFreq[i] }
     let stats = TileStats(full)
 
-    // 和绝张能从牌面推出来的部分：另外 3 张**明着**在副露里，手里只有和的这一张。
-    // 自己攥着 4 张不算绝张——绝张的含义是别人看得见那 3 张已经出完。
-    let lastTileOfKindByCount: Bool = {
+    // 场景番的三个勾选项，牌面能证伪的一律以牌面为准（官方同样这么校正）。
+    // 少了这层校正，用户点错一个勾就能凭空多出 4～8 分。
+    var context = context
+    if context.winningTile >= 0 {
         let w = context.winningTile
-        guard w >= 0 else { return false }
-        return concealed[w] == 1 && meldFreq[w] == 3
-    }()
+        // 和绝张：立牌里除了和的这张还有别的，就说明第 4 张不在明面上，撤销；
+        // 反过来另外 3 张明着在副露里，那必然是绝张，不必等用户勾。
+        if concealed[w] != 1 { context.lastTileOfKind = false }
+        if meldFreq[w] == 3 { context.lastTileOfKind = true }
+        if context.selfDrawn {
+            // 杠上开花：手里根本没有杠
+            if !melds.contains(where: { $0.kind == .exposedKong || $0.kind == .concealedKong }) {
+                context.kongBloom = false
+            }
+        } else {
+            // 抢杠和：抢的是别人补杠的第 4 张，自己手上不可能还有同一张
+            if meldFreq[w] != 0 || concealed[w] != 1 { context.robbingKong = false }
+        }
+    }
+    let lastTileOfKindByCount = false
 
     // 门清：没有吃 / 碰 / 明杠（暗杠可）
     let fullyConcealed = melds.allSatisfy { $0.kind == .concealedKong }
@@ -979,12 +1029,15 @@ func scoreMCRHand(
     }()
     let waitFanNames: Set<String> = ["边张", "坎张", "单钓将"]
 
-    // 分数打平时的取法：边张 > 坎张 > 单钓将。
-    // 例如 67788 + 和 7：既能读成「89 等 7」（边张），也能读成「68 夹 7」（坎张），
-    // 两种都是 1 分，就高不就低分不出高下。官方算番器取前者，这里跟它一致。
-    func waitRank(_ s: MCRScore) -> Int {
-        let order = ["边张": 0, "坎张": 1, "单钓将": 2]
-        return s.items.compactMap { order[$0.name] }.min() ?? 3
+    // 分数打平时选哪个拆解：官方保留**先算出来的**那个，只有两种例外——
+    // 后来的拆解里有一色三同顺或三同刻，以及「标准型打平七对时优先标准型」。
+    // 其余并列（比如同为 1 分的一般高 / 连六）官方取决于它自己的枚举顺序，
+    // 那不是规则、是实现细节，我们不去模仿，总分一样、只是番种名不同。
+    func tieBreakPrefersNew(_ new: MCRScore, over old: MCRScore) -> Bool {
+        let n = Set(new.items.map(\.name)), o = Set(old.items.map(\.name))
+        if n.contains("一色三同顺") || n.contains("三同刻") { return true }
+        if o.contains("七对"), !n.contains("七对") { return true }
+        return false
     }
 
     var best: MCRScore?
@@ -993,7 +1046,7 @@ func scoreMCRHand(
         let s = mcrFinalize(filtered, flowers: flowers, options: options)
         guard let b = best else { best = s; return }
         if s.scoringPoints > b.scoringPoints
-            || (s.scoringPoints == b.scoringPoints && waitRank(s) < waitRank(b)) {
+            || (s.scoringPoints == b.scoringPoints && tieBreakPrefersNew(s, over: b)) {
             best = s
         }
     }
@@ -1051,16 +1104,27 @@ func scoreMCRHand(
     if melds.count <= 1, mcrIsKnittedStraightForm(concealed, meldCount: melds.count) {
         var hits: [FanHit] = [FanHit(name: "组合龙")]
         hits += mcrWholeHandFan(stats)
-        hits += mcrFreqOnlyFan(stats)
-        // 组合龙型里那 1 副面子照样要算刻子番（幺九刻 / 箭刻 / 圈风刻 / 门风刻），
-        // 将牌也可能凑成番。原来整条分支只给了本命番，这正是「计番不全」。
+        // 这里**不能**用 mcrFreqOnlyFan：官方对组合龙的四归一有严格限定，
+        // 只有第 4 副面子那张（还得不是杠）或者将牌能成四归一，不是「凡 4 张就算」。
+        // 龙身上的牌哪怕攥了 4 张也不算。清幺九 / 混幺九则天然不可能——
+        // 龙身必然含 2…8，一定不是清一色幺九。
         if let extra = mcrKnittedExtraSets(concealed, melds: melds) {
-            hits += mcrHonorFan(extra.sets, pair: extra.pair, ctx: context)
-            hits += mcrConcealmentFan(extra.sets, options: options)
-            // 听牌番：和的那张落在那副面子或将上时照常计（独听与否由 consider 统一过滤）
-            for set in extra.sets + [extra.pair] where set.tiles.contains(context.winningTile) {
-                hits += mcrWaitFan(winSet: set, winningTile: context.winningTile)
+            let pairTile = extra.pair.tile
+            if let set = extra.sets.first, set.kind == .chow {
+                // 第 4 副是顺子：将是数牌就是平和（平和顺带把无字吸收掉）
+                if !mcrIsHonor(pairTile) { hits.append(FanHit(name: "平和")) }
+                // 顺子型只有将可能凑成四归一
+                if full[pairTile] == 4 { hits.append(FanHit(name: "四归一")) }
+            } else if let set = extra.sets.first {
+                // 第 4 副是刻子/杠：照常算刻子番（幺九刻 / 箭刻 / 圈风刻 / 门风刻）
+                hits += mcrHonorFan([set], pair: extra.pair, ctx: context)
+                hits += mcrConcealmentFan([set], options: options)
+                if !mcrIsHonor(set.tile), set.kind != .kong, full[set.tile] == 4 {
+                    hits.append(FanHit(name: "四归一"))
+                }
             }
+            hits += mcrKnittedWaitFan(extra: extra, concealed: concealed, melds: melds,
+                                      winningTile: context.winningTile)
         }
         hits += mcrSituationalFan(ctx: context, fullyConcealed: fullyConcealed,
                                   allMelded: false, singleWait: false,
@@ -1084,6 +1148,23 @@ func scoreMCRHand(
             }
         }
         if winCandidates.isEmpty { winCandidates = [-1] }
+        // 同一个拆解里和牌张可能同时读成好几种听法（比如 67788 + 和 7，
+        // 既在 789 的边上、又在 678 的中间、还能当将）。官方在一个拆解内部
+        // 只取一种，优先级 边张 > 坎张 > 单钓将——把候选按这个次序排好，
+        // 后面打平保留先算出来的那个，效果就等同于官方的取法。
+        // 注意这条优先级只在**同一个拆解内**成立，跨拆解打平时官方是按
+        // 自己的枚举顺序取的，那是实现细节，不在这里模仿。
+        let waitOrder = ["边张": 0, "坎张": 1, "单钓将": 2]
+        winCandidates.sort { a, b in
+            func rank(_ i: Int) -> Int {
+                guard i >= 0,
+                      let n = mcrWaitFan(winSet: handAll[i],
+                                         winningTile: context.winningTile).first?.name
+                else { return 3 }
+                return waitOrder[n] ?? 3
+            }
+            return rank(a) < rank(b)
+        }
 
         for winIdx in winCandidates {
             var sets = decomp.handSets + meldSets
