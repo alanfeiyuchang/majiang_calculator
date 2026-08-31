@@ -653,6 +653,27 @@ struct ContentView: View {
         hasKongMeld && ruleStore.settings.kongBloomEnabled
     }
 
+    /// 抢杠和 / 和绝张 这两个勾选，牌面上不可能成立时引擎会直接撤销。
+    /// 撤销是对的，但勾了却一分不涨会让人以为是算错——干脆别显示这个勾，
+    /// 和上面「没有杠就不显示杠上开花」是同一个做法。
+    private var mcrCandidateWinningTiles: [Int] {
+        let freq = handToFrequency34(viewModel.handTiles)
+        return (0..<mcrTileKinds).filter { freq[$0] > 0 }
+    }
+
+    /// 抢杠和抢的是别人补杠的第 4 张，自己手上不可能还留着同一张
+    private var robbingKongPossible: Bool {
+        let freq = handToFrequency34(viewModel.handTiles)
+        let meldFreq = meldsToFrequency34(viewModel.melds)
+        return mcrCandidateWinningTiles.contains { freq[$0] == 1 && meldFreq[$0] == 0 }
+    }
+
+    /// 绝张的含义是另外 3 张都在明面上，自己攥着第二张就不是
+    private var lastTileOfKindPossible: Bool {
+        let freq = handToFrequency34(viewModel.handTiles)
+        return mcrCandidateWinningTiles.contains { freq[$0] == 1 }
+    }
+
     /// 当前勾选的场景番组成胡牌上下文
     private func winContext(selfDrawn: Bool) -> WinContext {
         WinContext(
@@ -949,9 +970,9 @@ struct ContentView: View {
                 fanChip("妙手回春", $mcrLastTileDraw)
             } else {
                 fanChip("海底捞月（和最后一张打出的牌）", $mcrLastDiscard)
-                fanChip("抢杠和", $mcrRobbingKong)
+                if robbingKongPossible { fanChip("抢杠和", $mcrRobbingKong) }
             }
-            fanChip("和绝张", $mcrLastTileOfKind)
+            if lastTileOfKindPossible { fanChip("和绝张", $mcrLastTileOfKind) }
             Spacer(minLength: 0)
         }
     }

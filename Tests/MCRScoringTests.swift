@@ -395,6 +395,58 @@ do {
 
 // MARK: - 不重复计算原则
 
+// MARK: - 和牌张未知（界面「已和！」卡片走的就是这条路）
+
+print("— 和牌张未知 —")
+do {
+    // 这条路径此前没有任何对照测试：winningTile = -1 时凡是要看和牌张的番
+    // 全都拿不到，九莲宝灯 92 → 31，全求人还会被误判「不够起和」。
+    func unknown(_ hand: String, melds: [Meld] = [], selfDrawn: Bool = false,
+                 _ tweak: (inout MCRContext) -> Void = { _ in }) -> MCRScore {
+        var ctx = MCRContext(selfDrawn: selfDrawn, winningTile: -1)
+        ctx.prevalentWind = 0; ctx.seatWind = 0
+        tweak(&ctx)
+        return scoreMCRHand(concealed: mfreq(hand), melds: melds, context: ctx)
+    }
+    let jiulian = unknown("11123456788999s")
+    mcheck(jiulian.scoringPoints == 92 && mnames(jiulian).contains("九莲宝灯"),
+           "UNK1 九莲宝灯要逐张试才认得出", "got \(jiulian.scoringPoints) \(mnames(jiulian))")
+    let qiuren = unknown("99m", melds: [MM(.pong, "1m"), MM(.pong, "2p"),
+                                        MM(.chow, "3s"), MM(.pong, "5z")])
+    mcheck(qiuren.scoringPoints == 9 && mnames(qiuren).contains("全求人") && qiuren.meetsMinimum,
+           "UNK2 全求人要靠单钓将，丢了会误判不够起和",
+           "got \(qiuren.scoringPoints) \(mnames(qiuren))")
+    let wait = unknown("123456789m12355p")
+    mcheck(wait.scoringPoints == 23, "UNK3 听牌番照给", "got \(wait.scoringPoints)")
+    // 场景番的校正也要逐张判：一张都说不通就撤销
+    let rob = unknown("11223344556677p") { $0.robbingKong = true }
+    mcheck(rob.scoringPoints == 88 && !mnames(rob).contains("抢杠和"),
+           "UNK4 没有一张说得通 → 撤销抢杠和", "got \(rob.scoringPoints) \(mnames(rob))")
+    // 但真说得通的时候不能误撤
+    let robOK = unknown("123m456m789m234p11p") { $0.robbingKong = true }
+    mcheck(mnames(robOK).contains("抢杠和"), "UNK5 有一张说得通就不撤", "got \(mnames(robOK))")
+    // 未知和牌张的结果不能高于「逐张试取最优」，也不能低
+    for hand in ["11123456788999s", "123456789m12355p", "11223344556677p"] {
+        let f = mfreq(hand)
+        var bestKnown = 0
+        for w in 0..<mcrTileKinds where f[w] > 0 {
+            var c = MCRContext(selfDrawn: false, winningTile: w)
+            c.prevalentWind = 0; c.seatWind = 0
+            bestKnown = max(bestKnown, scoreMCRHand(concealed: f, melds: [], context: c).scoringPoints)
+        }
+        mcheck(unknown(hand).scoringPoints == bestKnown,
+               "UNK6 \(hand) 未知 = 逐张试的最优", "got \(unknown(hand).scoringPoints) vs \(bestKnown)")
+    }
+}
+do {
+    // 花牌数不该出现负值，真出现了也不能让总分低于起和分
+    var ctx = MCRContext(selfDrawn: false, winningTile: mt("5p").first!.mcrIndex)
+    ctx.flowers = -5
+    let s = scoreMCRHand(concealed: mfreq("123m456m789m123p55p"), melds: [], context: ctx)
+    mcheck(s.totalPoints >= s.scoringPoints, "UNK7 负花牌不至于让总分小于起和分",
+           "got \(s.totalPoints)/\(s.scoringPoints)")
+}
+
 // MARK: - 场景番：牌面与勾选矛盾时以牌面为准
 
 print("— 场景番的牌面校正 —")

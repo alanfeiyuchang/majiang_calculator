@@ -263,7 +263,9 @@ private func mcrOptionalExcludes(_ options: MCROptions) -> [String: [String]] {
 }
 
 /// 应用排除表并折算成 FanItem 列表 + 总分
-private func mcrFinalize(_ hits: [FanHit], flowers: Int, options: MCROptions) -> MCRScore {
+private func mcrFinalize(_ hits: [FanHit], flowers rawFlowers: Int, options: MCROptions) -> MCRScore {
+    // 花牌数不可能为负；不设防的话 totalPoints 会小于 scoringPoints
+    let flowers = max(0, rawFlowers)
     var merged: [String: Int] = [:]
     var order: [String] = []
     for h in hits where h.count > 0 {
@@ -462,7 +464,7 @@ private func mcrKnittedWaitFan(extra: (sets: [MCRSet], pair: MCRSet),
         return []
     }
     // 有副露：和牌张落在龙身外必是单钓将；落在龙身上要手里恰有 3 张才算
-    let inBody = mcrKnittedBodyTiles(concealed, melds: melds)?.contains(w) ?? false
+    let inBody = mcrKnittedBodyTiles(concealed)?.contains(w) ?? false
     if !inBody || concealed[w] == 3 { return [FanHit(name: "单钓将")] }
     return []
 }
@@ -471,7 +473,7 @@ private func mcrKnittedWaitFan(extra: (sets: [MCRSet], pair: MCRSet),
 /// 拿它去算刻子番——组合龙分支本身给不出面子，漏的正是「计番不全」。
 /// 手里那 9 张组合龙「龙身」是哪些牌。找不到组合龙就返回 nil。
 /// 三门花色分别取 147 / 258 / 369 之一，6 种分配方式挨个试。
-private func mcrKnittedBodyTiles(_ concealed: [Int], melds: [Meld]) -> Set<Int>? {
+private func mcrKnittedBodyTiles(_ concealed: [Int]) -> Set<Int>? {
     let patterns: [[Int]] = [[0, 3, 6], [1, 4, 7], [2, 5, 8]]
     for i in 0..<3 {
         for j in 0..<3 where j != i {
@@ -493,7 +495,7 @@ private func mcrKnittedBodyTiles(_ concealed: [Int], melds: [Meld]) -> Set<Int>?
 
 private func mcrKnittedExtraSets(_ concealed: [Int], melds: [Meld])
     -> (sets: [MCRSet], pair: MCRSet)? {
-    guard let body = mcrKnittedBodyTiles(concealed, melds: melds) else { return nil }
+    guard let body = mcrKnittedBodyTiles(concealed) else { return nil }
     var rest = concealed
     for idx in body { rest[idx] -= 1 }
 
@@ -913,7 +915,6 @@ private func mcrCompositionFan(_ sets: [MCRSet], pair: MCRSet, stats: TileStats)
 
 private func mcrSituationalFan(
     ctx: MCRContext, fullyConcealed: Bool, allMelded: Bool, singleWait: Bool,
-    lastTileOfKindByCount: Bool = false
 ) -> [FanHit] {
     var hits: [FanHit] = []
     if ctx.selfDrawn {
@@ -929,7 +930,7 @@ private func mcrSituationalFan(
     }
     // 和绝张：和的这张是明面第 4 张。手牌 + 副露里已经凑齐 4 张时，
     // 这一点从牌面就能确定，不必等用户勾选（参考实现同样是这么校正的）。
-    if ctx.lastTileOfKind || lastTileOfKindByCount { hits.append(FanHit(name: "和绝张")) }
+    if ctx.lastTileOfKind { hits.append(FanHit(name: "和绝张")) }
     return hits
 }
 
@@ -976,6 +977,22 @@ func scoreMCRHand(
     concealed: [Int], melds: [Meld], context: MCRContext,
     options: MCROptions = MCROptions()
 ) -> MCRScore {
+    // 和牌张未知（界面上的「已和！」卡片就是这种情形）：逐张试，取最高的那种读法。
+    // 不这么做的话，凡是要看和牌张才成立的番全都拿不到——九莲宝灯、全求人、
+    // 边张/坎张/单钓将——九莲宝灯会从 92 分掉到 31 分，全求人少 6 分还会
+    // 被误判成「不够起和」。同时场景番的牌面校正也要跟着逐张判：
+    // 只要没有任何一张说得通，那个勾就得撤销（否则抢杠和能凭空多 8 分）。
+    if context.winningTile < 0 {
+        var best: MCRScore?
+        for w in 0..<mcrTileKinds where concealed[w] > 0 {
+            var c = context
+            c.winningTile = w
+            let s = scoreMCRHand(concealed: concealed, melds: melds, context: c, options: options)
+            if best == nil || s.scoringPoints > best!.scoringPoints { best = s }
+        }
+        if let best { return best }
+    }
+
     var full = concealed
     let meldFreq = meldsToFrequency34(melds)
     for i in 0..<mcrTileKinds { full[i] += meldFreq[i] }
@@ -1000,7 +1017,6 @@ func scoreMCRHand(
             if meldFreq[w] != 0 || concealed[w] != 1 { context.robbingKong = false }
         }
     }
-    let lastTileOfKindByCount = false
 
     // 门清：没有吃 / 碰 / 明杠（暗杠可）
     let fullyConcealed = melds.allSatisfy { $0.kind == .concealedKong }
@@ -1061,8 +1077,7 @@ func scoreMCRHand(
             hits += mcrWholeHandFan(stats)
             hits += mcrFreqOnlyFan(stats)
             hits += mcrSituationalFan(ctx: context, fullyConcealed: true,
-                                      allMelded: false, singleWait: true,
-                                      lastTileOfKindByCount: lastTileOfKindByCount)
+                                      allMelded: false, singleWait: true)
             consider(hits)
         }
         // 七对 / 连七对
@@ -1072,8 +1087,7 @@ func scoreMCRHand(
             hits += mcrWholeHandFan(stats)
             hits += mcrFreqOnlyFan(stats)
             hits += mcrSituationalFan(ctx: context, fullyConcealed: true,
-                                      allMelded: false, singleWait: true,
-                                      lastTileOfKindByCount: lastTileOfKindByCount)
+                                      allMelded: false, singleWait: true)
             consider(hits)
         }
         // 全不靠 / 七星不靠（可与组合龙叠加）
@@ -1085,8 +1099,7 @@ func scoreMCRHand(
             hits += mcrWholeHandFan(stats)
             hits += mcrFreqOnlyFan(stats)
             hits += mcrSituationalFan(ctx: context, fullyConcealed: true,
-                                      allMelded: false, singleWait: false,
-                                      lastTileOfKindByCount: lastTileOfKindByCount)
+                                      allMelded: false, singleWait: false)
             consider(hits)
         }
         // 九莲宝灯
@@ -1094,8 +1107,7 @@ func scoreMCRHand(
             var hits: [FanHit] = [FanHit(name: "九莲宝灯")]
             hits += mcrWholeHandFan(stats)
             hits += mcrSituationalFan(ctx: context, fullyConcealed: true,
-                                      allMelded: false, singleWait: false,
-                                      lastTileOfKindByCount: lastTileOfKindByCount)
+                                      allMelded: false, singleWait: false)
             consider(hits)
         }
     }
@@ -1128,7 +1140,7 @@ func scoreMCRHand(
         }
         hits += mcrSituationalFan(ctx: context, fullyConcealed: fullyConcealed,
                                   allMelded: false, singleWait: false,
-                                  lastTileOfKindByCount: lastTileOfKindByCount)
+                                  )
         consider(hits)
     }
 
@@ -1155,15 +1167,17 @@ func scoreMCRHand(
         // 注意这条优先级只在**同一个拆解内**成立，跨拆解打平时官方是按
         // 自己的枚举顺序取的，那是实现细节，不在这里模仿。
         let waitOrder = ["边张": 0, "坎张": 1, "单钓将": 2]
+        func waitRank(_ i: Int) -> Int {
+            guard i >= 0,
+                  let n = mcrWaitFan(winSet: handAll[i],
+                                     winningTile: context.winningTile).first?.name
+            else { return 3 }
+            return waitOrder[n] ?? 3
+        }
+        // Swift 的 sort 不保证稳定，同 rank 的候选次序会随实现变——
+        // 拿原下标当次关键字，结果才是确定的（Kotlin 侧 sortedBy 本来就稳定）
         winCandidates.sort { a, b in
-            func rank(_ i: Int) -> Int {
-                guard i >= 0,
-                      let n = mcrWaitFan(winSet: handAll[i],
-                                         winningTile: context.winningTile).first?.name
-                else { return 3 }
-                return waitOrder[n] ?? 3
-            }
-            return rank(a) < rank(b)
+            (waitRank(a), a) < (waitRank(b), b)
         }
 
         for winIdx in winCandidates {
@@ -1194,8 +1208,7 @@ func scoreMCRHand(
                 hits += strictWaitFan
             }
             hits += mcrSituationalFan(ctx: context, fullyConcealed: fullyConcealed,
-                                      allMelded: allMelded, singleWait: singleWait,
-                                      lastTileOfKindByCount: lastTileOfKindByCount)
+                                      allMelded: allMelded, singleWait: singleWait)
             consider(hits)
         }
     }

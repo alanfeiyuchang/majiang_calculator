@@ -85,6 +85,11 @@ struct SettingsView: View {
                             note: "开了三个杠时：开 = 三杠 32 分之外，每个明杠再加 1 分、暗杠再加 2 分；关 = 只算三杠的 32 分。"
                         )
                         mcrRuleToggle(
+                            "一明杠加一暗杠算「明暗杠」",
+                            isOn: $store.settings.mcrOneOpenOneConcealedKong,
+                            note: "手里正好一个明杠、一个暗杠时：开 = 按「明暗杠」整体算 5 分（官方竞赛算番器就是这么算的）；关 = 按 1998 规则的 81 番拆成明杠 1 分 + 暗杠 2 分。"
+                        )
+                        mcrRuleToggle(
                             "边张 / 坎张 / 单钓将就高算",
                             isOn: $store.settings.mcrWaitFanHighestReading,
                             note: "和的那张牌能有好几种读法时：开 = 按对你有利的那种读，这 1 分照给；关 = 只有读法唯一、没有第二种拆法时才给这 1 分。"
