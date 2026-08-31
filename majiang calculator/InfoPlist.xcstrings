@@ -1,0 +1,24 @@
+{
+  "sourceLanguage" : "zh-Hans",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "主屏图标下面的名字、系统设置里的 App 名、以及评分弹窗标题。跟随**系统语言**，不跟 App 内的中/EN 开关。iPhone 主屏大约 12 个字符就截断。",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenpai Helper"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "听牌计算器"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -274,6 +274,7 @@
 				DEVELOPMENT_TEAM = 5V3HM8L9GT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "听牌计算器";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "用于拍摄牌桌上的麻将牌照片，自动识别手牌。";
@@ -314,6 +315,7 @@
 				DEVELOPMENT_TEAM = 5V3HM8L9GT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "听牌计算器";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "用于拍摄牌桌上的麻将牌照片，自动识别手牌。";
