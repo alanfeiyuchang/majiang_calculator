@@ -3,6 +3,9 @@
 //  什么时候找用户要评分。系统弹窗一年只有 3 次，规则写错了就白白浪费掉，
 //  而且线上看不出来——所以这里逐条钉死。
 //
+//  两步：分析成功攒次数（够了「上膛」），用户清空 / 开下一局时才真的弹。
+//  出结果那一刻不弹——那会儿用户正在读结果。
+//
 
 print("\n— 评分提示的触发规则 —")
 var rFails = 0
@@ -18,39 +21,60 @@ func freshDefaults(_ name: String) -> UserDefaults {
 }
 
 do {
+    // 攒够 8 次才上膛，而且上膛不等于弹——得等用户开下一手
     let d = freshDefaults("threshold")
-    var asked: [Int] = []
-    for i in 1...12 where ReviewPrompt.recordSuccessAndShouldAsk(defaults: d) { asked.append(i) }
-    rcheck(asked == [8], "RV1 攒够 8 次成功才问，且只问一次", "在第 \(asked) 次问了")
+    var firedAt: [Int] = []
+    for i in 1...12 {
+        ReviewPrompt.recordSuccess(defaults: d)
+        if ReviewPrompt.consumePendingAsk(defaults: d) { firedAt.append(i) }
+    }
+    rcheck(firedAt == [8], "RV1 攒够 8 次才弹，且只弹一次", "在第 \(firedAt) 次弹了")
 }
 do {
-    // 同一个版本问过一次就不再问，哪怕继续用
-    let d = freshDefaults("once")
-    for _ in 1...8 { _ = ReviewPrompt.recordSuccessAndShouldAsk(defaults: d) }
+    // 光分析、不开下一手，一次都不该弹
+    let d = freshDefaults("noconsume")
+    for _ in 1...50 { ReviewPrompt.recordSuccess(defaults: d) }
+    rcheck(ReviewPrompt.consumePendingAsk(defaults: d), "RV2 攒够后第一次开下一手会弹")
     var again = false
-    for _ in 1...50 where ReviewPrompt.recordSuccessAndShouldAsk(defaults: d) { again = true }
-    rcheck(!again, "RV2 同一版本问过就不再问")
+    for _ in 1...20 {
+        ReviewPrompt.recordSuccess(defaults: d)
+        if ReviewPrompt.consumePendingAsk(defaults: d) { again = true }
+    }
+    rcheck(!again, "RV3 同一版本弹过就不再弹")
 }
 do {
-    // 前 7 次一次都不该问——太早开口会把一年 3 次的额度浪费在还没觉得好用的人身上
+    // 前 7 次哪怕一直清空重来也不该弹
     let d = freshDefaults("early")
-    var earlyAsk = false
-    for _ in 1...7 where ReviewPrompt.recordSuccessAndShouldAsk(defaults: d) { earlyAsk = true }
-    rcheck(!earlyAsk, "RV3 前 7 次不开口")
+    var early = false
+    for _ in 1...7 {
+        ReviewPrompt.recordSuccess(defaults: d)
+        if ReviewPrompt.consumePendingAsk(defaults: d) { early = true }
+    }
+    rcheck(!early, "RV4 前 7 次不开口")
+}
+do {
+    // 没分析过就一通乱点清空，不该弹
+    let d = freshDefaults("bare")
+    var fired = false
+    for _ in 1...30 where ReviewPrompt.consumePendingAsk(defaults: d) { fired = true }
+    rcheck(!fired, "RV5 没攒够就清空，不弹")
 }
 do {
     let d = freshDefaults("reset")
-    for _ in 1...8 { _ = ReviewPrompt.recordSuccessAndShouldAsk(defaults: d) }
+    for _ in 1...8 { ReviewPrompt.recordSuccess(defaults: d) }
+    _ = ReviewPrompt.consumePendingAsk(defaults: d)
     ReviewPrompt.reset(defaults: d)
-    var asked: [Int] = []
-    for i in 1...10 where ReviewPrompt.recordSuccessAndShouldAsk(defaults: d) { asked.append(i) }
-    rcheck(asked == [8], "RV4 reset 之后从头计数", "在第 \(asked) 次问了")
+    var firedAt: [Int] = []
+    for i in 1...10 {
+        ReviewPrompt.recordSuccess(defaults: d)
+        if ReviewPrompt.consumePendingAsk(defaults: d) { firedAt.append(i) }
+    }
+    rcheck(firedAt == [8], "RV6 reset 之后从头计数", "在第 \(firedAt) 次弹了")
 }
 do {
-    // 写评价的直达链接得是 App Store 认的那种形式
     let url = ReviewPrompt.writeReviewURL?.absoluteString ?? ""
     rcheck(url == "https://apps.apple.com/app/id6776462266?action=write-review",
-           "RV5 写评价链接正确", "got \(url)")
+           "RV7 写评价链接正确", "got \(url)")
 }
 
 print(rFails == 0 ? "评分提示全部通过 ✅" : "❌ 评分提示 \(rFails) 个失败")

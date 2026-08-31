@@ -326,7 +326,8 @@ struct ContentView: View {
                 .onChange(of: viewModel.hasAnalyzed) { _, analyzed in
                     if analyzed {
                         scrollToResult(proxy)
-                        maybeAskForReview()
+                        // 只上膛，不在这儿弹——用户正要读结果
+                        if viewModel.hintMessage == nil { ReviewPrompt.recordSuccess() }
                     } else {
                         // 手牌变了：上一局的场景番勾选作废
                         kongBloom = false; lastTileDraw = false; heavenly = false
@@ -398,6 +399,7 @@ struct ContentView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         viewModel.reset()
+                        askForReviewIfPending()
                     } label: {
                         Image(systemName: "trash")
                             .font(.body.weight(.medium))
@@ -487,13 +489,11 @@ struct ContentView: View {
         }
     }
 
-    /// 分析成功后攒次数，到点了才让系统弹评分。
-    /// 张数不对、算不出结果的那几次不算——用户正卡着的时候不该去讨好评。
-    private func maybeAskForReview() {
-        guard viewModel.hintMessage == nil,
-              ReviewPrompt.recordSuccessAndShouldAsk() else { return }
-        // 让结果先滚到位、看清楚了再弹，不然弹窗盖在结果上
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+    /// 用户清空手牌、要开下一手了——屏幕上已经没有他要读的内容，
+    /// 这时候弹评分打断成本最低。出结果那一刻不弹。
+    private func askForReviewIfPending() {
+        guard ReviewPrompt.consumePendingAsk() else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             requestReview()
         }
     }
@@ -679,6 +679,8 @@ struct ContentView: View {
         if nextSeat == 0 { s.mcrPrevalentWind = (s.mcrPrevalentWind + 1) % 4 }
         s.mcrSeatWind = nextSeat
         ruleStore.settings = s
+        // 「下一局」和清空一样，都是「这手看完了」的时刻
+        askForReviewIfPending()
     }
 
     /// 结果区的风位提示：只有本手真有风刻、圈风/门风才会改变番数时才出现，
