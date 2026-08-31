@@ -7124,6 +7124,38 @@
           }
         }
       }
+    },
+    "给这个 App 评分": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rate this app"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "给这个 App 评分"
+          }
+        }
+      }
+    },
+    "会跳到 App Store 的评价页。算错了、少了什么，也欢迎在那里说。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the App Store review page. If something scores wrong or is missing, that's a good place to say so."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会跳到 App Store 的评价页。算错了、少了什么，也欢迎在那里说。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

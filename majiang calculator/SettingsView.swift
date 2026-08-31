@@ -94,7 +94,7 @@ struct SettingsView: View {
                         NavigationLink {
                             MCRFanReferenceView()
                         } label: {
-                            Label("番型一览（81 种）", systemImage: "list.bullet.rectangle")
+                            Label("番型一览", systemImage: "list.bullet.rectangle")
                         }
                     } footer: {
                         Text("国标不按底分翻倍算钱，只算番分，起和 8 分。花牌每张 1 分，不计入起和分。拍照识别只认万/筒/条，风牌、箭牌、花牌需手动补入。")
@@ -184,6 +184,18 @@ struct SettingsView: View {
                     }
                 } footer: {
                     Text("拍照识别在主界面底部；这里是从相册里选一张已有的照片来识别。")
+                }
+
+                // 直接开 App Store 的写评价页。系统那个弹窗一年只有 3 次、
+                // 还可能被静默吞掉，用户主动想写的时候得有个一定能走通的入口。
+                if let url = ReviewPrompt.writeReviewURL {
+                    Section {
+                        Link(destination: url) {
+                            Label("给这个 App 评分", systemImage: "star.bubble")
+                        }
+                    } footer: {
+                        Text("会跳到 App Store 的评价页。算错了、少了什么，也欢迎在那里说。")
+                    }
                 }
             }
             .navigationTitle("规则设置")
@@ -317,9 +329,9 @@ struct FanReferenceView: View {
         .environmentObject(RuleSettingsStore())
 }
 
-// MARK: - 番型一览（国标 81 种）
+// MARK: - 番型一览（国标 81 种 + 明暗杠）
 
-/// 国标 81 种番型，按分值分档列出，点开看含义
+/// 国标 81 种番型（外加通行的明暗杠），按分值分档列出，点开看含义
 struct MCRFanReferenceView: View {
     @State private var explainName: String?
 

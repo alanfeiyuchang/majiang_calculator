@@ -32,11 +32,12 @@ src = (src[:start] + src[j+1:]).replace("import Combine\n", "")
 open(sys.argv[2], "a").write(src)
 PY
 
-cat "$SRC/MCRScoring.swift" >> "$OUT"
+cat "$SRC/MCRScoring.swift" "$SRC/ReviewPrompt.swift" >> "$OUT"
 
 # 2) 测试（MCRScoringTests 最后跑，它汇总所有计数器并决定退出码）
 cat "$ROOT/Tests/ScoringTests.swift" "$ROOT/Tests/GroupingTests.swift" \
-    "$ROOT/Tests/DiscardEvalTests.swift" "$ROOT/Tests/MCROracleTests.swift" \
+    "$ROOT/Tests/DiscardEvalTests.swift" "$ROOT/Tests/ReviewPromptTests.swift" \
+    "$ROOT/Tests/MCROracleTests.swift" \
     "$ROOT/Tests/MCRScoringTests.swift" >> "$OUT"
 
 swift "$OUT"

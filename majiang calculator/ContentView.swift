@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import StoreKit
 import PhotosUI
 import AVFoundation
 import CoreMotion
@@ -203,6 +204,7 @@ struct ContentView: View {
     @StateObject private var viewModel = MahjongViewModel()
     @EnvironmentObject private var ruleStore: RuleSettingsStore
     @EnvironmentObject private var langManager: LanguageManager
+    @Environment(\.requestReview) private var requestReview
     @State private var keyboardSuit: MahjongCard.Suit = .wan
     /// 底部键盘点牌加到哪：手牌 / 碰 / 明杠 / 暗杠
     @State private var inputTarget: InputTarget = .hand
@@ -324,6 +326,7 @@ struct ContentView: View {
                 .onChange(of: viewModel.hasAnalyzed) { _, analyzed in
                     if analyzed {
                         scrollToResult(proxy)
+                        maybeAskForReview()
                     } else {
                         // 手牌变了：上一局的场景番勾选作废
                         kongBloom = false; lastTileDraw = false; heavenly = false
@@ -481,6 +484,17 @@ struct ContentView: View {
                     Task { await viewModel.recognizeAndCalculate(imageData: data) }
                 }
             }
+        }
+    }
+
+    /// 分析成功后攒次数，到点了才让系统弹评分。
+    /// 张数不对、算不出结果的那几次不算——用户正卡着的时候不该去讨好评。
+    private func maybeAskForReview() {
+        guard viewModel.hintMessage == nil,
+              ReviewPrompt.recordSuccessAndShouldAsk() else { return }
+        // 让结果先滚到位、看清楚了再弹，不然弹窗盖在结果上
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            requestReview()
         }
     }
 

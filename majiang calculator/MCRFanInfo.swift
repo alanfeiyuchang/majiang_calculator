@@ -125,7 +125,7 @@ enum MCRFanInfo {
         return String(localized: value, bundle: appLanguageBundle())
     }
 
-    /// 「番型一览」的分档表：分值 → 该档番型名（按官方 81 种的排列顺序）
+    /// 「番型一览」的分档表：分值 → 该档番型名（按官方 81 种的排列顺序，外加明暗杠）
     static let groups: [(points: Int, names: [String])] = [
         (88, ["大四喜", "大三元", "绿一色", "九莲宝灯", "四杠", "连七对", "十三幺"]),
         (64, ["清幺九", "小四喜", "小三元", "字一色", "四暗刻", "一色双龙会"]),

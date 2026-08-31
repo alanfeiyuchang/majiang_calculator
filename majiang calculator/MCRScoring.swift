@@ -139,7 +139,7 @@ struct MCRScore {
 /// 起和分
 let mcrMinimumPoints = 8
 
-// MARK: - 番种分值表（81 种）
+// MARK: - 番种分值表（官方 81 种 + 明暗杠）
 
 let mcrFanPoints: [String: Int] = [
     // 88
