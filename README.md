@@ -174,8 +174,8 @@ scoring (every fan type, rule-setting permutation, capped/uncapped payouts), pho
 grouping (hand/meld separation, adjacent-meld splitting, the two-pass zoom region), discard
 evaluation, and the MCR engine (winning shapes, shanten/waits with honours, every one of the
 81 fan types, the non-repeat principles, and the 8-point minimum). A companion Android test
-suite (`majiang-calculator-android`) mirrors the Sichuan assertions case-for-case — the two
-apps should never disagree. **MCR is iOS-only for now**; the Android port has not been updated.
+suite (`majiang-calculator-android`) mirrors these assertions case-for-case — the two apps
+should never disagree, and are diffed hand-for-hand against the official scorer (see below).
 
 ## Tech
 
@@ -185,10 +185,18 @@ apps should never disagree. **MCR is iOS-only for now**; the Android port has no
 
 ## Android
 
-A Kotlin + Jetpack Compose port of the **Sichuan** side with feature parity — same
-scoring engine, same rule settings, same recognition pipeline, same bilingual strings
-— lives at
+A Kotlin + Jetpack Compose port with **full feature parity** — both rule sets
+(Sichuan *and* MCR), the same scoring engines, rule settings, recognition pipeline
+and bilingual strings — lives at
 [**majiang_calculator_android**](https://github.com/alanfeiyuchang/majiang_calculator_android).
+Both engines are diffed hand-for-hand against the official MCR scorer and against
+each other; over 2.15M generated hands they agree on every score.
+
+**Download the APK:**
+[**mahjong-calculator.apk**](https://github.com/alanfeiyuchang/majiang_calculator_android/releases/download/latest-apk/mahjong-calculator.apk)
+— direct sideload build, rebuilt from `main` as features land
+([release page](https://github.com/alanfeiyuchang/majiang_calculator_android/releases/tag/latest-apk)).
+You will need to allow "Install unknown apps" for your browser.
 
 ## 🙏 Acknowledgements
 
