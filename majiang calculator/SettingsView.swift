@@ -46,23 +46,8 @@ struct SettingsView: View {
                 }
 
                 if isMCR {
-                    Section {
-                        Picker("圈风", selection: $store.settings.mcrPrevalentWind) {
-                            ForEach(0..<4, id: \.self) { i in
-                                Text(LocalizedStringKey(Self.windNames[i])).tag(i)
-                            }
-                        }
-                        Picker("门风", selection: $store.settings.mcrSeatWind) {
-                            ForEach(0..<4, id: \.self) { i in
-                                Text(LocalizedStringKey(Self.windNames[i])).tag(i)
-                            }
-                        }
-                    } header: {
-                        Text("圈风 / 门风")
-                    } footer: {
-                        Text("影响圈风刻、门风刻（各 2 分）。门风就是自己的座位风。")
-                    }
-
+                    // 圈风 / 门风 每局都在变（门风每局转一位，四局一圈换圈风），
+                    // 埋在设置页里没人会去改，已经挪到主页的滚轮那行。
                     Section {
                         mcrRuleToggle(
                             "字一色同时计混幺九",

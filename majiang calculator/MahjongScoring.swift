@@ -233,6 +233,14 @@ final class RuleSettingsStore: ObservableObject {
            let mode = GameMode(rawValue: demo) {
             settings.gameMode = mode
         }
+        // DEMO_WINDS=圈风,门风（各 0…3 = 东南西北），用来验证风位对番数的影响
+        if let w = ProcessInfo.processInfo.environment["DEMO_WINDS"] {
+            let parts = w.split(separator: ",").compactMap { Int($0) }
+            if parts.count == 2, (0...3).contains(parts[0]), (0...3).contains(parts[1]) {
+                settings.mcrPrevalentWind = parts[0]
+                settings.mcrSeatWind = parts[1]
+            }
+        }
 #endif
     }
 

@@ -310,8 +310,10 @@ struct ContentView: View {
                         titleMenu
                         handSection
                         meldSection
+                        if gameMode.isMCR { mcrWindSection.id("winds") }
                         analyzeButton
                         recognitionNoticeBanner
+                        if viewModel.hasAnalyzed { mcrWindNotice(proxy) }
                         resultSection
                             .id("result")
                     }
@@ -641,6 +643,131 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
+    }
+
+    // MARK: 圈风 / 门风（每局都在变，所以放主页而不是设置页）
+
+    static let mcrWindNames: [LocalizedStringKey] = ["东", "南", "西", "北"]
+
+    /// 要插进句子里的风名得是 **String**：把 LocalizedStringKey 插值进另一个
+    /// LocalizedStringKey，出来的是 `LocalizedStringKey(key: "东", …)` 这种调试描述。
+    /// 而 String(localized:) 不走 Bundle swizzle，必须显式传 appLanguageBundle()，
+    /// 否则应用内切英文时这里还是中文。
+    static func mcrWindName(_ i: Int) -> String {
+        let keys = ["东", "南", "西", "北"]
+        return String(localized: String.LocalizationValue(keys[i]), bundle: appLanguageBundle())
+    }
+
+    /// 下一局：门风退一位（庄家轮换，国标不连庄），门风转回东说明一圈打完、圈风也进一位
+    private func advanceHand() {
+        var s = ruleStore.settings
+        let nextSeat = (s.mcrSeatWind + 3) % 4
+        if nextSeat == 0 { s.mcrPrevalentWind = (s.mcrPrevalentWind + 1) % 4 }
+        s.mcrSeatWind = nextSeat
+        ruleStore.settings = s
+    }
+
+    /// 结果区的风位提示：只有本手真有风刻、圈风/门风才会改变番数时才出现，
+    /// 平时不打扰。点一下直接跳到上面那行滚轮。
+    @ViewBuilder
+    private func mcrWindNotice(_ proxy: ScrollViewProxy) -> some View {
+        if gameMode.isMCR, hasWindPung {
+            Button {
+                withAnimation(.easeInOut(duration: 0.35)) {
+                    proxy.scrollTo("winds", anchor: .center)
+                }
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "location.north.circle.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.accent)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("本手有风刻，正按 圈风\(Self.mcrWindName(ruleStore.settings.mcrPrevalentWind)) · 门风\(Self.mcrWindName(ruleStore.settings.mcrSeatWind)) 计算")
+                            .font(.footnote.weight(.medium))
+                            .foregroundStyle(.primary)
+                        Text("风位不对的话番数会差最多 4 分，点这里去改")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.up")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 11)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Theme.accent.opacity(0.10))
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("跳到圈风门风选择")
+        }
+    }
+
+    private var mcrWindSection: some View {
+        SectionCard(
+            title: "圈风 / 门风",
+            systemImage: "location.north.circle.fill",
+            accessory: Text(hasWindPung ? "影响本手" : "本手无风刻")
+        ) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 12) {
+                    windWheel("圈风", selection: $ruleStore.settings.mcrPrevalentWind)
+                    windWheel("门风", selection: $ruleStore.settings.mcrSeatWind)
+                }
+                HStack(spacing: 10) {
+                    Text(hasWindPung
+                         ? "本手有风刻，圈风 / 门风 会改变番数。"
+                         : "本手没有风刻，圈风 / 门风 不影响番数。")
+                        .font(.footnote)
+                        .foregroundStyle(.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    Button(action: advanceHand) {
+                        Label("下一局", systemImage: "arrow.turn.down.right")
+                            .font(.footnote.weight(.semibold))
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+            }
+        }
+    }
+
+    /// 手上（含副露）有没有风刻——没有的话这一行对分数没影响，据此给个提示
+    private var hasWindPung: Bool {
+        let freq = handToFrequency34(viewModel.handTiles)
+        let meldFreq = meldsToFrequency34(viewModel.melds)
+        return (27..<31).contains { freq[$0] + meldFreq[$0] >= 3 }
+    }
+
+    private func windWheel(_ title: LocalizedStringKey, selection: Binding<Int>) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.tertiary)
+            Picker(title, selection: selection) {
+                ForEach(0..<4, id: \.self) { i in
+                    Text(Self.mcrWindNames[i])
+                        .font(.title3.weight(.semibold))
+                        .tag(i)
+                }
+            }
+            .pickerStyle(.wheel)
+            .frame(height: 96)
+            .clipped()
+            .background {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.primary.opacity(0.04))
+            }
+            .accessibilityLabel(title)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: 算番（听牌金额 / 已和结算随规则设置即时刷新）
