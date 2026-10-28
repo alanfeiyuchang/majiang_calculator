@@ -7,7 +7,6 @@ import SwiftUI
 import StoreKit
 import PhotosUI
 import AVFoundation
-import CoreMotion
 import Combine
 
 // MARK: - Design
@@ -18,16 +17,92 @@ private enum Theme {
     static let sectionSpacing: CGFloat = 16
 }
 
+// MARK: - 跟着屏幕走的尺寸
+
+/// 牌画多大、一行摆几张、键盘怎么排——全部由当前可用宽度算出来。
+///
+/// 这些数原来是照着 393pt 宽的 iPhone 写死的（手牌 46、副露 38、键盘牌高 52）。
+/// 窄一点的 iPhone（SE / mini 只有 375pt）七列根本排不下，相邻两张牌会压住彼此的边框；
+/// iPhone Duo 展开后的内屏有 669pt，又反过来满屏留白。所以一律现算。
+private struct Metrics: Equatable {
+    /// 页面左右留白
+    static let pagePadding: CGFloat = 16
+    /// SectionCard 自己的内边距
+    static let cardPadding: CGFloat = 16
+    static let handSpacing: CGFloat = 8
+    static let keySpacing: CGFloat = 6
+    /// 牌高 = 牌宽 × 4/3（真实麻将牌的比例）
+    static let tileAspect: CGFloat = 4.0 / 3.0
+    /// 宽到这个数就把键盘从底部挪到右边（只有 Duo 内屏横过来才够）
+    static let twoColumnMinWidth: CGFloat = 700
+
+    /// 两栏布局下右边那栏的宽度
+    static func sidePanelWidth(for width: CGFloat) -> CGFloat {
+        min(max(width * 0.42, 340), 460)
+    }
+
+    /// 手牌区一行几张
+    let handColumns: Int
+    /// 手牌、听牌这种「大牌」的宽度
+    let tileWidth: CGFloat
+    /// 副露、打牌建议里「小牌」的宽度
+    let smallTileWidth: CGFloat
+    /// 键盘一行几张：贴底时九张一排，挪到右栏就排成三列（竖着有的是地方，牌可以大一圈）
+    let keyColumns: Int
+    /// 键盘上每张牌的宽度
+    let keyTileWidth: CGFloat
+    /// 屏幕矮（SE 667 / Duo 外屏 644）：键盘那块收紧一点，把高度让给内容
+    let isShort: Bool
+
+    /// - Parameters:
+    ///   - contentWidth: 滚动区那一栏的宽度（两栏时是左栏，不是整个窗口）
+    ///   - keyboardWidth: 键盘所在那一栏的宽度
+    ///   - height: 可用高度
+    ///   - twoColumn: 键盘是不是挪到了右栏
+    init(contentWidth: CGFloat, keyboardWidth: CGFloat, height: CGFloat, twoColumn: Bool = false) {
+        let inner = max(contentWidth - (Metrics.pagePadding + Metrics.cardPadding) * 2, 160)
+        // 先按「一张牌 46 宽」定列数，再把列宽平均分回去：
+        // 牌宽永远等于列宽，就不会出现牌比格子宽、相邻两张叠在一起的情况。
+        let columns = min(14, max(7, Int((inner + Metrics.handSpacing) / (46 + Metrics.handSpacing))))
+        let column = min((inner - Metrics.handSpacing * CGFloat(columns - 1)) / CGFloat(columns), 54)
+        handColumns = columns
+        tileWidth = column
+        smallTileWidth = column * 38 / 46
+
+        let keyInner = max(keyboardWidth - Metrics.pagePadding * 2, 160)
+        let keyCols = twoColumn ? 3 : 9
+        keyColumns = keyCols
+        keyTileWidth = min((keyInner - Metrics.keySpacing * CGFloat(keyCols - 1)) / CGFloat(keyCols),
+                           twoColumn ? 68 : 52)
+
+        isShort = height < 700
+    }
+}
+
+private struct MetricsKey: EnvironmentKey {
+    /// 还没量到尺寸时先按 iPhone 17 算，首帧不至于乱跳
+    static let defaultValue = Metrics(contentWidth: 402, keyboardWidth: 402, height: 874)
+}
+
+extension EnvironmentValues {
+    fileprivate var mjMetrics: Metrics {
+        get { self[MetricsKey.self] }
+        set { self[MetricsKey.self] = newValue }
+    }
+}
+
 // MARK: - 手牌 / 听牌块
 
 private struct MahjongTileChip: View {
+    @Environment(\.mjMetrics) private var metrics
+
     let card: MahjongCard
     var onTap: (() -> Void)? = nil
     var large: Bool = false
 
     /// 牌面宽度（高度按真实麻将牌 3:4 比例）
-    private var width: CGFloat { large ? 46 : 38 }
-    private var height: CGFloat { width * 4 / 3 }
+    private var width: CGFloat { large ? metrics.tileWidth : metrics.smallTileWidth }
+    private var height: CGFloat { width * Metrics.tileAspect }
     private var cornerRadius: CGFloat { width * 0.16 }
 
     var body: some View {
@@ -234,8 +309,12 @@ struct ContentView: View {
     @State private var showCamera = false
     /// 选中/拍摄后待裁剪的图片（裁剪到只剩自己的手牌再识别）
     @State private var pendingCrop: PendingImage?
-
-    private let handColumns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
+    /// 量到的尺寸镜像一份，sheet 在 GeometryReader 之外，靠它拿到同一套牌面大小
+    @State private var layoutMetrics = MetricsKey.defaultValue
+#if DEBUG
+    /// DEMO_* 这些口子一次启动只认一遍，不然视图一重建就又弹一次
+    @State private var didRunDemoHooks = false
+#endif
 
     /// 当前玩法（四川 / 国标）
     private var gameMode: GameMode { ruleStore.settings.gameMode }
@@ -306,70 +385,34 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(spacing: Theme.sectionSpacing) {
-                        titleMenu
-                        handSection
-                        meldSection
-                        if gameMode.isMCR { mcrWindSection.id("winds") }
-                        analyzeButton
-                        recognitionNoticeBanner
-                        if viewModel.hasAnalyzed { mcrWindNotice(proxy) }
-                        resultSection
-                            .id("result")
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-                    .padding(.bottom, 8)
-                }
-                .onChange(of: viewModel.hasAnalyzed) { _, analyzed in
-                    if analyzed {
-                        scrollToResult(proxy)
-                        // 只上膛，不在这儿弹——用户正要读结果
-                        if viewModel.hintMessage == nil { ReviewPrompt.recordSuccess() }
-                    } else {
-                        // 手牌变了：上一局的场景番勾选作废
-                        kongBloom = false; lastTileDraw = false; heavenly = false
-                        kongDischargeWin = false; robbingKong = false; earthly = false
-                        mcrLastTileDraw = false; mcrLastDiscard = false
-                        mcrRobbingKong = false; mcrLastTileOfKind = false
-                    }
-                }
-                .onChange(of: ruleStore.settings.gameMode) { _, mode in
-                    syncGameMode(mode)
-                }
-                .onChange(of: viewModel.hintMessage) { _, hint in
-                    if hint != nil { scrollToResult(proxy) }
-                }
-                .onAppear {
-                    syncGameMode(ruleStore.settings.gameMode)
-                    if viewModel.hasAnalyzed { scrollToResult(proxy) }
-#if DEBUG
-                    // UI 调试（配合 MahjongViewModel 的 DEMO_HAND）：
-                    // DEMO_SETTINGS=1 直接打开设置页（=fans 再进番型一览）；
-                    // DEMO_SHEET=8s 弹出听某张牌的番型明细
-                    let env = ProcessInfo.processInfo.environment
-                    if env["DEMO_SETTINGS"] == "fans" {
-                        demoShowFanReference = true
-                    } else if env["DEMO_SETTINGS"] == "1" {
-                        showSettings = true
-                    } else if let spec = env["DEMO_SHEET"], spec.count >= 2,
-                              let rank = spec.first?.wholeNumberValue {
-                        let suit: MahjongCard.Suit = spec.hasSuffix("m") ? .wan
-                            : (spec.hasSuffix("p") ? .tong : .tiao)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                            breakdownCard = MahjongCard(suit: suit, rank: rank)
+            GeometryReader { geo in
+                // 键盘放底下还是放右边、牌排多大，都看这一栏到底有多宽。
+                let wide = geo.size.width >= Metrics.twoColumnMinWidth
+                let keyboardWidth = wide ? Metrics.sidePanelWidth(for: geo.size.width) : geo.size.width
+                let metrics = Metrics(contentWidth: geo.size.width - (wide ? keyboardWidth : 0),
+                                      keyboardWidth: keyboardWidth,
+                                      height: geo.size.height,
+                                      twoColumn: wide)
+                // 转屏时 mainScroll 必须是同一个视图，不能一边一个：
+                // 放进 if / else 两条分支里 SwiftUI 会认成两个视图，转一次屏重建一次，
+                // 滚动位置丢掉、onAppear 再跑一遍（场景番勾选、滚到结果区都会重来）。
+                // 所以滚动区永远挂在 HStack 第一格，只让右栏和底栏跟着条件出现。
+                HStack(spacing: 0) {
+                    mainScroll(metrics)
+                        .safeAreaInset(edge: .bottom, spacing: 0) {
+                            if !wide { bottomBar(metrics) }
                         }
+                    if wide {
+                        // Duo 内屏横过来有 951pt 宽：键盘挪到右栏，左边才留得下结果区。
+                        Divider()
+                        sidePanel(metrics, width: keyboardWidth)
                     }
-#endif
                 }
+                .environment(\.mjMetrics, metrics)
+                .onChange(of: metrics) { _, m in layoutMetrics = m }
+                .onAppear { layoutMetrics = metrics }
             }
-            .scrollIndicators(.hidden)
             .background(Color(uiColor: .systemGroupedBackground))
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                bottomBar
-            }
             // 标题由 titleMenu 自绘（见下），这里把系统标题让开。
             // 试过 .toolbarTitleMenu，大标题上不显示任何可点提示，用户看不出来能点。
             .navigationTitle("")
@@ -487,6 +530,8 @@ struct ContentView: View {
                 }
             }
         }
+        // sheet / fullScreenCover 挂在这一层，拿不到 GeometryReader 里那份，补一道
+        .environment(\.mjMetrics, layoutMetrics)
     }
 
     /// 用户清空手牌、要开下一手了——屏幕上已经没有他要读的内容，
@@ -529,9 +574,79 @@ struct ContentView: View {
         }
     }
 
+    /// 主滚动区（标题 + 手牌 + 副露 + 结果）
+    private func mainScroll(_ metrics: Metrics) -> some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: Theme.sectionSpacing) {
+                    titleMenu
+                    handSection(metrics)
+                    meldSection
+                    if gameMode.isMCR { mcrWindSection.id("winds") }
+                    analyzeButton
+                    recognitionNoticeBanner
+                    if viewModel.hasAnalyzed { mcrWindNotice(proxy) }
+                    resultSection
+                        .id("result")
+                }
+                .padding(.horizontal, Metrics.pagePadding)
+                .padding(.top, 8)
+                .padding(.bottom, 8)
+            }
+            .onChange(of: viewModel.hasAnalyzed) { _, analyzed in
+                if analyzed {
+                    scrollToResult(proxy)
+                    // 只上膛，不在这儿弹——用户正要读结果
+                    if viewModel.hintMessage == nil { ReviewPrompt.recordSuccess() }
+                } else {
+                    // 手牌变了：上一局的场景番勾选作废
+                    kongBloom = false; lastTileDraw = false; heavenly = false
+                    kongDischargeWin = false; robbingKong = false; earthly = false
+                    mcrLastTileDraw = false; mcrLastDiscard = false
+                    mcrRobbingKong = false; mcrLastTileOfKind = false
+                }
+            }
+            .onChange(of: ruleStore.settings.gameMode) { _, mode in
+                syncGameMode(mode)
+            }
+            .onChange(of: viewModel.hintMessage) { _, hint in
+                if hint != nil { scrollToResult(proxy) }
+            }
+            .onAppear {
+                syncGameMode(ruleStore.settings.gameMode)
+                if viewModel.hasAnalyzed { scrollToResult(proxy) }
+#if DEBUG
+                // UI 调试（配合 MahjongViewModel 的 DEMO_HAND）：
+                // DEMO_SETTINGS=1 直接打开设置页（=fans 再进番型一览）；
+                // DEMO_SHEET=8s 弹出听某张牌的番型明细；
+                // DEMO_CAMERA=1 直接进拍照页（模拟器没有摄像头，取景只能上真机看，
+                //               而真机又点不到按钮，所以留个口子）
+                guard !didRunDemoHooks else { return }
+                didRunDemoHooks = true
+                let env = ProcessInfo.processInfo.environment
+                if env["DEMO_CAMERA"] == "1" {
+                    showCamera = true
+                } else if env["DEMO_SETTINGS"] == "fans" {
+                    demoShowFanReference = true
+                } else if env["DEMO_SETTINGS"] == "1" {
+                    showSettings = true
+                } else if let spec = env["DEMO_SHEET"], spec.count >= 2,
+                          let rank = spec.first?.wholeNumberValue {
+                    let suit: MahjongCard.Suit = spec.hasSuffix("m") ? .wan
+                        : (spec.hasSuffix("p") ? .tong : .tiao)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                        breakdownCard = MahjongCard(suit: suit, rank: rank)
+                    }
+                }
+#endif
+            }
+        }
+        .scrollIndicators(.hidden)
+    }
+
     // MARK: 手牌区
 
-    private var handSection: some View {
+    private func handSection(_ metrics: Metrics) -> some View {
         SectionCard(
             title: "手里的牌",
             systemImage: "square.grid.3x3.fill",
@@ -581,7 +696,9 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 20)
             } else {
-                LazyVGrid(columns: handColumns, spacing: 8) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Metrics.handSpacing),
+                                         count: metrics.handColumns),
+                          spacing: Metrics.handSpacing) {
                     ForEach(viewModel.selectedTiles) { item in
                         MahjongTileChip(card: item.card, onTap: {
                             viewModel.removeTile(item)
@@ -1413,107 +1530,121 @@ struct ContentView: View {
         }
     }
 
-    // MARK: 底部：操作 + 键盘
+    // MARK: 操作 + 键盘（窄屏贴底，宽屏挪到右栏）
 
-    private var bottomBar: some View {
+    private func bottomBar(_ metrics: Metrics) -> some View {
         VStack(spacing: 0) {
             Divider()
-            VStack(alignment: .leading, spacing: 12) {
-                Button {
-                    // 直接开相机；没有相机硬件时（模拟器）退回相册，避免黑屏死路
-                    if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                        showCamera = true
-                    } else {
-                        showPhotoPicker = true
-                    }
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "camera.viewfinder")
-                        Text("拍照识别手牌")
-                        Spacer(minLength: 0)
-                    }
-                    .font(.subheadline.weight(.semibold))
-                    .padding(.vertical, 10)
-                }
-                .buttonStyle(.bordered)
-                .tint(Theme.accent)
-                .disabled(viewModel.isRecognizing)
+            inputControls(metrics)
+                .padding(.horizontal, Metrics.pagePadding)
+                .padding(.top, metrics.isShort ? 8 : 12)
+                .padding(.bottom, metrics.isShort ? 6 : 10)
+                .background(.ultraThinMaterial)
+        }
+    }
 
-                HStack(spacing: 10) {
-                    Text("点选加入")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .textCase(.uppercase)
-                        .tracking(0.5)
-                        .padding(.horizontal, 4)
+    /// 宽屏（Duo 内屏横放）把这块竖着排在右栏，左边才留得下完整的结果区
+    private func sidePanel(_ metrics: Metrics, width: CGFloat) -> some View {
+        ScrollView {
+            inputControls(metrics)
+                .padding(.horizontal, Metrics.pagePadding)
+                .padding(.vertical, 16)
+        }
+        .scrollIndicators(.hidden)
+        .frame(width: width)
+        .background(.ultraThinMaterial)
+    }
+
+    private func inputControls(_ metrics: Metrics) -> some View {
+        VStack(alignment: .leading, spacing: metrics.isShort ? 8 : 12) {
+            Button {
+                // 直接开相机；没有相机硬件时（模拟器）退回相册，避免黑屏死路
+                if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                    showCamera = true
+                } else {
+                    showPhotoPicker = true
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "camera.viewfinder")
+                    Text("拍照识别手牌")
                     Spacer(minLength: 0)
-                    Picker("加入到", selection: $inputTarget) {
-                        ForEach(InputTarget.cases(for: gameMode), id: \.self) { target in
-                            Text(LocalizedStringKey(target.rawValue)).tag(target)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(maxWidth: gameMode.isMCR ? 320 : 270)
                 }
-
-                suitPicker
-
-                if inputTarget == .chow {
-                    Text("吃：点起始牌，自动配成连续三张（如点「3万」= 吃 345 万）。分析工具不限制只能吃上家。")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                HStack(spacing: 6) {
-                    ForEach(1...keyboardSuit.rankCount, id: \.self) { r in
-                        let card = MahjongCard(suit: keyboardSuit, rank: r)
-                        let enabled = keyboardCanAdd(card)
-                        Button {
-                            if let kind = inputTarget.meldKind {
-                                viewModel.addMeld(kind, of: card)
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    inputTarget = .hand
-                                }
-                            } else {
-                                viewModel.addCard(card)
-                            }
-                        } label: {
-                            Group {
-                                if card.hasImageAsset {
-                                    Image(card.assetName)
-                                        .resizable()
-                                        .interpolation(.high)
-                                        .aspectRatio(3.0 / 4.0, contentMode: .fit)
-                                } else {
-                                    TileFaceText(card: card)
-                                }
-                            }
-                            .frame(height: 52)
-                            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                    .strokeBorder(Color.black.opacity(0.28), lineWidth: 1)
-                            }
-                            .shadow(color: .black.opacity(0.18), radius: 1.5, y: 1)
-                            .frame(maxWidth: .infinity)
-                            .opacity(enabled ? 1 : 0.35)
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(!enabled)
-                    }
-                    // 风(4)/箭(3) 比数牌少，补空位撑住等宽布局
-                    if keyboardSuit.rankCount < 9 {
-                        ForEach(0..<(9 - keyboardSuit.rankCount), id: \.self) { _ in
-                            Color.clear.frame(height: 52).frame(maxWidth: .infinity)
-                        }
-                    }
-                }
+                .font(.subheadline.weight(.semibold))
+                .padding(.vertical, metrics.isShort ? 7 : 10)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 10)
-            .background(.ultraThinMaterial)
+            .buttonStyle(.bordered)
+            .tint(Theme.accent)
+            .disabled(viewModel.isRecognizing)
+
+            HStack(spacing: 10) {
+                Text("点选加入")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
+                    .tracking(0.5)
+                    .padding(.horizontal, 4)
+                Spacer(minLength: 0)
+                Picker("加入到", selection: $inputTarget) {
+                    ForEach(InputTarget.cases(for: gameMode), id: \.self) { target in
+                        Text(LocalizedStringKey(target.rawValue)).tag(target)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(maxWidth: gameMode.isMCR ? 320 : 270)
+            }
+
+            suitPicker
+
+            if inputTarget == .chow {
+                Text("吃：点起始牌，自动配成连续三张（如点「3万」= 吃 345 万）。分析工具不限制只能吃上家。")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Metrics.keySpacing),
+                                     count: metrics.keyColumns),
+                      spacing: Metrics.keySpacing) {
+                ForEach(1...keyboardSuit.rankCount, id: \.self) { r in
+                    let card = MahjongCard(suit: keyboardSuit, rank: r)
+                    let enabled = keyboardCanAdd(card)
+                    Button {
+                        if let kind = inputTarget.meldKind {
+                            viewModel.addMeld(kind, of: card)
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                inputTarget = .hand
+                            }
+                        } else {
+                            viewModel.addCard(card)
+                        }
+                    } label: {
+                        Group {
+                            if card.hasImageAsset {
+                                Image(card.assetName)
+                                    .resizable()
+                                    .interpolation(.high)
+                                    .aspectRatio(3.0 / 4.0, contentMode: .fit)
+                            } else {
+                                TileFaceText(card: card)
+                            }
+                        }
+                        .frame(width: metrics.keyTileWidth,
+                               height: metrics.keyTileWidth * Metrics.tileAspect)
+                        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                .strokeBorder(Color.black.opacity(0.28), lineWidth: 1)
+                        }
+                        .shadow(color: .black.opacity(0.18), radius: 1.5, y: 1)
+                        .frame(maxWidth: .infinity)
+                        .opacity(enabled ? 1 : 0.35)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!enabled)
+                }
+                // 风(4)/箭(3) 比数牌少，不用补空位：网格的列宽本来就是等分的
+            }
         }
     }
 
@@ -1857,29 +1988,57 @@ private final class CameraModel: NSObject, ObservableObject, AVCapturePhotoCaptu
     private var configured = false
 
     var onCapture: ((UIImage) -> Void)?
-    /// 拍摄时的旋转角度
-    var captureAngle: CGFloat = 90
 
-    // 用重力（加速度计）判断手机实际朝向——即使界面锁定竖屏也有效
-    private let motion = CMMotionManager()
-    /// 由重力推得的拍摄旋转角（0 / 90 / 180 / 270）
-    private(set) var gravityCaptureAngle: CGFloat = 90
+    // 取景和拍摄各自该转多少度，交给 AVCaptureDevice.RotationCoordinator 按重力算。
+    //
+    // 以前这里是自己读加速度计推的：界面锁死竖屏时那样够用。现在 Duo 内屏能转，
+    // 而且折叠机展开后「机身朝上」和摄像头的物理朝向不是一回事，自己推必错。
+    // AVFoundation 也明说：某些设备 / 界面方向组合下，预览该转的角度和拍摄该转的角度
+    // 本来就不相等，所以这两个角分开取。
+    private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
+    private var previewAngleObservation: NSKeyValueObservation?
+    private var captureAngleObservation: NSKeyValueObservation?
+    private weak var previewLayer: AVCaptureVideoPreviewLayer?
+    private var videoDevice: AVCaptureDevice?
+    /// 按下快门时要用的角度（协调器在主线程更新）
+    private var captureAngle: CGFloat = 90
 
-    func startMotion() {
-        guard motion.isAccelerometerAvailable, !motion.isAccelerometerActive else { return }
-        motion.accelerometerUpdateInterval = 0.1
-        motion.startAccelerometerUpdates(to: .main) { [weak self] data, _ in
-            guard let a = data?.acceleration else { return }
-            // 平放时 |x|、|y| 都很小 → 保持上一次朝向，避免乱跳
-            if abs(a.y) >= abs(a.x) {
-                if abs(a.y) > 0.4 { self?.gravityCaptureAngle = a.y < 0 ? 90 : 270 }   // 竖握 / 倒握
-            } else {
-                if abs(a.x) > 0.4 { self?.gravityCaptureAngle = a.x < 0 ? 0 : 180 }    // 横握两方向（如颠倒，把 0/180 对调）
-            }
+    /// 预览图层进到视图树之后调用。协调器要求图层已在视图树里，
+    /// 否则 videoRotationAngleForHorizonLevelPreview 一律返回 0。
+    func bindPreview(_ layer: AVCaptureVideoPreviewLayer) {
+        previewLayer = layer
+        rotationCoordinator = nil
+        previewAngleObservation = nil
+        captureAngleObservation = nil
+        startRotationCoordinatorIfReady()
+    }
+
+    /// 摄像头和预览图层都就位了才建得起来，两边谁后到谁负责建（主线程调用）
+    private func startRotationCoordinatorIfReady() {
+        guard rotationCoordinator == nil,
+              let device = videoDevice,
+              let layer = previewLayer else { return }
+        let coordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: layer)
+        rotationCoordinator = coordinator
+        previewAngleObservation = coordinator.observe(
+            \.videoRotationAngleForHorizonLevelPreview, options: [.initial, .new]
+        ) { [weak self] _, change in
+            guard let angle = change.newValue else { return }
+            self?.applyPreviewAngle(angle)
+        }
+        captureAngleObservation = coordinator.observe(
+            \.videoRotationAngleForHorizonLevelCapture, options: [.initial, .new]
+        ) { [weak self] _, change in
+            guard let angle = change.newValue else { return }
+            self?.captureAngle = angle
         }
     }
 
-    func stopMotion() { motion.stopAccelerometerUpdates() }
+    private func applyPreviewAngle(_ angle: CGFloat) {
+        guard let conn = previewLayer?.connection,
+              conn.isVideoRotationAngleSupported(angle) else { return }
+        conn.videoRotationAngle = angle
+    }
 
     func start() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -1911,16 +2070,21 @@ private final class CameraModel: NSObject, ObservableObject, AVCapturePhotoCaptu
         if let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
            let input = try? AVCaptureDeviceInput(device: device), session.canAddInput(input) {
             session.addInput(input)
+            DispatchQueue.main.async {
+                self.videoDevice = device
+                self.startRotationCoordinatorIfReady()
+            }
         }
         if session.canAddOutput(output) { session.addOutput(output) }
         session.commitConfiguration()
     }
 
     func capture() {
+        let angle = captureAngle        // 协调器只在主线程更新，先取好再进后台队列
         queue.async {
             if let conn = self.output.connection(with: .video),
-               conn.isVideoRotationAngleSupported(self.captureAngle) {
-                conn.videoRotationAngle = self.captureAngle
+               conn.isVideoRotationAngleSupported(angle) {
+                conn.videoRotationAngle = angle
             }
             self.output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
         }
@@ -1934,11 +2098,15 @@ private final class CameraModel: NSObject, ObservableObject, AVCapturePhotoCaptu
 }
 
 private struct CameraPreview: UIViewRepresentable {
-    let session: AVCaptureSession
+    let model: CameraModel
 
     func makeUIView(context: Context) -> PreviewView {
         let v = PreviewView()
-        v.videoPreviewLayer.session = session
+        v.videoPreviewLayer.session = model.session
+        v.onEnterHierarchy = { [weak v] in
+            guard let v else { return }
+            model.bindPreview(v.videoPreviewLayer)
+        }
         // .resizeAspect：完整显示拍摄画幅（按比例留黑边），避免 .resizeAspectFill 裁边导致
         // 取景框比实际拍到的画面「更窄」——之前拍完看裁剪页会发现四周多出内容，就是这个不一致。
         v.videoPreviewLayer.videoGravity = .resizeAspect
@@ -1949,6 +2117,14 @@ private struct CameraPreview: UIViewRepresentable {
     final class PreviewView: UIView {
         override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
         var videoPreviewLayer: AVCaptureVideoPreviewLayer { layer as! AVCaptureVideoPreviewLayer }
+
+        /// 进了视图树再通知 model 去建 RotationCoordinator（协调器对不在视图树里的图层只给 0 度）
+        var onEnterHierarchy: (() -> Void)?
+
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            if window != nil { onEnterHierarchy?() }
+        }
     }
 }
 
@@ -1960,7 +2136,7 @@ private struct CameraView: View {
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            CameraPreview(session: model.session)
+            CameraPreview(model: model)
                 .ignoresSafeArea()
 
             VStack {
@@ -1979,7 +2155,6 @@ private struct CameraView: View {
                 Spacer()
 
                 Button {
-                    model.captureAngle = model.gravityCaptureAngle
                     model.capture()
                 } label: {
                     ZStack {
@@ -1994,10 +2169,8 @@ private struct CameraView: View {
         .onAppear {
             model.onCapture = { onCapture($0) }
             model.start()
-            model.startMotion()
         }
         .onDisappear {
-            model.stopMotion()
             model.stop()
         }
     }
